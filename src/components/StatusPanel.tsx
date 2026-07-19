@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { GAME_CONFIG, SEASON_LABEL } from '../data/config'
 import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
 import { useGame } from '../store/gameStore'
+import { PortraitButton } from './portrait/PortraitButton'
 import { Button } from './ui/Button'
 import { StatBar } from './ui/StatBar'
 
@@ -19,30 +20,34 @@ export function StatusPanel() {
   return (
     <aside className="sticky top-0 z-20 lg:static lg:w-80 lg:shrink-0">
       <div className="border-b border-slate-800 bg-slate-900/95 backdrop-blur lg:rounded-2xl lg:border">
-        {/* 항상 보이는 요약 줄 */}
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-amber-200">
-              즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]}
-            </p>
-            <p className="text-xs text-slate-400">군주 {game.age}세</p>
-          </div>
+        {/* 항상 보이는 요약 줄. 폰=가로 한 줄, PC=초상이 위로 올라간 세로 배치 */}
+        <div className="flex items-center gap-3 px-4 py-3 lg:flex-col lg:gap-3 lg:pt-4">
+          <PortraitButton className="h-14 w-11 lg:h-40 lg:w-32" />
 
-          <div className="ml-auto flex items-center gap-2">
-            <div className="rounded-lg bg-slate-800 px-2.5 py-1 text-center">
-              <p className="text-[10px] leading-none text-slate-400">행동력</p>
-              <p className="text-sm font-semibold tabular-nums leading-tight text-slate-100">
-                {game.actionPoints}
-                <span className="text-slate-500">/{GAME_CONFIG.actionPointsPerTurn}</span>
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:w-full lg:flex-none">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-amber-200">
+                즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]}
               </p>
+              <p className="text-xs text-slate-400">군주 {game.age}세</p>
             </div>
-            <Button
-              className="px-3 lg:hidden"
-              aria-expanded={open}
-              onClick={() => setOpen((v) => !v)}
-            >
-              {open ? '닫기' : '상세'}
-            </Button>
+
+            <div className="ml-auto flex items-center gap-2">
+              <div className="rounded-lg bg-slate-800 px-2.5 py-1 text-center">
+                <p className="text-[10px] leading-none text-slate-400">행동력</p>
+                <p className="text-sm font-semibold tabular-nums leading-tight text-slate-100">
+                  {game.actionPoints}
+                  <span className="text-slate-500">/{GAME_CONFIG.actionPointsPerTurn}</span>
+                </p>
+              </div>
+              <Button
+                className="px-3 lg:hidden"
+                aria-expanded={open}
+                onClick={() => setOpen((v) => !v)}
+              >
+                {open ? '닫기' : '상세'}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -90,6 +95,11 @@ export function StatusPanel() {
               label={RESOURCE_META.tutorTrust.label}
               value={game.tutorTrust}
               bar={RESOURCE_META.tutorTrust.bar}
+            />
+            <StatBar
+              label={RESOURCE_META.regentRapport.label}
+              value={game.regentRapport}
+              bar={RESOURCE_META.regentRapport.bar}
             />
             <StatBar
               label={RESOURCE_META.regentSuspicion.label}

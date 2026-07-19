@@ -13,8 +13,19 @@ export type StatKey = 'statecraft' | 'finance' | 'rhetoric' | 'martial' | 'court
 
 export type Stats = Record<StatKey, number>
 
-/** 스탯이 아닌 자원·게이지. 0~100 으로 다루되 actionPoints 만 예외. */
-export type ResourceKey = 'wellbeing' | 'tutorTrust' | 'regentSuspicion' | 'actionPoints'
+/**
+ * 스탯이 아닌 자원·게이지. 0~100 으로 다루되 actionPoints 만 예외.
+ * regentSuspicion(경계도)과 regentRapport(통치자로 인정하는 정도)는 별개 축이다.
+ */
+export type ResourceKey =
+  | 'wellbeing'
+  | 'tutorTrust'
+  | 'regentSuspicion'
+  | 'regentRapport'
+  | 'actionPoints'
+
+/** 플레이어에게 수치를 미리 보여주지 않는 게이지. 선택지 미리보기에서 가려진다. */
+export type GaugeKey = Exclude<ResourceKey, 'actionPoints'>
 
 export type EffectTarget =
   | { kind: 'stat'; key: StatKey }
@@ -39,7 +50,7 @@ export interface Condition {
   minAge?: number
   maxAge?: number
   stats?: Partial<Record<StatKey, { min?: number; max?: number }>>
-  resources?: Partial<Record<Exclude<ResourceKey, 'actionPoints'>, { min?: number; max?: number }>>
+  resources?: Partial<Record<GaugeKey, { min?: number; max?: number }>>
   /** 해당 flag 가 지정한 값과 일치해야 한다. */
   flags?: FlagSet
 }
@@ -56,6 +67,22 @@ export interface Activity {
   tags?: string[]
 }
 
+/**
+ * 이벤트 선택지.
+ * 기본 effects 는 턴 종료 시 일괄 적용되지만, 선택지 effects 는
+ * 플레이어가 고른 순간 적용되고 그 자리에서 결과를 보여준다.
+ */
+export interface Choice {
+  id: string
+  label: string
+  /** 미충족이면 비활성 + describeCondition() 으로 사유를 표시한다. */
+  requires?: Condition
+  effects?: Effect[]
+  setFlags?: FlagSet
+  /** 고른 뒤 이어지는 후일담. */
+  resultText: string
+}
+
 export interface GameEvent {
   id: string
   title: string
@@ -68,7 +95,30 @@ export interface GameEvent {
   priority?: number
   effects?: Effect[]
   setFlags?: FlagSet
-  // 확장 예약: choices?: Choice[]
+  choices?: Choice[]
+  /**
+   * 기본 'scripted'. 엔진은 이 값을 읽지 않는다 —
+   * M2b 에서 AI 가 같은 구조로 돌발 이벤트를 주입할 때를 위한 표식일 뿐.
+   */
+  source?: 'scripted' | 'ai_generated'
+}
+
+/**
+ * 착장 한 벌. 이미지는 public/assets/outfits/ 아래에 두고 경로만 가리킨다.
+ * unlockCondition 은 이벤트와 동일한 Condition 을 재사용한다.
+ */
+export interface Outfit {
+  id: string
+  name: string
+  description: string
+  thumbSrc: string
+  fullSrc: string
+  unlockCondition?: Condition
+}
+
+export interface OutfitManifest {
+  version: number
+  outfits: Outfit[]
 }
 
 /** 결과 화면이 그대로 렌더할 수 있도록, 실제 적용된 변화량만 담는다. */
@@ -88,7 +138,15 @@ export interface Delta {
   amount: number
 }
 
-export type Phase = 'schedule' | 'result' | 'event'
+/** 'ended' = 20세를 넘겨 이번 단계의 끝점에 도달한 상태(엔딩은 M3). */
+export type Phase = 'schedule' | 'result' | 'event' | 'ended'
+
+/** 선택지를 고른 직후 이벤트 화면이 보여줄 결과. 세이브에 넣지 않는 UI 상태. */
+export interface ChoiceOutcome {
+  eventId: string
+  choiceId: string
+  deltas: Delta[]
+}
 
 export interface GameState {
   date: GameDate
@@ -97,7 +155,11 @@ export interface GameState {
   wellbeing: number
   tutorTrust: number
   regentSuspicion: number
+  /** 섭정이 군주를 통치자로 인정하는 정도. 회유 루트의 열쇠. */
+  regentRapport: number
   actionPoints: number
+  /** 현재 입고 있는 착장 id. 매니페스트에 없으면 기본 착장으로 되돌린다. */
+  currentOutfitId: string
   plannedActivityIds: string[]
   flags: FlagSet
   phase: Phase

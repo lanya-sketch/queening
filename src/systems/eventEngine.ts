@@ -1,5 +1,7 @@
+import { SEASON_LABEL } from '../data/config'
 import { EVENTS } from '../data/events'
-import type { Condition, GameEvent, GameState } from '../types/game'
+import { RESOURCE_META, STAT_META } from '../data/stats'
+import type { Condition, GameEvent, GameState, GaugeKey, StatKey } from '../types/game'
 
 export function seenFlagId(eventId: string): string {
   return `event:${eventId}`
@@ -28,9 +30,7 @@ export function matchesCondition(state: GameState, c: Condition): boolean {
 
   if (c.resources) {
     for (const [key, range] of Object.entries(c.resources)) {
-      if (!inRange(state[key as 'wellbeing' | 'tutorTrust' | 'regentSuspicion'], range)) {
-        return false
-      }
+      if (!inRange(state[key as GaugeKey], range)) return false
     }
   }
 
@@ -41,6 +41,37 @@ export function matchesCondition(state: GameState, c: Condition): boolean {
   }
 
   return true
+}
+
+/**
+ * 조건을 사람이 읽는 문장 조각으로 바꾼다.
+ * 착장 잠금 사유 표시에 쓰고, 앞으로 활동·이벤트 해금 안내에도 재사용한다.
+ */
+export function describeCondition(c: Condition | undefined): string[] {
+  if (!c) return []
+  const parts: string[] = []
+
+  if (c.minYear !== undefined) parts.push(`즉위 ${c.minYear}년 이후`)
+  if (c.maxYear !== undefined) parts.push(`즉위 ${c.maxYear}년 이내`)
+  if (c.season !== undefined) parts.push(`${SEASON_LABEL[c.season]}에만`)
+  if (c.minAge !== undefined) parts.push(`${c.minAge}세 이상`)
+  if (c.maxAge !== undefined) parts.push(`${c.maxAge}세 이하`)
+
+  for (const [key, range] of Object.entries(c.stats ?? {})) {
+    const label = STAT_META[key as StatKey]?.label ?? key
+    if (range?.min !== undefined) parts.push(`${label} ${range.min} 이상`)
+    if (range?.max !== undefined) parts.push(`${label} ${range.max} 이하`)
+  }
+
+  for (const [key, range] of Object.entries(c.resources ?? {})) {
+    const label = RESOURCE_META[key as keyof typeof RESOURCE_META]?.label ?? key
+    if (range?.min !== undefined) parts.push(`${label} ${range.min} 이상`)
+    if (range?.max !== undefined) parts.push(`${label} ${range.max} 이하`)
+  }
+
+  if (c.flags && Object.keys(c.flags).length > 0) parts.push('특정 사건을 겪은 뒤')
+
+  return parts
 }
 
 /**

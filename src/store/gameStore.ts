@@ -1,14 +1,37 @@
 import { create } from 'zustand'
 import { ACTIVITY_BY_ID } from '../data/activities'
-import type { GameState } from '../types/game'
+import { EVENT_BY_ID } from '../data/events'
+import { FALLBACK_MANIFEST } from '../data/outfits'
+import type { ChoiceOutcome, GameState, OutfitManifest, Phase } from '../types/game'
+import { applyEffects } from '../systems/effects'
+import { matchesCondition } from '../systems/eventEngine'
+import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/outfits'
 import { clearSave, getSavedAt, loadGame, saveGame } from '../systems/save'
-import { createInitialState, endTurn } from '../systems/turn'
+import { createInitialState, endTurn, hasReachedEnd } from '../systems/turn'
+
+/** 이벤트 큐를 다 비운 뒤 돌아갈 화면. 20세를 넘겼으면 스케줄 대신 종료 화면. */
+function idlePhase(game: GameState): Phase {
+  return hasReachedEnd(game) ? 'ended' : 'schedule'
+}
 
 interface GameStore {
   game: GameState
   savedAt: string | null
   /** 세이브/로드 결과를 알리는 짧은 안내문. */
   notice: string | null
+  /** 방금 고른 선택지의 결과. 이벤트 화면이 후일담을 보여주는 데 쓴다. */
+  lastChoiceOutcome: ChoiceOutcome | null
+
+  outfitManifest: OutfitManifest
+  manifestSource: 'manifest' | 'fallback'
+  manifestProblems: string[]
+  /** 초상 확대 모달 열림 여부. 게임 상태가 아니라 UI 상태라 세이브에 넣지 않는다. */
+  portraitOpen: boolean
+
+  initOutfits: () => Promise<void>
+  setOutfit: (outfitId: string) => void
+  openPortrait: () => void
+  closePortrait: () => void
 
   addActivity: (activityId: string) => void
   removeActivityAt: (index: number) => void
@@ -16,6 +39,8 @@ interface GameStore {
   endTurn: () => void
   /** 결과 화면 → 이벤트 or 스케줄. */
   continueFromResult: () => void
+  /** 이벤트 선택지를 고른다. 효과는 이 시점에 적용된다. */
+  chooseOption: (eventId: string, choiceId: string) => void
   /** 이벤트 하나를 소화한다. */
   dismissEvent: () => void
 
@@ -29,6 +54,36 @@ export const useGame = create<GameStore>()((set, get) => ({
   game: createInitialState(),
   savedAt: getSavedAt(),
   notice: null,
+  lastChoiceOutcome: null,
+
+  outfitManifest: FALLBACK_MANIFEST,
+  manifestSource: 'fallback',
+  manifestProblems: [],
+  portraitOpen: false,
+
+  initOutfits: async () => {
+    const { manifest, source, problems } = await loadOutfitManifest()
+    const { game } = get()
+    // 저장된 착장이 매니페스트에서 사라졌을 수 있으니 여기서 한 번 정리한다.
+    const resolved = resolveOutfit(manifest, game.currentOutfitId)
+    set({
+      outfitManifest: manifest,
+      manifestSource: source,
+      manifestProblems: problems,
+      game: resolved.id === game.currentOutfitId ? game : { ...game, currentOutfitId: resolved.id },
+    })
+  },
+
+  setOutfit: (outfitId) => {
+    const { game, outfitManifest } = get()
+    const outfit = outfitManifest.outfits.find((o) => o.id === outfitId)
+    if (!outfit) return
+    if (!isOutfitUnlocked(outfit, game)) return
+    set({ game: { ...game, currentOutfitId: outfit.id }, notice: `${outfit.name}(으)로 갈아입었습니다.` })
+  },
+
+  openPortrait: () => set({ portraitOpen: true }),
+  closePortrait: () => set({ portraitOpen: false }),
 
   addActivity: (activityId) => {
     const { game } = get()
@@ -70,11 +125,25 @@ export const useGame = create<GameStore>()((set, get) => ({
     })
   },
 
-  endTurn: () => set({ game: endTurn(get().game) }),
+  endTurn: () => set({ game: endTurn(get().game), lastChoiceOutcome: null }),
 
   continueFromResult: () => {
     const { game } = get()
-    set({ game: { ...game, phase: game.pendingEventIds.length ? 'event' : 'schedule' } })
+    set({ game: { ...game, phase: game.pendingEventIds.length ? 'event' : idlePhase(game) } })
+  },
+
+  chooseOption: (eventId, choiceId) => {
+    const { game } = get()
+    const event = EVENT_BY_ID[eventId]
+    const choice = event?.choices?.find((c) => c.id === choiceId)
+    if (!choice) return
+    if (choice.requires && !matchesCondition(game, choice.requires)) return
+
+    const { state, deltas } = applyEffects(game, choice.effects)
+    set({
+      game: { ...state, flags: { ...state.flags, ...choice.setFlags } },
+      lastChoiceOutcome: { eventId, choiceId, deltas },
+    })
   },
 
   dismissEvent: () => {
@@ -84,8 +153,9 @@ export const useGame = create<GameStore>()((set, get) => ({
       game: {
         ...game,
         pendingEventIds,
-        phase: pendingEventIds.length ? 'event' : 'schedule',
+        phase: pendingEventIds.length ? 'event' : idlePhase(game),
       },
+      lastChoiceOutcome: null,
     })
   },
 
@@ -103,12 +173,24 @@ export const useGame = create<GameStore>()((set, get) => ({
       set({ notice: '불러올 기록이 없습니다.' })
       return
     }
-    set({ game: loaded, notice: '기록을 불러왔습니다.' })
+    // 옛 세이브의 착장 id 가 지금 매니페스트에 없을 수 있다.
+    const resolved = resolveOutfit(get().outfitManifest, loaded.currentOutfitId)
+    set({
+      game: { ...loaded, currentOutfitId: resolved.id },
+      lastChoiceOutcome: null,
+      notice: '기록을 불러왔습니다.',
+    })
   },
 
   reset: () => {
     clearSave()
-    set({ game: createInitialState(), savedAt: null, notice: '처음부터 다시 시작합니다.' })
+    set({
+      game: createInitialState(),
+      savedAt: null,
+      portraitOpen: false,
+      lastChoiceOutcome: null,
+      notice: '처음부터 다시 시작합니다.',
+    })
   },
 
   clearNotice: () => set({ notice: null }),

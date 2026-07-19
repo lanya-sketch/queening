@@ -1,51 +1,166 @@
 import { EVENT_BY_ID } from '../data/events'
-import { formatEffect } from '../systems/effects'
+import { HIDDEN_GAUGES } from '../data/stats'
+import { formatEffect, targetLabel } from '../systems/effects'
+import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { useGame } from '../store/gameStore'
+import type { Choice, Delta, Effect } from '../types/game'
 import { Button } from './ui/Button'
 
-/** M2 에서 비주얼 노벨 씬으로 승격될 자리. 지금은 텍스트만 보여준다. */
+/**
+ * 선택지 미리보기에서는 히든 게이지(의심·신망)를 가린다.
+ * 내 능력치는 계산해서 고르되, 섭정의 속마음은 고른 뒤에야 안다.
+ */
+function visibleEffects(effects: Effect[] | undefined): Effect[] {
+  return (effects ?? []).filter(
+    (e) => !(e.target.kind === 'resource' && HIDDEN_GAUGES.includes(e.target.key)),
+  )
+}
+
+function EffectChips({ effects }: { effects: Effect[] }) {
+  if (effects.length === 0) return null
+  return (
+    <span className="mt-2 flex flex-wrap gap-1">
+      {effects.map((effect, i) => (
+        <span
+          key={i}
+          className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
+            effect.amount > 0 ? 'bg-slate-800 text-emerald-300' : 'bg-slate-800 text-rose-300'
+          }`}
+        >
+          {formatEffect(effect)}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+function DeltaChips({ deltas }: { deltas: Delta[] }) {
+  if (deltas.length === 0) return null
+  return (
+    <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-800 pt-4">
+      {deltas.map((delta) => (
+        <span
+          key={delta.label}
+          className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
+            delta.amount > 0 ? 'bg-slate-800 text-emerald-300' : 'bg-slate-800 text-rose-300'
+          }`}
+        >
+          {delta.label} {delta.amount > 0 ? '+' : ''}
+          {delta.amount}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function Paragraphs({ text, className }: { text: string; className: string }) {
+  return (
+    <>
+      {text.split('\n').map((line, i) =>
+        line.trim() === '' ? (
+          <span key={i} className="block h-2" />
+        ) : (
+          <p key={i} className={className}>
+            {line}
+          </p>
+        ),
+      )}
+    </>
+  )
+}
+
+function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) {
+  const game = useGame((s) => s.game)
+  const chooseOption = useGame((s) => s.chooseOption)
+
+  const available = !choice.requires || matchesCondition(game, choice.requires)
+  const requirements = describeCondition(choice.requires)
+
+  return (
+    <button
+      onClick={() => chooseOption(eventId, choice.id)}
+      disabled={!available}
+      className={`w-full min-h-[44px] rounded-xl border p-3 text-left transition-colors ${
+        available
+          ? 'border-slate-700 bg-slate-900/60 active:border-amber-500 active:bg-slate-800'
+          : 'border-slate-800 bg-slate-900/30'
+      }`}
+    >
+      <span className={`text-sm font-medium ${available ? 'text-slate-100' : 'text-slate-500'}`}>
+        {choice.label}
+      </span>
+      {available ? (
+        <EffectChips effects={visibleEffects(choice.effects)} />
+      ) : (
+        <span className="mt-1 block text-xs text-slate-500">
+          🔒 {requirements.join(', ')} 필요
+        </span>
+      )}
+    </button>
+  )
+}
+
+/** M2b 에서 비주얼 노벨 씬으로 승격될 자리. 지금은 텍스트와 선택지만. */
 export function EventScreen() {
   const eventId = useGame((s) => s.game.pendingEventIds[0])
-  const dismissEvent = useGame((s) => s.dismissEvent)
   const remaining = useGame((s) => s.game.pendingEventIds.length)
+  const outcome = useGame((s) => s.lastChoiceOutcome)
+  const dismissEvent = useGame((s) => s.dismissEvent)
 
   const event = eventId ? EVENT_BY_ID[eventId] : undefined
   if (!event) return null
+
+  const chosen =
+    outcome?.eventId === event.id
+      ? event.choices?.find((c) => c.id === outcome.choiceId)
+      : undefined
+  const awaitingChoice = Boolean(event.choices?.length) && !chosen
 
   return (
     <div className="pb-28 lg:pb-6">
       <article className="rounded-xl border border-amber-900/60 bg-slate-900/60 p-5">
         <p className="text-xs text-amber-500">사건</p>
         <h1 className="mt-1 text-xl font-semibold text-amber-100">{event.title}</h1>
+
         <div className="mt-4 space-y-3">
-          {event.text.split('\n').map((line, i) => (
-            <p key={i} className="text-sm leading-relaxed text-slate-200">
-              {line}
-            </p>
-          ))}
+          <Paragraphs text={event.text} className="text-sm leading-relaxed text-slate-200" />
         </div>
 
         {event.effects && event.effects.length > 0 && (
-          <div className="mt-5 flex flex-wrap gap-1.5 border-t border-slate-800 pt-4">
-            {event.effects.map((effect, i) => (
-              <span
-                key={i}
-                className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
-                  effect.amount > 0 ? 'bg-slate-800 text-emerald-300' : 'bg-slate-800 text-rose-300'
-                }`}
-              >
-                {formatEffect(effect)}
-              </span>
-            ))}
+          <DeltaChips
+            deltas={event.effects.map((e) => ({ label: targetLabel(e.target), amount: e.amount }))}
+          />
+        )}
+
+        {chosen && (
+          <div className="mt-5 border-t border-slate-800 pt-4">
+            <p className="text-xs text-amber-500">{chosen.label}</p>
+            <div className="mt-2 space-y-3">
+              <Paragraphs
+                text={chosen.resultText}
+                className="text-sm leading-relaxed text-slate-300"
+              />
+            </div>
+            {outcome && <DeltaChips deltas={outcome.deltas} />}
           </div>
         )}
       </article>
 
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
-        <Button variant="primary" className="w-full" onClick={dismissEvent}>
-          {remaining > 1 ? `계속 (${remaining - 1}건 더)` : '다음 계절로'}
-        </Button>
-      </div>
+      {awaitingChoice && (
+        <div className="mt-4 space-y-2">
+          {event.choices!.map((choice) => (
+            <ChoiceButton key={choice.id} eventId={event.id} choice={choice} />
+          ))}
+        </div>
+      )}
+
+      {!awaitingChoice && (
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
+          <Button variant="primary" className="w-full" onClick={dismissEvent}>
+            {remaining > 1 ? `계속 (${remaining - 1}건 더)` : '다음 계절로'}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

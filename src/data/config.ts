@@ -4,6 +4,8 @@ export const GAME_CONFIG = {
   /** 즉위년 봄, 11세에 시작. */
   startDate: { year: 0, season: 'spring' } as GameDate,
   startAge: 11,
+  /** 이 나이를 넘기면 이번 단계의 끝점. 엔딩은 M3. */
+  endAge: 20,
 
   actionPointsPerTurn: 3,
 
@@ -18,7 +20,8 @@ export const GAME_CONFIG = {
   wellbeingWarning: 25,
 
   saveKey: 'queening.save',
-  saveVersion: 1,
+  /** 올릴 때마다 systems/save.ts 의 MIGRATIONS 에 변환을 추가할 것. */
+  saveVersion: 3,
 } as const
 
 export const SEASON_LABEL: Record<GameDate['season'], string> = {
@@ -42,4 +45,5 @@ export const INITIAL_RESOURCES = {
   wellbeing: 70,
   tutorTrust: 20,
   regentSuspicion: 10,
+  regentRapport: 20,
 } as const

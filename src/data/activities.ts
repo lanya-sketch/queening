@@ -59,7 +59,21 @@ export const ACTIVITIES: Activity[] = [
     effects: [
       { target: { kind: 'stat', key: 'courtcraft' }, amount: 5, variance: 2 },
       { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 2 },
+      { target: { kind: 'resource', key: 'regentRapport' }, amount: 1 },
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -4 },
+    ],
+    tags: ['court'],
+  },
+  {
+    id: 'attend-council',
+    name: '국정 배석',
+    description: '섭정 옆에 앉아 국정을 지켜보게 한다. 배우는 자세를 보이면 그는 경계를 늦춘다.',
+    apCost: 2,
+    effects: [
+      { target: { kind: 'stat', key: 'statecraft' }, amount: 4, variance: 1 },
+      { target: { kind: 'resource', key: 'regentRapport' }, amount: 4 },
+      { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -2 },
+      { target: { kind: 'resource', key: 'wellbeing' }, amount: -5 },
     ],
     tags: ['court'],
   },

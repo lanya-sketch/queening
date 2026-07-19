@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" role="img" aria-label="예복 초상">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#450a0a"/><stop offset="1" stop-color="#1c0505"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <circle cx="150" cy="150" r="118" fill="#991b1b" opacity="0.12"/>
+  <rect x="132" y="158" width="36" height="56" rx="16" fill="#e8c9a8"/>
+  <ellipse cx="150" cy="128" rx="52" ry="60" fill="#e8c9a8"/>
+  <path d="M98 126 C98 66 202 66 202 126 C202 98 180 86 150 86 C120 86 98 98 98 126 Z" fill="#2b2118"/>
+  <circle cx="130" cy="134" r="4.5" fill="#2b2118"/><circle cx="170" cy="134" r="4.5" fill="#2b2118"/>
+  <path d="M150 202 C88 208 58 252 50 400 L250 400 C242 252 212 208 150 202 Z" fill="#991b1b"/>
+  <path d="M150 204 L112 400 L150 400 Z" fill="#f59e0b"/>
+  <path d="M150 204 L188 400 L150 400 Z" fill="#fcd34d" opacity="0.55"/>
+</svg>

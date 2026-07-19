@@ -47,5 +47,12 @@ export const RESOURCE_META: Record<ResourceKey, { label: string; bar: string }> 
   wellbeing: { label: '심신', bar: 'bg-teal-400' },
   tutorTrust: { label: '신뢰', bar: 'bg-amber-300' },
   regentSuspicion: { label: '섭정 의심', bar: 'bg-red-500' },
+  regentRapport: { label: '섭정 신망', bar: 'bg-indigo-400' },
   actionPoints: { label: '행동력', bar: 'bg-slate-400' },
 }
+
+/**
+ * 선택지 미리보기에서 수치를 가리는 게이지.
+ * "내 능력은 계산하되 섭정의 속마음은 나중에 안다" — 고른 뒤에는 결과로 공개된다.
+ */
+export const HIDDEN_GAUGES: ResourceKey[] = ['regentSuspicion', 'regentRapport']

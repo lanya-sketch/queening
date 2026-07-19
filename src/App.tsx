@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
+import { EndedScreen } from './components/EndedScreen'
 import { EventScreen } from './components/EventScreen'
+import { PortraitModal } from './components/portrait/PortraitModal'
 import { ScheduleScreen } from './components/ScheduleScreen'
 import { StatusPanel } from './components/StatusPanel'
 import { TurnResultScreen } from './components/TurnResultScreen'
@@ -27,6 +29,12 @@ function Notice() {
 
 export default function App() {
   const phase = useGame((s) => s.game.phase)
+  const initOutfits = useGame((s) => s.initOutfits)
+
+  // 착장 매니페스트는 앱 시작 시 한 번만 읽는다.
+  useEffect(() => {
+    void initOutfits()
+  }, [initOutfits])
 
   return (
     <div className="min-h-dvh">
@@ -36,8 +44,10 @@ export default function App() {
           {phase === 'schedule' && <ScheduleScreen />}
           {phase === 'result' && <TurnResultScreen />}
           {phase === 'event' && <EventScreen />}
+          {phase === 'ended' && <EndedScreen />}
         </main>
       </div>
+      <PortraitModal />
       <Notice />
     </div>
   )

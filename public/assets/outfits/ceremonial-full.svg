@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280" role="img" aria-label="예복을 입은 군주 전신">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#450a0a"/><stop offset="1" stop-color="#1c0505"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#bg)"/>
+  <ellipse cx="360" cy="1195" rx="230" ry="34" fill="#020617" opacity="0.45"/>
+  <rect x="336" y="298" width="48" height="62" rx="20" fill="#e8c9a8"/>
+  <ellipse cx="360" cy="250" rx="60" ry="70" fill="#e8c9a8"/>
+  <path d="M300 248 C300 178 420 178 420 248 C420 216 396 202 360 202 C324 202 300 216 300 248 Z" fill="#2b2118"/>
+  <circle cx="337" cy="258" r="5.5" fill="#2b2118"/><circle cx="383" cy="258" r="5.5" fill="#2b2118"/>
+  <path d="M248 392 C204 424 190 522 186 664 L246 672 C244 542 250 462 268 420 Z" fill="#991b1b"/>
+  <path d="M472 392 C516 424 530 522 534 664 L474 672 C476 542 470 462 452 420 Z" fill="#991b1b"/>
+  <circle cx="216" cy="700" r="24" fill="#e8c9a8"/>
+  <circle cx="504" cy="700" r="24" fill="#e8c9a8"/>
+  <path d="M360 338 C282 344 250 402 240 560 L224 1178 L496 1178 L480 560 C470 402 438 344 360 338 Z" fill="#991b1b"/>
+  <path d="M360 344 L318 566 L360 606 L402 566 Z" fill="#fcd34d" opacity="0.9"/>
+  <rect x="234" y="612" width="252" height="46" rx="6" fill="#f59e0b"/>
+  <rect x="234" y="612" width="252" height="10" rx="5" fill="#fcd34d" opacity="0.6"/>
+  <rect x="224" y="1146" width="272" height="32" fill="#f59e0b"/>
+  <path d="M352 680 L368 680 L364 1140 L356 1140 Z" fill="#fcd34d" opacity="0.35"/>
+  <rect x="0" y="1208" width="720" height="72" fill="#020617" opacity="0.72"/>
+  <text x="360" y="1258" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="600" fill="#e2e8f0">예복</text>
+</svg>

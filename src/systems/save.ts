@@ -1,10 +1,36 @@
-import { GAME_CONFIG } from '../data/config'
+import { GAME_CONFIG, INITIAL_RESOURCES } from '../data/config'
+import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import type { GameState } from '../types/game'
 
 interface SaveFile {
   version: number
   savedAt: string
   state: GameState
+}
+
+/**
+ * 세이브 마이그레이션.
+ * 키 n 은 "버전 n 을 n+1 로 올리는" 변환이다. 콘텐츠가 붙을 때마다
+ * GAME_CONFIG.saveVersion 을 올리고 여기에 한 줄 추가하면 옛 세이브가 살아남는다.
+ */
+const MIGRATIONS: Record<number, (state: any) => any> = {
+  // v1 -> v2 : 착장 시스템(M2a) 도입
+  1: (state) => ({ ...state, currentOutfitId: DEFAULT_OUTFIT_ID }),
+  // v2 -> v3 : 섭정 신망 게이지 도입. clue/truth flag 는 기존 flags 에 들어가므로 변환 불필요.
+  2: (state) => ({ ...state, regentRapport: INITIAL_RESOURCES.regentRapport }),
+}
+
+function migrate(state: any, fromVersion: number): GameState | null {
+  let current = state
+  for (let version = fromVersion; version < GAME_CONFIG.saveVersion; version++) {
+    const step = MIGRATIONS[version]
+    if (!step) {
+      console.warn(`[save] v${version} → v${version + 1} 마이그레이션이 없습니다.`)
+      return null
+    }
+    current = step(current)
+  }
+  return current as GameState
 }
 
 export function saveGame(state: GameState): boolean {
@@ -25,10 +51,14 @@ export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(GAME_CONFIG.saveKey)
     if (!raw) return null
+
     const file = JSON.parse(raw) as SaveFile
-    // 버전이 다르면 지금은 그냥 거절한다. 마이그레이션은 콘텐츠가 쌓인 뒤에.
-    if (file.version !== GAME_CONFIG.saveVersion) return null
-    return file.state
+    if (typeof file?.version !== 'number' || !file.state) return null
+    // 미래 버전 세이브는 되돌릴 방법이 없으므로 거절한다.
+    if (file.version > GAME_CONFIG.saveVersion) return null
+    if (file.version === GAME_CONFIG.saveVersion) return file.state
+
+    return migrate(file.state, file.version)
   } catch {
     return null
   }
