@@ -1,6 +1,7 @@
 import { ACTIVITY_BY_ID } from '../data/activities'
 import { GAME_CONFIG, INITIAL_RESOURCES, INITIAL_STATS, SEASON_ORDER } from '../data/config'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
+import { initialAffection } from './romance'
 import type { Delta, GameDate, GameEvent, GameState } from '../types/game'
 
 /**
@@ -25,6 +26,8 @@ export function createInitialState(): GameState {
     ...INITIAL_RESOURCES,
     actionPoints: GAME_CONFIG.actionPointsPerTurn,
     currentOutfitId: DEFAULT_OUTFIT_ID,
+    monarchGender: 'male',
+    affection: initialAffection(),
     plannedActivityIds: [],
     flags: {},
     phase: 'schedule',

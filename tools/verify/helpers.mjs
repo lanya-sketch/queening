@@ -109,8 +109,28 @@ export async function phaseOf(p) {
 /** 이벤트 화면의 선택지 버튼들. 하단 고정 "다음 계절로" 바와 구분된다. */
 export const choiceButtons = (p) => p.locator('div.mt-4.space-y-2 > button')
 
+/**
+ * 대사 씬이 있는 이벤트는 대사를 다 넘겨야 선택지/진행 버튼이 나온다.
+ * 씬이 없으면 아무 일도 하지 않는다.
+ */
+export async function advanceScene(p) {
+  for (let i = 0; i < 30; i++) {
+    const next = p.getByRole('button', { name: /^다음$/ })
+    if (!(await next.isVisible().catch(() => false))) break
+    await next.click()
+    await p.waitForTimeout(40)
+  }
+  // 씬의 마지막 버튼은 "계속" (이벤트 진행 버튼 "계속 (N건 더)" 와는 다르다)
+  const end = p.getByRole('button', { name: /^계속$/ })
+  if (await end.isVisible().catch(() => false)) {
+    await end.click()
+    await p.waitForTimeout(40)
+  }
+}
+
 /** 선택지가 있으면 첫 번째 활성 선택지를 고르고, 계속 버튼을 누른다. */
 export async function clearEvent(p) {
+  await advanceScene(p)
   const choices = choiceButtons(p)
   const count = await choices.count()
   for (let i = 0; i < count; i++) {

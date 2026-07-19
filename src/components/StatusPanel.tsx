@@ -4,8 +4,10 @@ import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
 import { useAiEnabled } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
 import { talkLocked, useTalk } from '../store/talkStore'
+import { resolveText } from '../systems/text'
 import { AiSettingsModal } from './ai/AiSettingsModal'
 import { PortraitButton } from './portrait/PortraitButton'
+import { RomancePanel } from './romance/RomancePanel'
 import { Button } from './ui/Button'
 import { StatBar } from './ui/StatBar'
 
@@ -14,6 +16,8 @@ export function StatusPanel() {
   const [aiOpen, setAiOpen] = useState(false)
   const aiEnabled = useAiEnabled()
   const openTalk = useTalk((s) => s.openTalk)
+  const [romanceOpen, setRomanceOpen] = useState(false)
+  const setMonarchGender = useGame((s) => s.setMonarchGender)
   const game = useGame((s) => s.game)
   const savedAt = useGame((s) => s.savedAt)
   const save = useGame((s) => s.save)
@@ -38,7 +42,8 @@ export function StatusPanel() {
               </p>
               {/* 20세를 넘겨 잠긴 상태에서는 본문과 어긋나지 않게 끝점 나이로 고정 */}
             <p className="text-xs text-slate-400">
-              왕 {game.phase === 'ended' ? GAME_CONFIG.endAge : game.age}세
+              {resolveText('{왕}', game)}{' '}
+              {game.phase === 'ended' ? GAME_CONFIG.endAge : game.age}세
             </p>
             </div>
 
@@ -147,6 +152,30 @@ export function StatusPanel() {
             <Button className="col-span-2" onClick={() => setAiOpen(true)}>
               AI 설정 {aiEnabled ? '· 켜짐' : '· 꺼짐'}
             </Button>
+            <Button className="col-span-2" onClick={() => setRomanceOpen(true)}>
+              인연
+            </Button>
+          </div>
+
+          {/* 군주 성별 — 진행 중 바꾸면 표기만 바뀐다(정치 구조엔 영향 없음) */}
+          <div className="mt-3">
+            <p className="mb-1 text-[11px] font-medium text-slate-500">군주</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                aria-pressed={game.monarchGender === 'male'}
+                className={game.monarchGender === 'male' ? 'border-amber-400 text-amber-200' : ''}
+                onClick={() => setMonarchGender('male')}
+              >
+                왕
+              </Button>
+              <Button
+                aria-pressed={game.monarchGender === 'female'}
+                className={game.monarchGender === 'female' ? 'border-amber-400 text-amber-200' : ''}
+                onClick={() => setMonarchGender('female')}
+              >
+                여왕
+              </Button>
+            </div>
           </div>
 
           {/* 군주와의 대화 — 키가 있고 이벤트 씬이 아닐 때만 */}
@@ -158,7 +187,7 @@ export function StatusPanel() {
                 disabled={locked}
                 onClick={openTalk}
               >
-                왕과 대화하기
+                {resolveText('{왕}', game)}과 대화하기
               </Button>
               {locked && (
                 <p className="mt-1 text-[11px] text-slate-500">
@@ -174,6 +203,7 @@ export function StatusPanel() {
       </div>
 
       {aiOpen && <AiSettingsModal onClose={() => setAiOpen(false)} />}
+      {romanceOpen && <RomancePanel onClose={() => setRomanceOpen(false)} />}
     </aside>
   )
 }

@@ -5,7 +5,7 @@
 //   node tools/verify/simulate.mjs        전체 빌드
 //   node tools/verify/simulate.mjs D      머리글자가 D 인 빌드만
 import {
-  APP_URL, choiceButtons, launch, ok, phaseOf, readPanel, shotsDir,
+  APP_URL, advanceScene, choiceButtons, launch, ok, phaseOf, readPanel, shotsDir,
 } from './helpers.mjs'
 
 const OUT = shotsDir('simulate')
@@ -168,6 +168,8 @@ async function runSimulation(browser, run) {
     }
 
     if (phase === 'event') {
+      // 씬이 붙은 이벤트는 대사를 먼저 넘긴다
+      await advanceScene(page)
       const title = await page.locator('article h1').innerText()
       const panel = await readPanel(page)
       let picked = null

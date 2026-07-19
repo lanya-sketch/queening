@@ -1,5 +1,6 @@
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
+import { resolveText } from '../systems/text'
 import { buildMonarchPrompt } from './persona'
 import { AI_PROVIDERS } from './providers'
 import type { AiProviderId } from './types'
@@ -42,6 +43,10 @@ export function installDevBridge(): void {
     /** 지금 상태로 조립된 시스템 프롬프트. 숫자가 없는지 검증에서 확인한다. */
     prompt() {
       return buildMonarchPrompt(useGame.getState().game)
+    },
+    /** 토큰 치환 결과를 직접 확인한다(복합어가 안 깨지는지). */
+    resolve(text: string) {
+      return resolveText(text, useGame.getState().game)
     },
   }
 }

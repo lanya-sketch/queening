@@ -112,7 +112,7 @@ export const ACTIVITIES: Activity[] = [
     id: 'direct-decree',
     name: '직접 재가한다',
     description:
-      '섭정공을 거치지 않고 왕의 이름으로 서명한다. 한 건마다 궁정이 술렁이고, 한 건마다 정무가 조금씩 제자리로 돌아온다.',
+      '섭정공을 거치지 않고 {왕}의 이름으로 서명한다. 한 건마다 궁정이 술렁이고, 한 건마다 정무가 조금씩 제자리로 돌아온다.',
     apCost: 2,
     requires: { minAge: 14, stats: { statecraft: { min: 35 } } },
     effects: [

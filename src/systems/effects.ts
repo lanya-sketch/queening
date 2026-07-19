@@ -1,3 +1,4 @@
+import { CHARACTER_BY_ID } from '../data/characters'
 import { GAME_CONFIG, courtInfluenceCap } from '../data/config'
 import { RESOURCE_META, STAT_META } from '../data/stats'
 import type { Delta, Effect, EffectTarget, GameState } from '../types/game'
@@ -5,7 +6,11 @@ import type { Delta, Effect, EffectTarget, GameState } from '../types/game'
 export type Rng = () => number
 
 export function targetLabel(target: EffectTarget): string {
-  return target.kind === 'stat' ? STAT_META[target.key].label : RESOURCE_META[target.key].label
+  if (target.kind === 'stat') return STAT_META[target.key].label
+  if (target.kind === 'affection') {
+    return `${CHARACTER_BY_ID[target.charId]?.name ?? target.charId} 호감도`
+  }
+  return RESOURCE_META[target.key].label
 }
 
 /** amount 에 ±variance 정수 편차를 더한다. */
@@ -16,12 +21,19 @@ function roll(effect: Effect, rng: Rng): number {
 }
 
 function read(state: GameState, target: EffectTarget): number {
-  return target.kind === 'stat' ? state.stats[target.key] : state[target.key]
+  if (target.kind === 'stat') return state.stats[target.key]
+  if (target.kind === 'affection') {
+    return state.affection[target.charId] ?? CHARACTER_BY_ID[target.charId]?.startingAffection ?? 0
+  }
+  return state[target.key]
 }
 
 function clamp(target: EffectTarget, value: number, state: GameState): number {
   if (target.kind === 'stat') {
     return Math.min(GAME_CONFIG.statMax, Math.max(GAME_CONFIG.statMin, value))
+  }
+  if (target.kind === 'affection') {
+    return Math.min(GAME_CONFIG.resourceMax, Math.max(GAME_CONFIG.resourceMin, value))
   }
   if (target.key === 'actionPoints') return Math.max(0, value)
   // 국정 영향도만 나이에 따라 상한이 움직인다.
@@ -32,6 +44,7 @@ function clamp(target: EffectTarget, value: number, state: GameState): number {
 
 function write(state: GameState, target: EffectTarget, value: number): void {
   if (target.kind === 'stat') state.stats[target.key] = value
+  else if (target.kind === 'affection') state.affection[target.charId] = value
   else state[target.key] = value
 }
 
@@ -44,7 +57,11 @@ export function applyEffects(
   effects: Effect[] | undefined,
   rng: Rng = Math.random,
 ): { state: GameState; deltas: Delta[] } {
-  const next: GameState = { ...state, stats: { ...state.stats } }
+  const next: GameState = {
+    ...state,
+    stats: { ...state.stats },
+    affection: { ...state.affection },
+  }
   if (!effects?.length) return { state: next, deltas: [] }
 
   const totals = new Map<string, number>()

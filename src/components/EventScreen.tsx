@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react'
 import { EVENT_BY_ID } from '../data/events'
 import { HIDDEN_GAUGES } from '../data/stats'
 import { formatEffect, targetLabel } from '../systems/effects'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
+import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
+import { ScenePlayer } from './scene/ScenePlayer'
 import type { Choice, Delta, Effect } from '../types/game'
 import { Button } from './ui/Button'
 
@@ -54,9 +57,10 @@ function DeltaChips({ deltas }: { deltas: Delta[] }) {
 }
 
 function Paragraphs({ text, className }: { text: string; className: string }) {
+  const game = useGame((s) => s.game)
   return (
     <>
-      {text.split('\n').map((line, i) =>
+      {resolveText(text, game).split('\n').map((line, i) =>
         line.trim() === '' ? (
           <span key={i} className="block h-2" />
         ) : (
@@ -87,7 +91,7 @@ function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) 
       }`}
     >
       <span className={`text-sm font-medium ${available ? 'text-slate-100' : 'text-slate-500'}`}>
-        {choice.label}
+        {resolveText(choice.label, game)}
       </span>
       {available ? (
         <>
@@ -112,14 +116,21 @@ export function EventScreen() {
   const outcome = useGame((s) => s.lastChoiceOutcome)
   const dismissEvent = useGame((s) => s.dismissEvent)
 
+  const game = useGame((s) => s.game)
+  // 씬이 있는 이벤트는 대사를 다 본 뒤에야 선택지/계속으로 넘어간다.
+  const [sceneDone, setSceneDone] = useState(false)
+  useEffect(() => setSceneDone(false), [eventId])
+
   const event = eventId ? EVENT_BY_ID[eventId] : undefined
   if (!event) return null
+
+  const playingScene = Boolean(event.sceneId) && !sceneDone
 
   const chosen =
     outcome?.eventId === event.id
       ? event.choices?.find((c) => c.id === outcome.choiceId)
       : undefined
-  const awaitingChoice = Boolean(event.choices?.length) && !chosen
+  const awaitingChoice = Boolean(event.choices?.length) && !chosen && !playingScene
 
   return (
     <div className="pb-28 lg:pb-6">
@@ -127,13 +138,23 @@ export function EventScreen() {
         <p className="text-xs text-amber-500">
           {event.category === 'state_affair' ? '국정 현안' : '사건'}
         </p>
-        <h1 className="mt-1 text-xl font-semibold text-amber-100">{event.title}</h1>
+        <h1 className="mt-1 text-xl font-semibold text-amber-100">
+          {resolveText(event.title, game)}
+        </h1>
 
         <div className="mt-4 space-y-3">
-          <Paragraphs text={event.text} className="text-sm leading-relaxed text-slate-200" />
+          {event.sceneId ? (
+            <ScenePlayer
+              sceneId={event.sceneId}
+              finished={sceneDone}
+              onFinished={() => setSceneDone(true)}
+            />
+          ) : (
+            <Paragraphs text={event.text} className="text-sm leading-relaxed text-slate-200" />
+          )}
         </div>
 
-        {event.effects && event.effects.length > 0 && (
+        {!playingScene && event.effects && event.effects.length > 0 && (
           <DeltaChips
             deltas={event.effects.map((e) => ({ label: targetLabel(e.target), amount: e.amount }))}
           />
@@ -141,12 +162,13 @@ export function EventScreen() {
 
         {chosen && (
           <div className="mt-5 border-t border-slate-800 pt-4">
-            <p className="text-xs text-amber-500">{chosen.label}</p>
+            <p className="text-xs text-amber-500">{resolveText(chosen.label, game)}</p>
             <div className="mt-2 space-y-3">
               <Paragraphs
                 text={chosen.resultText}
                 className="text-sm leading-relaxed text-slate-300"
               />
+              {/* chosen.label 도 토큰 치환을 거친다 */}
             </div>
             {outcome && <DeltaChips deltas={outcome.deltas} />}
           </div>
@@ -161,7 +183,7 @@ export function EventScreen() {
         </div>
       )}
 
-      {!awaitingChoice && (
+      {!awaitingChoice && !playingScene && (
         <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
           <Button variant="primary" className="w-full" onClick={dismissEvent}>
             {remaining > 1 ? `계속 (${remaining - 1}건 더)` : '다음 계절로'}

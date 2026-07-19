@@ -1,3 +1,4 @@
+import { CHARACTER_BY_ID } from '../data/characters'
 import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
 import type { AiDelta, AiDeltaTarget, AiReply, ClampedReply } from './types'
 
@@ -39,6 +40,9 @@ const MAX_ABS: Record<AiDeltaTarget, number> = {
 /** 한 응답에서 받아들일 델타 개수 상한. */
 const MAX_DELTAS = 4
 
+/** 호감도 1회 상한. 신뢰와 같은 결로 작게 움직인다. */
+const MAX_AFFECTION = 3
+
 /** 대사 길이 상한. 넘치면 자른다(모델이 폭주해도 UI 가 깨지지 않게). */
 const MAX_REPLY_CHARS = 1200
 
@@ -70,6 +74,28 @@ export function clampReply(raw: AiReply, options: ClampOptions = {}): ClampedRep
 
     if (allow && !allow.includes(target)) {
       rejected.push({ target: String(delta?.target), amount, reason: '이 화면에서 허용되지 않은 대상' })
+      continue
+    }
+    // 호감도는 복합키(affection:<charId>). 캐릭터가 실재해야 한다.
+    if (typeof target === 'string' && target.startsWith('affection:')) {
+      const charId = target.slice('affection:'.length)
+      if (!CHARACTER_BY_ID[charId]) {
+        rejected.push({ target, amount, reason: '없는 캐릭터' })
+        continue
+      }
+      if (!Number.isFinite(amount) || amount === 0 || seen.has(target)) {
+        rejected.push({ target, amount, reason: '숫자가 아니거나 0, 또는 중복' })
+        continue
+      }
+      const clampedAffection = Math.max(
+        -MAX_AFFECTION,
+        Math.min(MAX_AFFECTION, Math.trunc(amount)),
+      )
+      if (clampedAffection !== Math.trunc(amount)) {
+        rejected.push({ target, amount, reason: `상한 ±${MAX_AFFECTION} 로 축소` })
+      }
+      seen.add(target)
+      deltas.push({ target, amount: clampedAffection })
       continue
     }
     if (!ALLOWED_TARGETS.includes(target)) {

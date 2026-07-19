@@ -1,5 +1,6 @@
 import { GAME_CONFIG, INITIAL_RESOURCES } from '../data/config'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
+import { initialAffection } from './romance'
 import type { GameState } from '../types/game'
 
 interface SaveFile {
@@ -20,6 +21,8 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
   2: (state) => ({ ...state, regentRapport: INITIAL_RESOURCES.regentRapport }),
   // v3 -> v4 : 국정 영향도 도입.
   3: (state) => ({ ...state, courtInfluence: INITIAL_RESOURCES.courtInfluence }),
+  // v4 -> v5 : 연애 기반(호감도·군주 성별) 도입. 기존 세이브는 왕(male)로 본다.
+  4: (state) => ({ ...state, affection: initialAffection(), monarchGender: 'male' }),
 }
 
 function migrate(state: any, fromVersion: number): GameState | null {

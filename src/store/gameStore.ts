@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { ACTIVITY_BY_ID } from '../data/activities'
 import { EVENT_BY_ID } from '../data/events'
 import { FALLBACK_MANIFEST } from '../data/outfits'
-import type { ChoiceOutcome, GameState, OutfitManifest, Phase } from '../types/game'
+import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '../types/game'
 import { applyEffects } from '../systems/effects'
 import { matchesCondition } from '../systems/eventEngine'
 import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/outfits'
@@ -39,6 +39,8 @@ interface GameStore {
   endTurn: () => void
   /** 결과 화면 → 이벤트 or 스케줄. */
   continueFromResult: () => void
+  /** 군주 성별. 새 게임을 시작하기 전에만 바꾸는 것을 권한다. */
+  setMonarchGender: (gender: Gender) => void
   /** 이벤트 선택지를 고른다. 효과는 이 시점에 적용된다. */
   chooseOption: (eventId: string, choiceId: string) => void
   /** 이벤트 하나를 소화한다. */
@@ -132,6 +134,8 @@ export const useGame = create<GameStore>()((set, get) => ({
     const { game } = get()
     set({ game: { ...game, phase: game.pendingEventIds.length ? 'event' : idlePhase(game) } })
   },
+
+  setMonarchGender: (monarchGender) => set({ game: { ...get().game, monarchGender } }),
 
   chooseOption: (eventId, choiceId) => {
     const { game } = get()

@@ -58,7 +58,7 @@ export interface AiCallConfig {
 export type AiStreamHandler = (chunk: string, full: string) => void
 
 /** AI 가 제안할 수 있는 델타의 대상. 스탯과 게이지만 허용한다. */
-export type AiDeltaTarget = StatKey | GaugeKey
+export type AiDeltaTarget = StatKey | GaugeKey | `affection:${string}`
 
 export interface AiDelta {
   target: AiDeltaTarget

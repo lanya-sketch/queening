@@ -23,7 +23,7 @@ export const STAT_META: Record<StatKey, StatMeta> = {
   },
   finance: {
     label: '재정',
-    description: '조세와 국고. 숫자를 읽지 못하는 왕은 속는다.',
+    description: '조세와 국고. 숫자를 읽지 못하는 {왕}은 속는다.',
     bar: 'bg-emerald-400',
   },
   rhetoric: {

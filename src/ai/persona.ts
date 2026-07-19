@@ -12,6 +12,7 @@ import {
   type PersonaBand,
 } from '../data/persona/monarch'
 import { STAT_KEYS } from '../data/stats'
+import { resolveText } from '../systems/text'
 import type { GameState } from '../types/game'
 
 /**
@@ -63,12 +64,13 @@ export function buildMonarchPrompt(game: GameState): string {
   const persona = describeMonarch(game)
   const context = describeRecentContext(game)
 
-  const parts = [MONARCH_CORE, '', `지금 이 왕은: ${persona.join(' ')}`]
+  const parts = [MONARCH_CORE, '', `지금 이 {왕}은: ${persona.join(' ')}`]
 
   if (context.length) {
     parts.push('', '최근 겪은 일:', ...context.map((line) => `- ${line}`))
   }
 
   parts.push('', MONARCH_FORMAT)
-  return parts.join('\n')
+  // 프롬프트도 성별 토큰을 거친다 — 여왕을 고르면 AI 도 그렇게 인식한다.
+  return resolveText(parts.join('\n'), game)
 }

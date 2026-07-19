@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SEASON_LABEL } from '../../data/config'
 import { RESOURCE_META } from '../../data/stats'
 import { resolveOutfit } from '../../systems/outfits'
+import { resolveText } from '../../systems/text'
 import { useGame } from '../../store/gameStore'
 import { CALL_SOFT_LIMIT, useTalk } from '../../store/talkStore'
 import { Button } from '../ui/Button'
@@ -46,6 +47,7 @@ export function TalkModal() {
   if (!open) return null
 
   const outfit = resolveOutfit(manifest, game.currentOutfitId)
+  const monarch = resolveText('{왕}', game)
 
   const submit = () => {
     const text = draft
@@ -74,9 +76,9 @@ export function TalkModal() {
             className="h-11 w-9 shrink-0 rounded object-cover object-top"
           />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-amber-200">왕과의 대화</p>
+            <p className="text-sm font-semibold text-amber-200">{monarch}과의 대화</p>
             <p className="text-xs text-slate-400">
-              즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]} · 왕 {game.age}세
+              즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]} · {monarch} {game.age}세
             </p>
           </div>
           <button
@@ -96,7 +98,7 @@ export function TalkModal() {
         >
           {turns.length === 0 && streaming === null && !error && (
             <p className="py-8 text-center text-sm text-slate-500">
-              무엇이든 물어보세요. 왕은 지금까지 자란 대로 답합니다.
+              무엇이든 물어보세요. {monarch}은 지금까지 자란 대로 답합니다.
             </p>
           )}
 
@@ -187,7 +189,7 @@ export function TalkModal() {
                 }
               }}
               disabled={busy}
-              placeholder={busy ? '왕이 생각하고 있습니다…' : '무엇을 물어볼까요'}
+              placeholder={busy ? `${monarch}이 생각하고 있습니다…` : '무엇을 물어볼까요'}
               className="min-h-[44px] flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-slate-100 disabled:opacity-60"
             />
             <Button variant="primary" className="px-4" onClick={submit} disabled={busy || !draft.trim()}>

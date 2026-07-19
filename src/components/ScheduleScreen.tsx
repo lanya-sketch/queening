@@ -2,6 +2,7 @@ import { ACTIVITIES, ACTIVITY_BY_ID } from '../data/activities'
 import { SEASON_LABEL } from '../data/config'
 import { formatEffect } from '../systems/effects'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
+import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
 import type { Activity } from '../types/game'
 import { Button } from './ui/Button'
@@ -95,13 +96,15 @@ export function ScheduleScreen() {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-medium text-slate-100">{activity.name}</span>
+                    <span className="font-medium text-slate-100">
+                    {resolveText(activity.name, game)}
+                  </span>
                     <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[11px] text-slate-300">
                       {activity.apCost} AP
                     </span>
                   </div>
                   <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                    {activity.description}
+                    {resolveText(activity.description, game)}
                   </p>
                   {unlocked ? (
                     <>

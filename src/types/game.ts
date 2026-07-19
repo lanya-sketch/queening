@@ -31,7 +31,37 @@ export type GaugeKey = Exclude<ResourceKey, 'actionPoints'>
 export type EffectTarget =
   | { kind: 'stat'; key: StatKey }
   | { kind: 'resource'; key: ResourceKey }
-// 확장 예약: | { kind: 'affection'; charId: string }
+  | { kind: 'affection'; charId: string }
+
+/** 군주·캐릭터의 성별. 마나 설정상 사회적 위치에는 차이가 없다(배경일 뿐). */
+export type Gender = 'male' | 'female'
+
+/** 연애 대상 정의. 실제 성격·대사는 M2b-3b. */
+export interface Character {
+  id: string
+  name: string
+  role: string
+  /** ★ 하드코딩하지 않고 데이터로 둔다 — (다) 전면 성별 선택 대비. */
+  gender: Gender
+  startingAffection: number
+  /** 로맨스 해금 조건. 기존 Condition 을 그대로 쓴다. */
+  romanceUnlock: Condition
+  portraitId: string
+}
+
+/** 대사 씬 한 줄. speaker 는 'narration' | 'monarch' | charId. */
+export interface SceneLine {
+  speaker: string
+  /** 토큰({왕} 등)을 포함할 수 있다. 렌더 직전에 치환된다. */
+  text: string
+  /** 표정·컷 키(선택). 지금은 표시에만 쓴다. */
+  portrait?: string
+}
+
+export interface Scene {
+  id: string
+  lines: SceneLine[]
+}
 
 export interface Effect {
   target: EffectTarget
@@ -103,6 +133,11 @@ export interface GameEvent {
   setFlags?: FlagSet
   choices?: Choice[]
   /**
+   * 있으면 대사 씬으로 재생한다(한 줄씩 진행 → 마지막에 choices).
+   * 없으면 지금까지와 완전히 동일하게 text 를 그대로 보여준다.
+   */
+  sceneId?: string
+  /**
    * 기본 'scripted'. 엔진은 이 값을 읽지 않는다 —
    * M2b 에서 AI 가 같은 구조로 돌발 이벤트를 주입할 때를 위한 표식일 뿐.
    */
@@ -173,6 +208,10 @@ export interface GameState {
   actionPoints: number
   /** 현재 입고 있는 착장 id. 매니페스트에 없으면 기본 착장으로 되돌린다. */
   currentOutfitId: string
+  /** 군주의 성별. 연애 대상들의 성별은 데이터(CHARACTERS)에 있다. */
+  monarchGender: Gender
+  /** 캐릭터별 호감도 0~100. 키는 charId. */
+  affection: Record<string, number>
   plannedActivityIds: string[]
   flags: FlagSet
   phase: Phase

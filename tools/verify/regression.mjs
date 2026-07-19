@@ -88,7 +88,7 @@ await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(200)
 const savedDate = await dateText(page)
 const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('B5 저장:', savedDate, '| 세이브 버전:', saved.version, ok(saved.version === 4))
+log('B5 저장:', savedDate, '| 세이브 버전:', saved.version, ok(saved.version === 5))
 log('B6 착장이 세이브에 포함됨:', saved.state.currentOutfitId,
   ok(saved.state.currentOutfitId === 'office'))
 await page.getByRole('button', { name: '닫기' }).click()
@@ -199,7 +199,7 @@ log('C10 기존 착장 보존:',
 await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(200)
 const resaved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('C11 재저장 버전:', resaved.version, ok(resaved.version === 4))
+log('C11 재저장 버전:', resaved.version, ok(resaved.version === 5))
 log('C12 기존 flag 보존 (clue_radical_edict):', ok(resaved.state.flags.clue_radical_edict === true))
 log('C13 신망·영향도가 세이브에 기록됨:',
   resaved.state.regentRapport, '/', resaved.state.courtInfluence,
@@ -271,7 +271,7 @@ await apage.waitForTimeout(250)
 const affairSave = await apage.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
 log('E8 people_burdened_frontier flag 기록:',
   ok(affairSave.state.flags.people_burdened_frontier === true))
-log('E9 세이브 버전 그대로 (구조 변경 없음):', affairSave.version, ok(affairSave.version === 4))
+log('E9 세이브 버전 그대로 (구조 변경 없음):', affairSave.version, ok(affairSave.version === 5))
 
 // (2) 재정·무예 요구를 못 채운 경우 — 직접 결정은 잠기고 위임만 열려야 한다
 await seedAffairSave(apage, { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 })
@@ -338,7 +338,7 @@ const hSave = await apage.evaluate(() => JSON.parse(localStorage.getItem('queeni
 log('E20 house_commons_defended + people_relieved_commons 기록:',
   ok(hSave.state.flags.house_commons_defended === true &&
      hSave.state.flags.people_relieved_commons === true))
-log('E21 세이브 버전 그대로:', hSave.version, ok(hSave.version === 4))
+log('E21 세이브 버전 그대로:', hSave.version, ok(hSave.version === 5))
 
 await seedAffairSave(apage,
   { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, COMMONS_WHEN, ['issue-frontier-raid', 'issue-empire-tribute'])

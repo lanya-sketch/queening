@@ -300,7 +300,7 @@ await page.keyboard.press('Escape')
 await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(300)
 const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('G1 세이브 버전 4 유지:', saved.version, ok(saved.version === 4))
+log('G1 세이브 버전 유지 (M2b-3a 에서 5 로 상승):', saved.version, ok(saved.version === 5))
 log('G2 대화 로그가 세이브에 없음:',
   ok(!JSON.stringify(saved).includes('숙부께서 듣고')))
 
