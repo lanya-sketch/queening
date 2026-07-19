@@ -4,6 +4,7 @@ import { EventScreen } from './components/EventScreen'
 import { PortraitModal } from './components/portrait/PortraitModal'
 import { ScheduleScreen } from './components/ScheduleScreen'
 import { StatusPanel } from './components/StatusPanel'
+import { TalkModal } from './components/talk/TalkModal'
 import { TurnResultScreen } from './components/TurnResultScreen'
 import { useGame } from './store/gameStore'
 
@@ -48,6 +49,7 @@ export default function App() {
         </main>
       </div>
       <PortraitModal />
+      <TalkModal />
       <Notice />
     </div>
   )

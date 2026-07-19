@@ -3,6 +3,7 @@ import { GAME_CONFIG, SEASON_LABEL, courtInfluenceCap } from '../data/config'
 import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
 import { useAiEnabled } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
+import { talkLocked, useTalk } from '../store/talkStore'
 import { AiSettingsModal } from './ai/AiSettingsModal'
 import { PortraitButton } from './portrait/PortraitButton'
 import { Button } from './ui/Button'
@@ -12,12 +13,14 @@ export function StatusPanel() {
   const [open, setOpen] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
   const aiEnabled = useAiEnabled()
+  const openTalk = useTalk((s) => s.openTalk)
   const game = useGame((s) => s.game)
   const savedAt = useGame((s) => s.savedAt)
   const save = useGame((s) => s.save)
   const load = useGame((s) => s.load)
   const reset = useGame((s) => s.reset)
 
+  const locked = talkLocked(game.phase)
   const lowWellbeing = game.wellbeing <= GAME_CONFIG.wellbeingWarning
   const highSuspicion = game.regentSuspicion >= GAME_CONFIG.regentSuspicionWarning
 
@@ -145,6 +148,25 @@ export function StatusPanel() {
               AI 설정 {aiEnabled ? '· 켜짐' : '· 꺼짐'}
             </Button>
           </div>
+
+          {/* 군주와의 대화 — 키가 있고 이벤트 씬이 아닐 때만 */}
+          {aiEnabled && (
+            <>
+              <Button
+                variant="primary"
+                className="mt-2 w-full"
+                disabled={locked}
+                onClick={openTalk}
+              >
+                왕과 대화하기
+              </Button>
+              {locked && (
+                <p className="mt-1 text-[11px] text-slate-500">
+                  지금은 다른 일이 벌어지는 중입니다.
+                </p>
+              )}
+            </>
+          )}
           <p className="mt-2 text-[11px] text-slate-500">
             {savedAt ? `마지막 저장: ${new Date(savedAt).toLocaleString('ko-KR')}` : '저장된 기록 없음'}
           </p>

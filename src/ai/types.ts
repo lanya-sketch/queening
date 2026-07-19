@@ -22,13 +22,40 @@ export interface AiModelOption {
   label: string
 }
 
+/**
+ * 생성 파라미터.
+ * maxTokens·contextTurns 는 비용에 직접 영향을 주고,
+ * temperature·topP·topK 는 응답 성격만 바꾼다(비용 무관).
+ */
+export interface AiGenerationSettings {
+  maxTokens: number
+  /** 모델에 함께 보낼 최근 대화 턴 수. */
+  contextTurns: number
+  temperature: number
+  topP: number
+  /** null 이면 보내지 않는다. */
+  topK: number | null
+}
+
+export const DEFAULT_GENERATION: AiGenerationSettings = {
+  maxTokens: 700,
+  contextTurns: 12,
+  temperature: 0.8,
+  topP: 0.95,
+  topK: null,
+}
+
 /** 한 번의 호출에 필요한 설정. 제공자마다 쓰는 항목이 다르다. */
 export interface AiCallConfig {
   apiKey: string
   model: string
   /** editableBaseUrl 제공자만 사용. */
   baseUrl?: string
+  generation?: AiGenerationSettings
 }
+
+/** 스트리밍 중 새 텍스트 조각이 올 때마다 호출된다. */
+export type AiStreamHandler = (chunk: string, full: string) => void
 
 /** AI 가 제안할 수 있는 델타의 대상. 스탯과 게이지만 허용한다. */
 export type AiDeltaTarget = StatKey | GaugeKey
@@ -93,8 +120,16 @@ export interface AiProvider {
   note?: string
   /** 키 형식에 대한 간단한 사전 검사(오타 조기 발견용, 인증이 아님). */
   looksLikeKey: (key: string) => boolean
-  /** 실제 호출. 실패는 AiError 로 던진다. */
-  send: (config: AiCallConfig, request: AiRequest) => Promise<AiResult>
+  /**
+   * 이 모델이 temperature·topP·topK 를 받는지.
+   * false 면 어댑터가 **아예 전송하지 않는다** — Claude 최신 모델은 이 값을 보내면 400 이다.
+   */
+  supportsSampling: (model: string) => boolean
+  /**
+   * 실제 호출. onDelta 를 주면 스트리밍으로 받는다(제공자별 SSE 차이는 어댑터가 흡수).
+   * 실패는 AiError 로 던진다.
+   */
+  send: (config: AiCallConfig, request: AiRequest, onDelta?: AiStreamHandler) => Promise<AiResult>
 }
 
 export type AiErrorKind =

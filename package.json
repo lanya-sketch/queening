@@ -13,6 +13,7 @@
     "verify:flags": "node tools/verify/regent-flags.mjs",
     "verify:ai": "node tools/verify/ai-infra.mjs",
     "verify:providers": "node tools/verify/ai-providers.mjs",
+    "verify:talk": "node tools/verify/ai-talk.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs"
   },

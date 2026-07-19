@@ -1,5 +1,13 @@
 import { REPLY_JSON_SCHEMA, parseReplyText } from '../clamp'
-import { AiError, type AiCallConfig, type AiProvider, type AiRequest, type AiResult } from '../types'
+import {
+  AiError,
+  DEFAULT_GENERATION,
+  type AiCallConfig,
+  type AiProvider,
+  type AiRequest,
+  type AiResult,
+  type AiStreamHandler,
+} from '../types'
 
 /**
  * OpenAI 호환 어댑터 — /chat/completions 표준 형식.
@@ -17,7 +25,6 @@ import { AiError, type AiCallConfig, type AiProvider, type AiRequest, type AiRes
  */
 
 const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'
-const MAX_TOKENS = 2048
 
 interface ChatCompletionResponse {
   choices?: { message?: { content?: string | null } }[]
@@ -28,6 +35,48 @@ interface ChatCompletionResponse {
 
 function normalizeBaseUrl(baseUrl: string | undefined): string {
   return (baseUrl?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, '')
+}
+
+/**
+ * OpenAI 호환 SSE 를 읽어 전체 텍스트를 돌려준다.
+ * 형식: `data: {json}` 줄이 이어지고 `data: [DONE]` 으로 끝난다.
+ */
+async function readSseStream(response: Response, onDelta: AiStreamHandler): Promise<string> {
+  const reader = response.body?.getReader()
+  if (!reader) throw new AiError('bad_response', '스트림을 열지 못했습니다.')
+
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let full = ''
+
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed.startsWith('data:')) continue
+      const data = trimmed.slice(5).trim()
+      if (!data || data === '[DONE]') continue
+      try {
+        const chunk = JSON.parse(data) as {
+          choices?: { delta?: { content?: string | null } }[]
+        }
+        const piece = chunk.choices?.[0]?.delta?.content
+        if (piece) {
+          full += piece
+          onDelta(piece, full)
+        }
+      } catch {
+        // 부분 청크나 주석 줄은 건너뛴다
+      }
+    }
+  }
+  return full
 }
 
 export const openaiCompatibleProvider: AiProvider = {
@@ -48,18 +97,30 @@ export const openaiCompatibleProvider: AiProvider = {
   // 호환 서버마다 키 형식이 제각각이라 길이만 본다.
   looksLikeKey: (key) => key.trim().length >= 8,
 
-  async send(config: AiCallConfig, request: AiRequest): Promise<AiResult> {
+  // 이 규격은 샘플링 파라미터를 표준으로 받는다.
+  supportsSampling: () => true,
+
+  async send(
+    config: AiCallConfig,
+    request: AiRequest,
+    onDelta?: AiStreamHandler,
+  ): Promise<AiResult> {
     if (!config.apiKey.trim()) throw new AiError('no_key', 'API 키가 없습니다.')
 
+    const gen = config.generation ?? DEFAULT_GENERATION
     const url = `${normalizeBaseUrl(config.baseUrl)}/chat/completions`
     const body: Record<string, unknown> = {
       model: config.model,
-      max_tokens: MAX_TOKENS,
+      max_tokens: gen.maxTokens,
+      temperature: gen.temperature,
+      top_p: gen.topP,
       messages: [
         { role: 'system', content: request.systemPrompt },
         ...request.messages.map((m) => ({ role: m.role, content: m.content })),
       ],
     }
+    if (gen.topK !== null) body.top_k = gen.topK
+    if (onDelta) body.stream = true
 
     if (request.structured) {
       // 지원하지 않는 서버는 이 필드를 무시한다. 그래서 파싱 쪽이 관대해야 한다.
@@ -89,6 +150,18 @@ export const openaiCompatibleProvider: AiProvider = {
       }
       if (response.status === 429) throw new AiError('rate_limit', '요청 한도를 넘었습니다.')
       throw new AiError('unknown', `API 오류 (${response.status})`)
+    }
+
+    // 스트리밍 — SSE 를 읽어 delta.content 만 뽑는다. 봉투 차이는 여기서 끝난다.
+    if (onDelta) {
+      const text = await readSseStream(response, onDelta)
+      const usage = { inputTokens: 0, outputTokens: 0 }
+      if (!request.structured) {
+        return { reply: { reply: text, deltas: [] }, usage, model: config.model }
+      }
+      const reply = parseReplyText(text)
+      if (!reply) throw new AiError('bad_response', '응답에서 JSON 을 찾지 못했습니다.')
+      return { reply, usage, model: config.model }
     }
 
     let payload: ChatCompletionResponse

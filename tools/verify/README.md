@@ -20,6 +20,7 @@ npm run dev
 | `npm run verify:flags` | 섭정 회유/결렬 flag 배타성 | ~1.5분 |
 | `npm run verify:ai` | AI 인프라 — 키 없이도 코어 완전, BYOK 저장/삭제, **브라우저 직접 호출(CORS·헤더)** | ~30초 |
 | `npm run verify:providers` | 제공자 어댑터 동등성 — 응답 형식이 달라도 같은 델타·같은 클램핑 (네트워크 불필요) | ~20초 |
+| `npm run verify:talk` | 군주 대화 — **대조적인 두 세이브가 다른 페르소나를 만드는지**, 프롬프트에 숫자 없음, 스트리밍·META 비노출, 화면별 델타 허용, 폴백, 잠금 (네트워크 불필요) | ~40초 |
 | `npm run gen:outfits` | 플레이스홀더 착장 SVG 8장 재생성 | 즉시 |
 
 ## 환경변수

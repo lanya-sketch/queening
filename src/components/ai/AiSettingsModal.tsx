@@ -5,8 +5,43 @@ import { useAi } from '../../store/aiStore'
 import type { AiProviderId } from '../../ai/types'
 import { Button } from '../ui/Button'
 
+/** 숫자 하나짜리 설정 행. 고급 섹션에서만 쓴다. */
+function NumberField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <label className="mt-2 flex items-center gap-3 text-[11px] text-slate-400">
+      <span className="flex-1">{label}</span>
+      <input
+        type="number"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => {
+          const next = Number(e.target.value)
+          if (Number.isFinite(next)) onChange(Math.min(max, Math.max(min, next)))
+        }}
+        className="min-h-[44px] w-24 rounded-lg border border-slate-700 bg-slate-900 px-2 text-right font-mono text-sm text-slate-100"
+      />
+    </label>
+  )
+}
+
 /**
- * BYOK 설정 화면 (M2b-1).
+ * BYOK 설정 화면 (M2b-1 · M2b-2 에서 생성 파라미터 추가).
  * 키가 없으면 AI 기능만 꺼지고, 게임 본편은 그대로 동작한다.
  */
 export function AiSettingsModal({ onClose }: { onClose: () => void }) {
@@ -21,6 +56,9 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
   const setModel = useAi((s) => s.setModel)
   const baseUrl = useAi((s) => s.baseUrl)
   const setBaseUrl = useAi((s) => s.setBaseUrl)
+  const generation = useAi((s) => s.generation)
+  const setGeneration = useAi((s) => s.setGeneration)
+  const samplingOk = useAi((s) => s.samplingSupported())
   const persistSettings = useAi((s) => s.persistSettings)
   const forgetKey = useAi((s) => s.forgetKey)
   const testConnection = useAi((s) => s.testConnection)
@@ -166,6 +204,69 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
         {provider?.note && (
           <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{provider.note}</p>
         )}
+
+        {/* 고급 — 기본값으로 잘 돌아가므로 접어둔다 */}
+        <details className="mt-4 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
+          <summary className="min-h-[44px] cursor-pointer list-none py-2 text-xs font-medium text-slate-300">
+            고급 설정 ▾
+          </summary>
+
+          <p className="mt-1 text-[11px] text-slate-500">
+            비용에 직접 영향을 주는 값입니다.
+          </p>
+          <NumberField
+            label="최대 응답 길이 (max_tokens)"
+            value={generation.maxTokens}
+            min={100}
+            max={4000}
+            step={50}
+            onChange={(v) => setGeneration({ maxTokens: v })}
+          />
+          <NumberField
+            label="함께 보낼 최근 대화 (턴)"
+            value={generation.contextTurns}
+            min={2}
+            max={40}
+            step={1}
+            onChange={(v) => setGeneration({ contextTurns: v })}
+          />
+
+          <p className="mt-3 text-[11px] text-slate-500">
+            응답의 다양성·성격을 바꿉니다. 비용과는 무관합니다.
+          </p>
+          {!samplingOk && (
+            <p className="mt-1 rounded border border-amber-900/60 bg-amber-950/30 p-2 text-[11px] text-amber-300">
+              지금 고른 모델은 이 값들을 받지 않습니다. 보내면 오류가 나므로 요청에서 자동으로
+              제외됩니다.
+            </p>
+          )}
+          <div className={samplingOk ? '' : 'pointer-events-none opacity-40'}>
+            <NumberField
+              label="temperature"
+              value={generation.temperature}
+              min={0}
+              max={2}
+              step={0.05}
+              onChange={(v) => setGeneration({ temperature: v })}
+            />
+            <NumberField
+              label="top_p"
+              value={generation.topP}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(v) => setGeneration({ topP: v })}
+            />
+            <NumberField
+              label="top_k (0 = 사용 안 함)"
+              value={generation.topK ?? 0}
+              min={0}
+              max={200}
+              step={1}
+              onChange={(v) => setGeneration({ topK: v === 0 ? null : v })}
+            />
+          </div>
+        </details>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Button onClick={persistSettings} disabled={busy}>

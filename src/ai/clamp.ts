@@ -48,16 +48,30 @@ function labelOf(target: AiDeltaTarget): string {
     : RESOURCE_META[target as keyof typeof RESOURCE_META].label
 }
 
+export interface ClampOptions {
+  /**
+   * 화면별로 더 좁힌 허용 목록.
+   * 전역 규칙(ALLOWED_TARGETS·MAX_ABS) 위에 한 겹 더 좁히는 용도다.
+   * 예: 군주 대화는 tutorTrust·wellbeing 만 허용.
+   */
+  allow?: AiDeltaTarget[]
+}
+
 /** 모델 제안을 게임이 받아들일 수 있는 형태로 깎는다. */
-export function clampReply(raw: AiReply): ClampedReply {
+export function clampReply(raw: AiReply, options: ClampOptions = {}): ClampedReply {
   const rejected: ClampedReply['rejected'] = []
   const deltas: AiDelta[] = []
   const seen = new Set<string>()
+  const allow = options.allow
 
   for (const delta of raw.deltas ?? []) {
     const target = delta?.target as AiDeltaTarget
     const amount = Number(delta?.amount)
 
+    if (allow && !allow.includes(target)) {
+      rejected.push({ target: String(delta?.target), amount, reason: '이 화면에서 허용되지 않은 대상' })
+      continue
+    }
     if (!ALLOWED_TARGETS.includes(target)) {
       rejected.push({ target: String(delta?.target), amount, reason: '허용되지 않은 대상' })
       continue
@@ -102,19 +116,23 @@ export function clampReply(raw: AiReply): ClampedReply {
  * 어댑터의 몫이고, 그 안의 문자열부터는 여기서 공통으로 처리한다.
  */
 export function parseReplyText(text: string): AiReply | null {
+  return coerceReply(extractJson(text))
+}
+
+/** 코드펜스와 앞뒤 잡문을 걷어내고 첫 JSON 객체만 건져낸다. */
+export function extractJson(text: string): unknown | null {
   const stripped = text
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/```$/, '')
     .trim()
 
-  // 앞뒤에 설명이 붙어도 첫 번째 객체만 건져낸다.
   const start = stripped.indexOf('{')
   const end = stripped.lastIndexOf('}')
   if (start === -1 || end <= start) return null
 
   try {
-    return coerceReply(JSON.parse(stripped.slice(start, end + 1)))
+    return JSON.parse(stripped.slice(start, end + 1))
   } catch {
     return null
   }
@@ -129,6 +147,29 @@ export function coerceReply(value: unknown): AiReply | null {
     reply: candidate.reply,
     deltas: Array.isArray(candidate.deltas) ? (candidate.deltas as AiDelta[]) : [],
   }
+}
+
+/** 대사와 메타(JSON)를 가르는 구분자. 스트리밍 중 JSON 이 화면에 새지 않게 한다. */
+export const META_MARKER = '<<<META>>>'
+
+/** 스트리밍으로 받은 원문에서 화면에 보일 부분만 잘라낸다(스트림 도중에도 호출된다). */
+export function visiblePart(raw: string): string {
+  const index = raw.indexOf(META_MARKER)
+  return (index === -1 ? raw : raw.slice(0, index)).trimEnd()
+}
+
+/**
+ * 구분자 방식 응답을 대사 + 델타로 가른다.
+ * META 가 없으면 대사는 멀쩡하고 델타만 0건이 된다(우아한 실패).
+ */
+export function parseMetaReply(raw: string): AiReply {
+  const reply = visiblePart(raw)
+  const index = raw.indexOf(META_MARKER)
+  if (index === -1) return { reply, deltas: [] }
+
+  // META 꼬리에는 deltas 만 있으므로 coerceReply(reply 필수)를 쓰지 않는다.
+  const meta = extractJson(raw.slice(index + META_MARKER.length)) as { deltas?: unknown } | null
+  return { reply, deltas: Array.isArray(meta?.deltas) ? (meta.deltas as AiDelta[]) : [] }
 }
 
 /** 구조화 응답에 요구할 JSON Schema. */

@@ -1,4 +1,4 @@
-import type { AiProviderId } from './types'
+import type { AiGenerationSettings, AiProviderId } from './types'
 
 /**
  * BYOK 키 보관.
@@ -31,6 +31,26 @@ function writeSetting(prefix: string, provider: AiProviderId, value: string): vo
     const trimmed = value.trim()
     if (trimmed) localStorage.setItem(prefix + provider, trimmed)
     else localStorage.removeItem(prefix + provider)
+  } catch {
+    /* 무시 */
+  }
+}
+
+const GENERATION_KEY = 'queening.ai.generation'
+
+/** 생성 파라미터는 제공자와 무관하게 하나만 둔다. */
+export function loadGeneration(): Partial<AiGenerationSettings> {
+  try {
+    const raw = localStorage.getItem(GENERATION_KEY)
+    return raw ? (JSON.parse(raw) as Partial<AiGenerationSettings>) : {}
+  } catch {
+    return {}
+  }
+}
+
+export function saveGeneration(value: AiGenerationSettings): void {
+  try {
+    localStorage.setItem(GENERATION_KEY, JSON.stringify(value))
   } catch {
     /* 무시 */
   }

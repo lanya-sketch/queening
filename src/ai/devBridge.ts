@@ -1,4 +1,6 @@
 import { useAi } from '../store/aiStore'
+import { useGame } from '../store/gameStore'
+import { buildMonarchPrompt } from './persona'
 import { AI_PROVIDERS } from './providers'
 import type { AiProviderId } from './types'
 
@@ -32,5 +34,14 @@ export function installDevBridge(): void {
       })
     },
     providers: Object.keys(AI_PROVIDERS),
+
+    /** 게임 상태를 갈아끼운다(검증에서 대조적인 두 군주를 만들 때). */
+    setGame(patch: Record<string, unknown>) {
+      useGame.setState({ game: { ...useGame.getState().game, ...patch } as never })
+    },
+    /** 지금 상태로 조립된 시스템 프롬프트. 숫자가 없는지 검증에서 확인한다. */
+    prompt() {
+      return buildMonarchPrompt(useGame.getState().game)
+    },
   }
 }

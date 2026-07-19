@@ -1,20 +1,31 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { REPLY_JSON_SCHEMA, parseReplyText } from '../clamp'
-import { AiError, type AiCallConfig, type AiProvider, type AiRequest, type AiResult } from '../types'
+import {
+  AiError,
+  DEFAULT_GENERATION,
+  type AiCallConfig,
+  type AiProvider,
+  type AiRequest,
+  type AiResult,
+  type AiStreamHandler,
+} from '../types'
 
 /**
- * Anthropic 어댑터 (M2b-1 의 유일한 구현).
+ * Anthropic 어댑터.
  *
  * BYOK — 키는 유저 것이고 브라우저에서 직접 API 를 호출한다.
  * 그래서 두 가지가 반드시 필요하다:
- *   dangerouslyAllowBrowser        SDK 의 브라우저 사용 차단을 해제
- *   anthropic-dangerous-direct-browser-access  CORS 허용 헤더
+ *   dangerouslyAllowBrowser                     SDK 의 브라우저 사용 차단 해제
+ *   anthropic-dangerous-direct-browser-access   CORS 허용 헤더
  *
  * 이 구조의 대가는 분명하다 — 키가 브라우저에 노출된다. 공용 PC 경고를
  * 설정 화면에 붙여두는 이유이며, 키는 세이브 파일이 아니라 별도 항목에 둔다.
  */
 
-const MAX_TOKENS = 2048
+/** 샘플링 파라미터가 제거된 세대. 보내면 400 이 난다. */
+const NO_SAMPLING = /^(claude-opus-4-[78]|claude-sonnet-5|claude-fable-5|claude-mythos-5)/
+/** adaptive thinking 을 받는 세대. 그 이전 모델에 보내면 400 이다. */
+const ADAPTIVE_THINKING = /^(claude-opus-4-[678]|claude-sonnet-(5|4-6)|claude-fable-5|claude-mythos-5)/
 
 function client(apiKey: string): Anthropic {
   return new Anthropic({
@@ -53,6 +64,36 @@ function firstText(message: Anthropic.Message): string {
   return ''
 }
 
+/** 요청 본문을 만든다. 모델이 못 받는 파라미터는 아예 넣지 않는다. */
+function buildParams(config: AiCallConfig, request: AiRequest) {
+  const gen = config.generation ?? DEFAULT_GENERATION
+  const params: Record<string, unknown> = {
+    model: config.model,
+    max_tokens: gen.maxTokens,
+    system: request.systemPrompt,
+    messages: request.messages.map((m) => ({ role: m.role, content: m.content })),
+  }
+
+  if (ADAPTIVE_THINKING.test(config.model)) {
+    params.thinking = { type: 'adaptive' }
+  }
+
+  const outputConfig: Record<string, unknown> = { effort: 'low' }
+  if (request.structured) {
+    outputConfig.format = { type: 'json_schema', schema: REPLY_JSON_SCHEMA }
+  }
+  params.output_config = outputConfig
+
+  // ★ 400 방지 — 이 세대는 샘플링 파라미터를 아예 받지 않는다.
+  if (!NO_SAMPLING.test(config.model)) {
+    params.temperature = gen.temperature
+    params.top_p = gen.topP
+    if (gen.topK !== null) params.top_k = gen.topK
+  }
+
+  return params
+}
+
 export const anthropicProvider: AiProvider = {
   id: 'anthropic',
   label: 'Anthropic (Claude)',
@@ -67,25 +108,27 @@ export const anthropicProvider: AiProvider = {
   // 형식만 훑는 사전 검사다. 유효성은 실제 호출로만 알 수 있다.
   looksLikeKey: (key) => /^sk-ant-/.test(key.trim()) && key.trim().length > 20,
 
-  async send(config: AiCallConfig, request: AiRequest): Promise<AiResult> {
+  supportsSampling: (model) => !NO_SAMPLING.test(model),
+
+  async send(config: AiCallConfig, request: AiRequest, onDelta?: AiStreamHandler): Promise<AiResult> {
     const apiKey = config.apiKey
     if (!apiKey.trim()) throw new AiError('no_key', 'API 키가 없습니다.')
 
     try {
-      const message = await client(apiKey).messages.create({
-        model: config.model,
-        max_tokens: MAX_TOKENS,
-        system: request.systemPrompt,
-        // 짧은 대사에 과한 지연을 주지 않으면서, 상태를 고려한 판단은 하게 한다.
-        thinking: { type: 'adaptive' },
-        output_config: {
-          effort: 'low',
-          ...(request.structured
-            ? { format: { type: 'json_schema' as const, schema: REPLY_JSON_SCHEMA } }
-            : {}),
-        },
-        messages: request.messages.map((m) => ({ role: m.role, content: m.content })),
-      })
+      const params = buildParams(config, request)
+      let message: Anthropic.Message
+
+      if (onDelta) {
+        let full = ''
+        const stream = client(apiKey).messages.stream(params as never)
+        stream.on('text', (chunk: string) => {
+          full += chunk
+          onDelta(chunk, full)
+        })
+        message = await stream.finalMessage()
+      } else {
+        message = (await client(apiKey).messages.create(params as never)) as Anthropic.Message
+      }
 
       if (message.stop_reason === 'refusal') {
         throw new AiError('refusal', '모델이 응답을 거절했습니다.')

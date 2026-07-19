@@ -11,9 +11,16 @@ import {
   saveModel,
   saveProviderId,
 } from '../ai/keyStore'
+import { loadGeneration, saveGeneration } from '../ai/keyStore'
 import { DEFAULT_PROVIDER_ID, getProvider } from '../ai/providers'
-import { AiError, describeAiError } from '../ai/types'
-import type { AiProviderId, AiRequest, ClampedReply } from '../ai/types'
+import { AiError, DEFAULT_GENERATION, describeAiError } from '../ai/types'
+import type {
+  AiGenerationSettings,
+  AiProviderId,
+  AiRequest,
+  AiStreamHandler,
+  ClampedReply,
+} from '../ai/types'
 
 /**
  * AI 인프라 스토어 (M2b-1).
@@ -33,6 +40,7 @@ interface AiStore {
   apiKey: string
   model: string
   baseUrl: string
+  generation: AiGenerationSettings
   status: AiStatus
   /** 마지막 연결 테스트 결과. null = 아직 시험하지 않음. */
   lastTestOk: boolean | null
@@ -44,11 +52,19 @@ interface AiStore {
   setApiKey: (key: string) => void
   setModel: (model: string) => void
   setBaseUrl: (baseUrl: string) => void
+  setGeneration: (patch: Partial<AiGenerationSettings>) => void
   persistSettings: () => void
   forgetKey: () => void
   testConnection: () => Promise<void>
   /** 실제 호출. 델타는 clamp 를 거친 뒤 반환된다. */
   send: (request: AiRequest) => Promise<ClampedReply | null>
+  /**
+   * 원문(대사 + META)을 그대로 돌려주는 스트리밍 호출.
+   * 대화 화면이 쓰며, 파싱·클램핑은 호출자가 화면별 규칙으로 수행한다.
+   */
+  streamRaw: (request: AiRequest, onDelta: AiStreamHandler) => Promise<string>
+  /** 현재 모델이 샘플링 파라미터를 받는지. */
+  samplingSupported: () => boolean
 }
 
 function settingsFor(id: AiProviderId) {
@@ -65,6 +81,7 @@ const initialProvider = loadProviderId() ?? DEFAULT_PROVIDER_ID
 export const useAi = create<AiStore>()((set, get) => ({
   providerId: initialProvider,
   ...settingsFor(initialProvider),
+  generation: { ...DEFAULT_GENERATION, ...loadGeneration() },
   status: 'idle',
   lastTestOk: null,
   lastMessage: null,
@@ -78,13 +95,20 @@ export const useAi = create<AiStore>()((set, get) => ({
   setApiKey: (apiKey) => set({ apiKey, lastTestOk: null, lastMessage: null }),
   setModel: (model) => set({ model, lastTestOk: null, lastMessage: null }),
   setBaseUrl: (baseUrl) => set({ baseUrl, lastTestOk: null, lastMessage: null }),
+  setGeneration: (patch) => set({ generation: { ...get().generation, ...patch } }),
 
   persistSettings: () => {
-    const { providerId, apiKey, model, baseUrl } = get()
+    const { providerId, apiKey, model, baseUrl, generation } = get()
     const ok = saveKey(providerId, apiKey)
     saveModel(providerId, model)
     saveBaseUrl(providerId, baseUrl)
+    saveGeneration(generation)
     set({ lastMessage: ok ? '설정을 저장했습니다.' : '저장하지 못했습니다.' })
+  },
+
+  samplingSupported: () => {
+    const { providerId, model } = get()
+    return getProvider(providerId)?.supportsSampling(model) ?? false
   },
 
   forgetKey: () => {
@@ -108,7 +132,7 @@ export const useAi = create<AiStore>()((set, get) => ({
     set({ status: 'testing', lastMessage: null })
     try {
       const result = await provider.send(
-        { apiKey, model, baseUrl },
+        { apiKey, model, baseUrl, generation: get().generation },
         {
           systemPrompt:
             '너는 연결 확인용 응답기다. 다른 말 없이 정확히 "연결됨" 이라고만 답하라.',
@@ -128,8 +152,30 @@ export const useAi = create<AiStore>()((set, get) => ({
     }
   },
 
+  streamRaw: async (request, onDelta) => {
+    const { providerId, apiKey, model, baseUrl, generation } = get()
+    const provider = getProvider(providerId)
+    if (!provider || !apiKey.trim()) throw new AiError('no_key', 'API 키가 없습니다.')
+
+    set({ status: 'sending' })
+    try {
+      let full = ''
+      await provider.send(
+        { apiKey, model, baseUrl, generation },
+        { ...request, structured: false },
+        (chunk, accumulated) => {
+          full = accumulated
+          onDelta(chunk, accumulated)
+        },
+      )
+      return full
+    } finally {
+      set({ status: 'idle' })
+    }
+  },
+
   send: async (request) => {
-    const { providerId, apiKey, model, baseUrl } = get()
+    const { providerId, apiKey, model, baseUrl, generation } = get()
     const provider = getProvider(providerId)
     if (!provider || !apiKey.trim()) {
       set({ lastMessage: 'API 키가 없어 AI 기능을 쓸 수 없습니다.' })
@@ -138,7 +184,10 @@ export const useAi = create<AiStore>()((set, get) => ({
 
     set({ status: 'sending', lastMessage: null })
     try {
-      const result = await provider.send({ apiKey, model, baseUrl }, { ...request, structured: true })
+      const result = await provider.send(
+        { apiKey, model, baseUrl, generation },
+        { ...request, structured: true },
+      )
       const clamped = clampReply(result.reply)
       set({ status: 'idle', lastRejected: clamped.rejected })
       if (clamped.rejected.length) {
