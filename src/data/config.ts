@@ -21,7 +21,7 @@ export const GAME_CONFIG = {
 
   saveKey: 'queening.save',
   /** 올릴 때마다 systems/save.ts 의 MIGRATIONS 에 변환을 추가할 것. */
-  saveVersion: 3,
+  saveVersion: 4,
 } as const
 
 export const SEASON_LABEL: Record<GameDate['season'], string> = {
@@ -46,4 +46,17 @@ export const INITIAL_RESOURCES = {
   tutorTrust: 20,
   regentSuspicion: 10,
   regentRapport: 20,
+  /** 11세 허수아비에서 출발한다. */
+  courtInfluence: 10,
 } as const
+
+/**
+ * 국정 영향도의 나이별 상한.
+ * 11세:25 · 14세:49 · 17세:73 · 20세:97
+ *
+ * 어린 나이에 실권을 몰아쳐 굳히는 길을 막는다. 친정은 9년에 걸쳐
+ * 밀어 올려야만 닿는 자리여야 한다.
+ */
+export function courtInfluenceCap(age: number): number {
+  return Math.min(GAME_CONFIG.resourceMax, 25 + (age - GAME_CONFIG.startAge) * 8)
+}

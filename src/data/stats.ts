@@ -17,13 +17,13 @@ export interface StatMeta {
 
 export const STAT_META: Record<StatKey, StatMeta> = {
   statecraft: {
-    label: '제왕학',
-    description: '통치의 원리와 선례. 조회에서 스스로 판단할 힘.',
+    label: '통치학',
+    description: '통치의 원리와 선례. 어전 회의에서 스스로 판단할 힘.',
     bar: 'bg-amber-400',
   },
   finance: {
     label: '재정',
-    description: '조세와 국고. 숫자를 읽지 못하는 군주는 속는다.',
+    description: '조세와 국고. 숫자를 읽지 못하는 왕은 속는다.',
     bar: 'bg-emerald-400',
   },
   rhetoric: {
@@ -41,11 +41,13 @@ export const STAT_META: Record<StatKey, StatMeta> = {
     description: '누가 누구의 사람인지 읽고 처신하는 감각.',
     bar: 'bg-violet-400',
   },
+  // 라벨만 서양 궁정 톤으로 옮겼다. StatKey 와 수치는 그대로.
 }
 
 export const RESOURCE_META: Record<ResourceKey, { label: string; bar: string }> = {
   wellbeing: { label: '심신', bar: 'bg-teal-400' },
   tutorTrust: { label: '신뢰', bar: 'bg-amber-300' },
+  courtInfluence: { label: '국정 영향도', bar: 'bg-yellow-500' },
   regentSuspicion: { label: '섭정 의심', bar: 'bg-red-500' },
   regentRapport: { label: '섭정 신망', bar: 'bg-indigo-400' },
   actionPoints: { label: '행동력', bar: 'bg-slate-400' },

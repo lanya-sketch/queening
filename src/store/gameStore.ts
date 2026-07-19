@@ -90,6 +90,7 @@ export const useGame = create<GameStore>()((set, get) => ({
     const activity = ACTIVITY_BY_ID[activityId]
     if (!activity || game.phase !== 'schedule') return
     if (activity.apCost > game.actionPoints) return
+    if (activity.requires && !matchesCondition(game, activity.requires)) return
     set({
       game: {
         ...game,

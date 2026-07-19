@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GAME_CONFIG, SEASON_LABEL } from '../data/config'
+import { GAME_CONFIG, SEASON_LABEL, courtInfluenceCap } from '../data/config'
 import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
 import { useGame } from '../store/gameStore'
 import { PortraitButton } from './portrait/PortraitButton'
@@ -29,7 +29,10 @@ export function StatusPanel() {
               <p className="truncate text-sm font-semibold text-amber-200">
                 즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]}
               </p>
-              <p className="text-xs text-slate-400">군주 {game.age}세</p>
+              {/* 20세를 넘겨 잠긴 상태에서는 본문과 어긋나지 않게 끝점 나이로 고정 */}
+            <p className="text-xs text-slate-400">
+              왕 {game.phase === 'ended' ? GAME_CONFIG.endAge : game.age}세
+            </p>
             </div>
 
             <div className="ml-auto flex items-center gap-2">
@@ -84,7 +87,16 @@ export function StatusPanel() {
 
           <div className="my-4 h-px bg-slate-800" />
 
+          {/* 국정 — 계획에 쓰는 공개 지표 */}
+          <p className="mb-2 text-[11px] font-medium text-slate-500">국정</p>
           <div className="space-y-2.5">
+            <StatBar
+              label={RESOURCE_META.courtInfluence.label}
+              value={game.courtInfluence}
+              bar={RESOURCE_META.courtInfluence.bar}
+              emphasis
+              suffix={`/ ${courtInfluenceCap(game.age)}`}
+            />
             <StatBar
               label={RESOURCE_META.wellbeing.label}
               value={game.wellbeing}
@@ -96,6 +108,13 @@ export function StatusPanel() {
               value={game.tutorTrust}
               bar={RESOURCE_META.tutorTrust.bar}
             />
+          </div>
+
+          <div className="my-4 h-px bg-slate-800" />
+
+          {/* 섭정 — 값은 보이되 선택지에서 변화가 미리 표시되지 않는다 */}
+          <p className="mb-2 text-[11px] font-medium text-slate-500">섭정</p>
+          <div className="space-y-2.5">
             <StatBar
               label={RESOURCE_META.regentRapport.label}
               value={game.regentRapport}
@@ -108,6 +127,9 @@ export function StatusPanel() {
               warning={highSuspicion ? '주의' : undefined}
             />
           </div>
+          <p className="mt-2 text-[10px] leading-relaxed text-slate-600">
+            선택지에서 이 두 지표의 변화는 미리 표시되지 않습니다.
+          </p>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <Button onClick={save}>저장</Button>

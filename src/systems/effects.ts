@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from '../data/config'
+import { GAME_CONFIG, courtInfluenceCap } from '../data/config'
 import { RESOURCE_META, STAT_META } from '../data/stats'
 import type { Delta, Effect, EffectTarget, GameState } from '../types/game'
 
@@ -19,12 +19,15 @@ function read(state: GameState, target: EffectTarget): number {
   return target.kind === 'stat' ? state.stats[target.key] : state[target.key]
 }
 
-function clamp(target: EffectTarget, value: number): number {
+function clamp(target: EffectTarget, value: number, state: GameState): number {
   if (target.kind === 'stat') {
     return Math.min(GAME_CONFIG.statMax, Math.max(GAME_CONFIG.statMin, value))
   }
   if (target.key === 'actionPoints') return Math.max(0, value)
-  return Math.min(GAME_CONFIG.resourceMax, Math.max(GAME_CONFIG.resourceMin, value))
+  // 국정 영향도만 나이에 따라 상한이 움직인다.
+  const max =
+    target.key === 'courtInfluence' ? courtInfluenceCap(state.age) : GAME_CONFIG.resourceMax
+  return Math.min(max, Math.max(GAME_CONFIG.resourceMin, value))
 }
 
 function write(state: GameState, target: EffectTarget, value: number): void {
@@ -48,7 +51,7 @@ export function applyEffects(
 
   for (const effect of effects) {
     const before = read(next, effect.target)
-    const after = clamp(effect.target, before + roll(effect, rng))
+    const after = clamp(effect.target, before + roll(effect, rng), next)
     write(next, effect.target, after)
 
     const label = targetLabel(effect.target)

@@ -20,6 +20,7 @@ export type Stats = Record<StatKey, number>
 export type ResourceKey =
   | 'wellbeing'
   | 'tutorTrust'
+  | 'courtInfluence'
   | 'regentSuspicion'
   | 'regentRapport'
   | 'actionPoints'
@@ -79,6 +80,11 @@ export interface Choice {
   requires?: Condition
   effects?: Effect[]
   setFlags?: FlagSet
+  /**
+   * 히든 게이지(의심·신망)만 움직이는 선택지에 붙이는 질적 힌트.
+   * 수치는 계속 감추되 "뭔가 바뀌었다"는 신호는 준다.
+   */
+  hint?: string
   /** 고른 뒤 이어지는 후일담. */
   resultText: string
 }
@@ -101,6 +107,11 @@ export interface GameEvent {
    * M2b 에서 AI 가 같은 구조로 돌발 이벤트를 주입할 때를 위한 표식일 뿐.
    */
   source?: 'scripted' | 'ai_generated'
+  /**
+   * 기본 'story'. 'state_affair' = 정치 현안 — 새 시스템이 아니라 이벤트의 한 유형이다.
+   * 엔진은 이 값을 읽지 않고, 화면에서 라벨만 다르게 표시한다.
+   */
+  category?: 'story' | 'state_affair'
 }
 
 /**
@@ -157,6 +168,8 @@ export interface GameState {
   regentSuspicion: number
   /** 섭정이 군주를 통치자로 인정하는 정도. 회유 루트의 열쇠. */
   regentRapport: number
+  /** 군주가 실제로 국정을 장악한 정도. 허수아비(10)에서 시작한다. */
+  courtInfluence: number
   actionPoints: number
   /** 현재 입고 있는 착장 id. 매니페스트에 없으면 기본 착장으로 되돌린다. */
   currentOutfitId: string

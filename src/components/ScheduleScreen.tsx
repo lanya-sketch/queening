@@ -1,6 +1,7 @@
 import { ACTIVITIES, ACTIVITY_BY_ID } from '../data/activities'
 import { SEASON_LABEL } from '../data/config'
 import { formatEffect } from '../systems/effects'
+import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { useGame } from '../store/gameStore'
 import type { Activity } from '../types/game'
 import { Button } from './ui/Button'
@@ -79,14 +80,16 @@ export function ScheduleScreen() {
         <h2 className="mb-2 text-sm font-medium text-slate-300">활동 선택</h2>
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {ACTIVITIES.map((activity) => {
+            const unlocked = !activity.requires || matchesCondition(game, activity.requires)
             const affordable = activity.apCost <= game.actionPoints
+            const usable = unlocked && affordable
             return (
               <li key={activity.id}>
                 <button
-                  disabled={!affordable}
+                  disabled={!usable}
                   onClick={() => addActivity(activity.id)}
                   className={`w-full rounded-xl border p-3 text-left transition-colors ${
-                    affordable
+                    usable
                       ? 'border-slate-700 bg-slate-900/60 active:border-amber-500 active:bg-slate-800'
                       : 'border-slate-800 bg-slate-900/30 opacity-50'
                   }`}
@@ -100,9 +103,17 @@ export function ScheduleScreen() {
                   <p className="mt-1 text-xs leading-relaxed text-slate-400">
                     {activity.description}
                   </p>
-                  <EffectChips activity={activity} />
-                  {activity.tags?.includes('independence') && (
-                    <p className="mt-2 text-[11px] text-red-400">섭정의 눈에 띄는 일입니다</p>
+                  {unlocked ? (
+                    <>
+                      <EffectChips activity={activity} />
+                      {activity.tags?.includes('independence') && (
+                        <p className="mt-2 text-[11px] text-red-400">섭정공의 눈에 띄는 일입니다</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="mt-2 text-[11px] text-slate-500">
+                      🔒 {describeCondition(activity.requires).join(', ')} 필요
+                    </p>
                   )}
                 </button>
               </li>

@@ -9,11 +9,11 @@ import { GAME_CONFIG } from '../config'
 export const M1_EVENTS: GameEvent[] = [
   {
     id: 'first-audience',
-    title: '첫 조회(朝會)',
+    title: '첫 어전 회의',
     text:
-      '섭정이 병을 핑계로 자리를 비운 아침, 군주가 처음으로 홀로 어좌에 앉는다.\n' +
-      '신료들의 시선이 열두 살짜리 아이에게 쏠린다. 군주는 당신이 가르친 대로 ' +
-      '먼저 묻고, 그 다음에 답한다. 짧은 조회였지만 아무도 웃지 않았다.',
+      '섭정공이 병을 핑계로 자리를 비운 아침, 왕이 처음으로 홀로 옥좌에 앉는다.\n' +
+      '신하들의 시선이 열두 살짜리 아이에게 쏠린다. 왕은 당신이 가르친 대로 ' +
+      '먼저 묻고, 그 다음에 답한다. 짧은 회의였지만 아무도 웃지 않았다.',
     condition: {
       minYear: 1,
       season: 'summer',
@@ -28,11 +28,11 @@ export const M1_EVENTS: GameEvent[] = [
   },
   {
     id: 'regent-warning',
-    title: '섭정의 방문',
+    title: '섭정공의 방문',
     text:
-      '섭정이 예고 없이 서재에 들어선다. 책상 위를 한참 내려다보다가, ' +
-      '당신에게가 아니라 군주에게 말한다.\n' +
-      '"폐하께서는 요즘 무엇을 배우고 계십니까."\n' +
+      '섭정공이 예고 없이 서재에 들어선다. 책상 위를 한참 내려다보다가, ' +
+      '당신에게가 아니라 왕에게 말한다.\n' +
+      '"전하께서는 요즘 무엇을 배우고 계십니까."\n' +
       '대답을 기다리지 않고 그는 나갔다. 감시가 한 단계 조여졌다.',
     condition: {
       resources: { regentSuspicion: { min: GAME_CONFIG.regentSuspicionWarning } },

@@ -1,7 +1,12 @@
-# 어린 군주 육성 시뮬 (가제)
+# 어린 왕 육성 시뮬 (가제)
 
-선황이 암살당해 11세에 즉위한 어린 군주를, 황제파가 심은 가정교사(=플레이어)가 몇 년에 걸쳐
+선왕이 암살당해 11세에 즉위한 어린 왕을, 왕당파가 심은 가정교사(=플레이어)가 9년에 걸쳐
 유능한 통치자로 키우는 싱글플레이어 육성 시뮬 + 비주얼 노벨.
+
+세계관은 서양 중세 왕국. 국경 너머에는 이 왕국을 얕보는 **제국**이 있고, 변경 너머에는
+마족이 있다. 섭정공(왕대비의 오라비)이 정무를 쥐고 있으며, 작위는 공작·백작·남작으로 나뉜다.
+표시 텍스트는 전부 `src/data/` 에 모여 있어, 나중에 다른 세계관을 얹을 때
+id·수치·조건은 그대로 두고 문자열만 갈아끼우면 된다.
 
 ## 실행
 
@@ -11,6 +16,17 @@ npm run dev        # http://localhost:5173
 npm run typecheck  # 타입 검사
 npm run build      # 프로덕션 빌드
 ```
+
+## 검증
+
+콘텐츠를 추가한 뒤에는 실제 브라우저로 회귀를 확인한다. 개발 서버를 띄운 상태에서:
+
+```bash
+npm run verify     # 회귀 스위트 (착장·턴 루프·이벤트·세이브 마이그레이션·반응형)
+npm run simulate   # 6개 육성 빌드로 9년 자동 플레이 → 진실 도달·회유·영향도 실측
+```
+
+자세한 내용과 결과 읽는 법은 [tools/verify/README.md](tools/verify/README.md) 참고.
 
 ## 구조
 
@@ -27,7 +43,7 @@ src/components/          화면
 
 ## 착장(의상) 커스터마이징
 
-> **군주는 미성년 캐릭터입니다. 노출 등 부적절한 이미지로 교체하지 마세요.**
+> **군주(왕)는 미성년 캐릭터입니다. 노출 등 부적절한 이미지로 교체하지 마세요.**
 > 기본 제공 이미지는 전부 옷을 갖춰 입은 착장이며, 교체 이미지도 그래야 합니다.
 
 착장 이미지는 코드에 박혀 있지 않습니다. `public/assets/outfits/manifest.json` 이 목록을 들고 있고,
@@ -53,15 +69,15 @@ PNG·WebP·JPG·SVG 모두 됩니다. 기본 제공되는 것은 플레이스홀
   "outfits": [
     {
       "id": "casual",                    // 세이브에 기록되는 값. 바꾸지 않는 편이 안전
-      "name": "평상복",
-      "description": "사가에서 입던 옷.",
+      "name": "사복",
+      "description": "사저에서 입던 소박한 옷.",
       "thumbSrc": "/assets/outfits/casual-thumb.svg",
       "fullSrc": "/assets/outfits/casual-full.svg"
     },
     {
       "id": "ceremonial",
-      "name": "예복",
-      "description": "국가 대례에만 꺼내는 옷.",
+      "name": "대례복",
+      "description": "대관식과 국가 의례에만 꺼내는 옷.",
       "thumbSrc": "/assets/outfits/ceremonial-thumb.png",
       "fullSrc": "/assets/outfits/ceremonial-full.png",
       "unlockCondition": { "stats": { "courtcraft": { "min": 25 } } }

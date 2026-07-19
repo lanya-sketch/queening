@@ -1,5 +1,6 @@
 import type { GameEvent } from '../../types/game'
 import { ADULT_EVENTS } from './adult'
+import { AFFAIR_EVENTS } from './affairs'
 import { M1_EVENTS } from './m1-samples'
 import { TEEN_EVENTS } from './teen'
 import { TRUTH_EVENTS } from './truth'
@@ -12,6 +13,7 @@ export const EVENTS: GameEvent[] = [
   ...TEEN_EVENTS,
   ...ADULT_EVENTS,
   ...TRUTH_EVENTS,
+  ...AFFAIR_EVENTS,
 ]
 
 export const EVENT_BY_ID: Record<string, GameEvent> = Object.fromEntries(

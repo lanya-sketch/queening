@@ -18,6 +18,8 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
   1: (state) => ({ ...state, currentOutfitId: DEFAULT_OUTFIT_ID }),
   // v2 -> v3 : 섭정 신망 게이지 도입. clue/truth flag 는 기존 flags 에 들어가므로 변환 불필요.
   2: (state) => ({ ...state, regentRapport: INITIAL_RESOURCES.regentRapport }),
+  // v3 -> v4 : 국정 영향도 도입.
+  3: (state) => ({ ...state, courtInfluence: INITIAL_RESOURCES.courtInfluence }),
 }
 
 function migrate(state: any, fromVersion: number): GameState | null {

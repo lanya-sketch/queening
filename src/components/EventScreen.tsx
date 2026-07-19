@@ -90,7 +90,12 @@ function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) 
         {choice.label}
       </span>
       {available ? (
-        <EffectChips effects={visibleEffects(choice.effects)} />
+        <>
+          <EffectChips effects={visibleEffects(choice.effects)} />
+          {choice.hint && (
+            <span className="mt-2 block text-[11px] italic text-slate-500">{choice.hint}</span>
+          )}
+        </>
       ) : (
         <span className="mt-1 block text-xs text-slate-500">
           🔒 {requirements.join(', ')} 필요
@@ -119,7 +124,9 @@ export function EventScreen() {
   return (
     <div className="pb-28 lg:pb-6">
       <article className="rounded-xl border border-amber-900/60 bg-slate-900/60 p-5">
-        <p className="text-xs text-amber-500">사건</p>
+        <p className="text-xs text-amber-500">
+          {event.category === 'state_affair' ? '국정 현안' : '사건'}
+        </p>
         <h1 className="mt-1 text-xl font-semibold text-amber-100">{event.title}</h1>
 
         <div className="mt-4 space-y-3">
