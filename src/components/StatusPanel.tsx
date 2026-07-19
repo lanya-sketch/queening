@@ -1,0 +1,116 @@
+import { useState } from 'react'
+import { GAME_CONFIG, SEASON_LABEL } from '../data/config'
+import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
+import { useGame } from '../store/gameStore'
+import { Button } from './ui/Button'
+import { StatBar } from './ui/StatBar'
+
+export function StatusPanel() {
+  const [open, setOpen] = useState(false)
+  const game = useGame((s) => s.game)
+  const savedAt = useGame((s) => s.savedAt)
+  const save = useGame((s) => s.save)
+  const load = useGame((s) => s.load)
+  const reset = useGame((s) => s.reset)
+
+  const lowWellbeing = game.wellbeing <= GAME_CONFIG.wellbeingWarning
+  const highSuspicion = game.regentSuspicion >= GAME_CONFIG.regentSuspicionWarning
+
+  return (
+    <aside className="sticky top-0 z-20 lg:static lg:w-80 lg:shrink-0">
+      <div className="border-b border-slate-800 bg-slate-900/95 backdrop-blur lg:rounded-2xl lg:border">
+        {/* 항상 보이는 요약 줄 */}
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-amber-200">
+              즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]}
+            </p>
+            <p className="text-xs text-slate-400">군주 {game.age}세</p>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <div className="rounded-lg bg-slate-800 px-2.5 py-1 text-center">
+              <p className="text-[10px] leading-none text-slate-400">행동력</p>
+              <p className="text-sm font-semibold tabular-nums leading-tight text-slate-100">
+                {game.actionPoints}
+                <span className="text-slate-500">/{GAME_CONFIG.actionPointsPerTurn}</span>
+              </p>
+            </div>
+            <Button
+              className="px-3 lg:hidden"
+              aria-expanded={open}
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? '닫기' : '상세'}
+            </Button>
+          </div>
+        </div>
+
+        {/* 경고는 접혀 있어도 보여야 한다 */}
+        {(lowWellbeing || highSuspicion) && (
+          <div className="flex flex-wrap gap-1.5 px-4 pb-3">
+            {lowWellbeing && (
+              <span className="rounded-full bg-amber-950 px-2.5 py-1 text-[11px] text-amber-300">
+                심신이 바닥났습니다
+              </span>
+            )}
+            {highSuspicion && (
+              <span className="rounded-full bg-red-950 px-2.5 py-1 text-[11px] text-red-300">
+                섭정의 의심이 높습니다
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* 상세: 폰에선 접힘, PC(lg)에선 항상 펼침 */}
+        <div
+          className={`${open ? 'block' : 'hidden'} max-h-[60vh] overflow-y-auto px-4 pb-4 lg:block lg:max-h-none`}
+        >
+          <div className="space-y-2.5">
+            {STAT_KEYS.map((key) => (
+              <StatBar
+                key={key}
+                label={STAT_META[key].label}
+                value={game.stats[key]}
+                bar={STAT_META[key].bar}
+              />
+            ))}
+          </div>
+
+          <div className="my-4 h-px bg-slate-800" />
+
+          <div className="space-y-2.5">
+            <StatBar
+              label={RESOURCE_META.wellbeing.label}
+              value={game.wellbeing}
+              bar={RESOURCE_META.wellbeing.bar}
+              warning={lowWellbeing ? '위험' : undefined}
+            />
+            <StatBar
+              label={RESOURCE_META.tutorTrust.label}
+              value={game.tutorTrust}
+              bar={RESOURCE_META.tutorTrust.bar}
+            />
+            <StatBar
+              label={RESOURCE_META.regentSuspicion.label}
+              value={game.regentSuspicion}
+              bar={RESOURCE_META.regentSuspicion.bar}
+              warning={highSuspicion ? '주의' : undefined}
+            />
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button onClick={save}>저장</Button>
+            <Button onClick={load}>불러오기</Button>
+            <Button variant="danger" className="col-span-2" onClick={reset}>
+              처음부터
+            </Button>
+          </div>
+          <p className="mt-2 text-[11px] text-slate-500">
+            {savedAt ? `마지막 저장: ${new Date(savedAt).toLocaleString('ko-KR')}` : '저장된 기록 없음'}
+          </p>
+        </div>
+      </div>
+    </aside>
+  )
+}

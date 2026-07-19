@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background-color: #070a14;
+  color: #e2e8f0;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* 터치 대상 최소 44px 을 기본값으로 둔다. */
+button {
+  touch-action: manipulation;
+}
