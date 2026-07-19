@@ -93,6 +93,33 @@ export function clampReply(raw: AiReply): ClampedReply {
   return { reply, deltas, rejected }
 }
 
+/**
+ * 모델이 돌려준 텍스트에서 JSON 을 뽑아 AiReply 로 좁힌다.
+ *
+ * **모든 제공자가 이 함수를 통과한다.** 구조화 출력을 지원하지 않거나 무시하는
+ * 모델이 ```json 펜스로 감싸 보내는 경우가 흔해서, 펜스와 앞뒤 잡문을 걷어낸다.
+ * 제공자별 응답 봉투(content 블록 / choices[].message.content)를 벗기는 일까지가
+ * 어댑터의 몫이고, 그 안의 문자열부터는 여기서 공통으로 처리한다.
+ */
+export function parseReplyText(text: string): AiReply | null {
+  const stripped = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```$/, '')
+    .trim()
+
+  // 앞뒤에 설명이 붙어도 첫 번째 객체만 건져낸다.
+  const start = stripped.indexOf('{')
+  const end = stripped.lastIndexOf('}')
+  if (start === -1 || end <= start) return null
+
+  try {
+    return coerceReply(JSON.parse(stripped.slice(start, end + 1)))
+  } catch {
+    return null
+  }
+}
+
 /** 모델이 돌려준 임의의 JSON 을 AiReply 형태로 좁힌다. */
 export function coerceReply(value: unknown): AiReply | null {
   if (!value || typeof value !== 'object') return null

@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { REPLY_JSON_SCHEMA, coerceReply } from '../clamp'
-import { AiError, type AiProvider, type AiRequest, type AiResult } from '../types'
+import { REPLY_JSON_SCHEMA, parseReplyText } from '../clamp'
+import { AiError, type AiCallConfig, type AiProvider, type AiRequest, type AiResult } from '../types'
 
 /**
  * Anthropic 어댑터 (M2b-1 의 유일한 구현).
@@ -14,7 +14,6 @@ import { AiError, type AiProvider, type AiRequest, type AiResult } from '../type
  * 설정 화면에 붙여두는 이유이며, 키는 세이브 파일이 아니라 별도 항목에 둔다.
  */
 
-const MODEL = 'claude-opus-4-8'
 const MAX_TOKENS = 2048
 
 function client(apiKey: string): Anthropic {
@@ -57,16 +56,24 @@ function firstText(message: Anthropic.Message): string {
 export const anthropicProvider: AiProvider = {
   id: 'anthropic',
   label: 'Anthropic (Claude)',
+  models: [
+    { id: 'claude-opus-4-8', label: 'Claude Opus 4.8 — 가장 유능' },
+    { id: 'claude-sonnet-5', label: 'Claude Sonnet 5 — 균형' },
+    { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 — 가장 저렴' },
+  ],
+  defaultModel: 'claude-opus-4-8',
+  note: '키는 console.anthropic.com 에서 발급합니다.',
 
   // 형식만 훑는 사전 검사다. 유효성은 실제 호출로만 알 수 있다.
   looksLikeKey: (key) => /^sk-ant-/.test(key.trim()) && key.trim().length > 20,
 
-  async send(apiKey, request: AiRequest): Promise<AiResult> {
+  async send(config: AiCallConfig, request: AiRequest): Promise<AiResult> {
+    const apiKey = config.apiKey
     if (!apiKey.trim()) throw new AiError('no_key', 'API 키가 없습니다.')
 
     try {
       const message = await client(apiKey).messages.create({
-        model: MODEL,
+        model: config.model,
         max_tokens: MAX_TOKENS,
         system: request.systemPrompt,
         // 짧은 대사에 과한 지연을 주지 않으면서, 상태를 고려한 판단은 하게 한다.
@@ -94,15 +101,9 @@ export const anthropicProvider: AiProvider = {
         return { reply: { reply: text, deltas: [] }, usage, model: message.model }
       }
 
-      let parsed: unknown
-      try {
-        parsed = JSON.parse(text)
-      } catch (e) {
-        throw new AiError('bad_response', 'JSON 을 해석하지 못했습니다.', e)
-      }
-
-      const reply = coerceReply(parsed)
-      if (!reply) throw new AiError('bad_response', '응답에 reply 가 없습니다.')
+      // 봉투를 벗긴 뒤부터는 OpenAI 호환 경로와 완전히 같은 함수를 탄다.
+      const reply = parseReplyText(text)
+      if (!reply) throw new AiError('bad_response', '응답에서 JSON 을 찾지 못했습니다.')
 
       return { reply, usage, model: message.model }
     } catch (error) {

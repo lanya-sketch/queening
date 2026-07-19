@@ -13,7 +13,33 @@ import type { AiProviderId } from './types'
  */
 
 const KEY_PREFIX = 'queening.ai.key.'
+const MODEL_PREFIX = 'queening.ai.model.'
+const BASE_URL_PREFIX = 'queening.ai.baseUrl.'
 const PROVIDER_KEY = 'queening.ai.provider'
+
+/** 모델·엔드포인트는 비밀이 아니지만, 제공자별로 따로 기억한다. */
+function readSetting(prefix: string, provider: AiProviderId): string {
+  try {
+    return localStorage.getItem(prefix + provider) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function writeSetting(prefix: string, provider: AiProviderId, value: string): void {
+  try {
+    const trimmed = value.trim()
+    if (trimmed) localStorage.setItem(prefix + provider, trimmed)
+    else localStorage.removeItem(prefix + provider)
+  } catch {
+    /* 무시 */
+  }
+}
+
+export const loadModel = (p: AiProviderId) => readSetting(MODEL_PREFIX, p)
+export const saveModel = (p: AiProviderId, v: string) => writeSetting(MODEL_PREFIX, p, v)
+export const loadBaseUrl = (p: AiProviderId) => readSetting(BASE_URL_PREFIX, p)
+export const saveBaseUrl = (p: AiProviderId, v: string) => writeSetting(BASE_URL_PREFIX, p, v)
 
 export function loadKey(provider: AiProviderId): string {
   try {

@@ -1,0 +1,36 @@
+import { useAi } from '../store/aiStore'
+import { AI_PROVIDERS } from './providers'
+import type { AiProviderId } from './types'
+
+/**
+ * 개발 전용 테스트 시임.
+ *
+ * 검증 스크립트가 "어느 제공자든 같은 형태의 델타가 나오는지"를 관측하려면
+ * 브라우저 안에서 send() 를 직접 부를 수 있어야 한다. 프로덕션 번들에는
+ * 포함되지 않는다(import.meta.env.DEV 가드 + main.tsx 에서만 호출).
+ */
+export function installDevBridge(): void {
+  if (!import.meta.env.DEV) return
+
+  // eslint 없는 프로젝트라 window 확장은 캐스팅으로 처리한다.
+  ;(window as unknown as Record<string, unknown>).__queeningAi = {
+    /** 제공자·모델·키를 한 번에 세팅한다(저장은 하지 않는다). */
+    configure(providerId: AiProviderId, apiKey: string, model?: string, baseUrl?: string) {
+      const provider = AI_PROVIDERS[providerId]
+      useAi.setState({
+        providerId,
+        apiKey,
+        model: model ?? provider?.defaultModel ?? '',
+        baseUrl: baseUrl ?? provider?.defaultBaseUrl ?? '',
+      })
+    },
+    /** 구조화 호출 → clamp 까지 통과한 결과를 그대로 돌려준다. */
+    async send(prompt: string) {
+      return useAi.getState().send({
+        systemPrompt: '테스트',
+        messages: [{ role: 'user', content: prompt }],
+      })
+    },
+    providers: Object.keys(AI_PROVIDERS),
+  }
+}

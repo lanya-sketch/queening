@@ -1,6 +1,16 @@
 import { create } from 'zustand'
 import { clampReply } from '../ai/clamp'
-import { clearKey, loadKey, loadProviderId, saveKey, saveProviderId } from '../ai/keyStore'
+import {
+  clearKey,
+  loadBaseUrl,
+  loadKey,
+  loadModel,
+  loadProviderId,
+  saveBaseUrl,
+  saveKey,
+  saveModel,
+  saveProviderId,
+} from '../ai/keyStore'
 import { DEFAULT_PROVIDER_ID, getProvider } from '../ai/providers'
 import { AiError, describeAiError } from '../ai/types'
 import type { AiProviderId, AiRequest, ClampedReply } from '../ai/types'
@@ -11,6 +21,9 @@ import type { AiProviderId, AiRequest, ClampedReply } from '../ai/types'
  * 게임 스토어(gameStore)와 분리한다 — 키가 없거나 호출이 실패해도
  * 코어 게임은 완전히 동작해야 하기 때문이다. gameStore 는 이 파일을
  * 참조하지 않는다.
+ *
+ * 제공자별 분기는 어댑터 안에만 있다. 이 파일은 어느 제공자든
+ * 같은 AiReply 를 받아 같은 clamp 를 태운다.
  */
 
 export type AiStatus = 'idle' | 'testing' | 'sending'
@@ -18,6 +31,8 @@ export type AiStatus = 'idle' | 'testing' | 'sending'
 interface AiStore {
   providerId: AiProviderId
   apiKey: string
+  model: string
+  baseUrl: string
   status: AiStatus
   /** 마지막 연결 테스트 결과. null = 아직 시험하지 않음. */
   lastTestOk: boolean | null
@@ -27,18 +42,29 @@ interface AiStore {
 
   setProviderId: (id: AiProviderId) => void
   setApiKey: (key: string) => void
-  persistKey: () => void
+  setModel: (model: string) => void
+  setBaseUrl: (baseUrl: string) => void
+  persistSettings: () => void
   forgetKey: () => void
   testConnection: () => Promise<void>
   /** 실제 호출. 델타는 clamp 를 거친 뒤 반환된다. */
   send: (request: AiRequest) => Promise<ClampedReply | null>
 }
 
+function settingsFor(id: AiProviderId) {
+  const provider = getProvider(id)
+  return {
+    apiKey: loadKey(id),
+    model: loadModel(id) || provider?.defaultModel || '',
+    baseUrl: loadBaseUrl(id) || provider?.defaultBaseUrl || '',
+  }
+}
+
 const initialProvider = loadProviderId() ?? DEFAULT_PROVIDER_ID
 
 export const useAi = create<AiStore>()((set, get) => ({
   providerId: initialProvider,
-  apiKey: loadKey(initialProvider),
+  ...settingsFor(initialProvider),
   status: 'idle',
   lastTestOk: null,
   lastMessage: null,
@@ -46,15 +72,19 @@ export const useAi = create<AiStore>()((set, get) => ({
 
   setProviderId: (id) => {
     saveProviderId(id)
-    set({ providerId: id, apiKey: loadKey(id), lastTestOk: null, lastMessage: null })
+    set({ providerId: id, ...settingsFor(id), lastTestOk: null, lastMessage: null })
   },
 
-  setApiKey: (key) => set({ apiKey: key, lastTestOk: null, lastMessage: null }),
+  setApiKey: (apiKey) => set({ apiKey, lastTestOk: null, lastMessage: null }),
+  setModel: (model) => set({ model, lastTestOk: null, lastMessage: null }),
+  setBaseUrl: (baseUrl) => set({ baseUrl, lastTestOk: null, lastMessage: null }),
 
-  persistKey: () => {
-    const { providerId, apiKey } = get()
+  persistSettings: () => {
+    const { providerId, apiKey, model, baseUrl } = get()
     const ok = saveKey(providerId, apiKey)
-    set({ lastMessage: ok ? '키를 저장했습니다.' : '키를 저장하지 못했습니다.' })
+    saveModel(providerId, model)
+    saveBaseUrl(providerId, baseUrl)
+    set({ lastMessage: ok ? '설정을 저장했습니다.' : '저장하지 못했습니다.' })
   },
 
   forgetKey: () => {
@@ -64,7 +94,7 @@ export const useAi = create<AiStore>()((set, get) => ({
   },
 
   testConnection: async () => {
-    const { providerId, apiKey } = get()
+    const { providerId, apiKey, model, baseUrl } = get()
     const provider = getProvider(providerId)
     if (!provider) {
       set({ lastTestOk: false, lastMessage: '지원하지 않는 제공자입니다.' })
@@ -77,11 +107,15 @@ export const useAi = create<AiStore>()((set, get) => ({
 
     set({ status: 'testing', lastMessage: null })
     try {
-      const result = await provider.send(apiKey, {
-        systemPrompt: '너는 연결 확인용 응답기다. 다른 말 없이 정확히 "연결됨" 이라고만 답하라.',
-        messages: [{ role: 'user', content: '연결 확인' }],
-        structured: false,
-      })
+      const result = await provider.send(
+        { apiKey, model, baseUrl },
+        {
+          systemPrompt:
+            '너는 연결 확인용 응답기다. 다른 말 없이 정확히 "연결됨" 이라고만 답하라.',
+          messages: [{ role: 'user', content: '연결 확인' }],
+          structured: false,
+        },
+      )
       set({
         status: 'idle',
         lastTestOk: true,
@@ -95,7 +129,7 @@ export const useAi = create<AiStore>()((set, get) => ({
   },
 
   send: async (request) => {
-    const { providerId, apiKey } = get()
+    const { providerId, apiKey, model, baseUrl } = get()
     const provider = getProvider(providerId)
     if (!provider || !apiKey.trim()) {
       set({ lastMessage: 'API 키가 없어 AI 기능을 쓸 수 없습니다.' })
@@ -104,7 +138,7 @@ export const useAi = create<AiStore>()((set, get) => ({
 
     set({ status: 'sending', lastMessage: null })
     try {
-      const result = await provider.send(apiKey, { ...request, structured: true })
+      const result = await provider.send({ apiKey, model, baseUrl }, { ...request, structured: true })
       const clamped = clampReply(result.reply)
       set({ status: 'idle', lastRejected: clamped.rejected })
       if (clamped.rejected.length) {

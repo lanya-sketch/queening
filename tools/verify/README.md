@@ -18,6 +18,8 @@ npm run dev
 | `npm run simulate -- D` | 특정 빌드만 (머리글자 A~F) | ~1.5분 |
 | `npm run verify:fallback` | 착장 매니페스트가 깨졌을 때의 폴백 4종 | ~30초 |
 | `npm run verify:flags` | 섭정 회유/결렬 flag 배타성 | ~1.5분 |
+| `npm run verify:ai` | AI 인프라 — 키 없이도 코어 완전, BYOK 저장/삭제, **브라우저 직접 호출(CORS·헤더)** | ~30초 |
+| `npm run verify:providers` | 제공자 어댑터 동등성 — 응답 형식이 달라도 같은 델타·같은 클램핑 (네트워크 불필요) | ~20초 |
 | `npm run gen:outfits` | 플레이스홀더 착장 SVG 8장 재생성 | 즉시 |
 
 ## 환경변수

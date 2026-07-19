@@ -9,8 +9,26 @@ import type { GaugeKey, StatKey } from '../types/game'
  * AI 는 델타를 "제안"할 뿐이고, 반영 여부와 크기는 코드가 정한다(clamp.ts).
  */
 
-/** 제공자 어댑터. 1차는 anthropic 만 구현하고 나머지는 자리만 예약한다. */
-export type AiProviderId = 'anthropic' | 'openai' | 'google' | 'local'
+/**
+ * 제공자 어댑터.
+ *   anthropic         — 공식 SDK 사용
+ *   openai-compatible — /chat/completions 표준 형식. OpenRouter·로컬 서버 등이 여기 붙는다.
+ *   google            — 예약. 인증 방식이 달라 브라우저 호출 가능 여부를 먼저 확인해야 한다.
+ */
+export type AiProviderId = 'anthropic' | 'openai-compatible' | 'google'
+
+export interface AiModelOption {
+  id: string
+  label: string
+}
+
+/** 한 번의 호출에 필요한 설정. 제공자마다 쓰는 항목이 다르다. */
+export interface AiCallConfig {
+  apiKey: string
+  model: string
+  /** editableBaseUrl 제공자만 사용. */
+  baseUrl?: string
+}
 
 /** AI 가 제안할 수 있는 델타의 대상. 스탯과 게이지만 허용한다. */
 export type AiDeltaTarget = StatKey | GaugeKey
@@ -56,14 +74,27 @@ export interface AiResult {
   model: string
 }
 
-/** 제공자 구현이 지켜야 할 인터페이스. */
+/**
+ * 제공자 구현이 지켜야 할 인터페이스.
+ *
+ * 어댑터의 유일한 책임은 **형식 차이 흡수**다. 호출부(aiStore)는 어느 제공자든
+ * 같은 AiReply 를 받고, 같은 clamp 를 거친다. 제공자별 분기는 이 파일 밖에 없다.
+ */
 export interface AiProvider {
   id: AiProviderId
   label: string
+  /** 추천 모델. 유저는 목록 밖의 값도 직접 입력할 수 있다. */
+  models: AiModelOption[]
+  defaultModel: string
+  /** 기본 엔드포인트. editableBaseUrl 이 true 면 유저가 바꿀 수 있다. */
+  defaultBaseUrl?: string
+  editableBaseUrl?: boolean
+  /** 설정 화면에 띄울 짧은 안내. */
+  note?: string
   /** 키 형식에 대한 간단한 사전 검사(오타 조기 발견용, 인증이 아님). */
   looksLikeKey: (key: string) => boolean
   /** 실제 호출. 실패는 AiError 로 던진다. */
-  send: (key: string, request: AiRequest) => Promise<AiResult>
+  send: (config: AiCallConfig, request: AiRequest) => Promise<AiResult>
 }
 
 export type AiErrorKind =

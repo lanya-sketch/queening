@@ -58,7 +58,7 @@ await page.waitForTimeout(200)
 log('C2 올바른 형식이면 경고 사라짐:',
   ok(!(await dialog.getByText('이 제공자의 키 형식과 다릅니다').isVisible().catch(() => false))))
 
-await dialog.getByRole('button', { name: '키 저장' }).click()
+await dialog.getByRole('button', { name: '설정 저장' }).click()
 await page.waitForTimeout(250)
 const storedKey = await page.evaluate(() => localStorage.getItem('queening.ai.key.anthropic'))
 log('C3 localStorage 에 저장:', ok(storedKey === FAKE_KEY))

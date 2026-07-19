@@ -17,7 +17,11 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
   const lastMessage = useAi((s) => s.lastMessage)
   const setProviderId = useAi((s) => s.setProviderId)
   const setApiKey = useAi((s) => s.setApiKey)
-  const persistKey = useAi((s) => s.persistKey)
+  const model = useAi((s) => s.model)
+  const setModel = useAi((s) => s.setModel)
+  const baseUrl = useAi((s) => s.baseUrl)
+  const setBaseUrl = useAi((s) => s.setBaseUrl)
+  const persistSettings = useAi((s) => s.persistSettings)
   const forgetKey = useAi((s) => s.forgetKey)
   const testConnection = useAi((s) => s.testConnection)
 
@@ -120,9 +124,52 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
           </p>
         )}
 
+        {/* 모델 — 목록은 추천일 뿐이고 직접 입력해도 된다 */}
+        <label className="mt-3 block text-xs text-slate-400">
+          모델
+          <input
+            list="ai-model-options"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            spellCheck={false}
+            autoComplete="off"
+            placeholder={provider?.defaultModel}
+            className="mt-1 block min-h-[44px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 font-mono text-sm text-slate-100"
+          />
+        </label>
+        <datalist id="ai-model-options">
+          {provider?.models.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.label}
+            </option>
+          ))}
+        </datalist>
+        <p className="mt-1 text-[11px] text-slate-500">
+          목록에 없는 모델도 직접 적을 수 있습니다. 비용은 유저 키로 청구되니 저렴한 모델을
+          골라도 됩니다.
+        </p>
+
+        {provider?.editableBaseUrl && (
+          <label className="mt-3 block text-xs text-slate-400">
+            엔드포인트
+            <input
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              spellCheck={false}
+              autoComplete="off"
+              placeholder={provider.defaultBaseUrl}
+              className="mt-1 block min-h-[44px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 font-mono text-sm text-slate-100"
+            />
+          </label>
+        )}
+
+        {provider?.note && (
+          <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{provider.note}</p>
+        )}
+
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button onClick={persistKey} disabled={busy}>
-            키 저장
+          <Button onClick={persistSettings} disabled={busy}>
+            설정 저장
           </Button>
           <Button variant="primary" onClick={testConnection} disabled={busy}>
             {status === 'testing' ? '확인 중…' : '연결 테스트'}
