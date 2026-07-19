@@ -189,7 +189,12 @@ async function runSimulation(browser, run) {
         await target.click()
         await page.waitForTimeout(60)
       }
-      fired.push({ title, picked, age: panel.age, date: panel.date })
+      // 발동 시점의 게이지도 남긴다 — 조건 문턱까지 여유가 얼마였는지 재기 위함
+      fired.push({
+        title, picked, age: panel.age, date: panel.date,
+        의심: panel.stats['섭정 의심'], 신망: panel.stats['섭정 신망'],
+        영향도: panel.stats['국정 영향도'],
+      })
       await page.getByRole('button', { name: /다음 계절로|계속/ }).click()
       await page.waitForTimeout(60)
       continue
@@ -230,7 +235,8 @@ for (const run of only ? RUNS.filter((r) => r.name.startsWith(only)) : RUNS) {
 
   console.log(`턴 ${r.turns} | 종료 도달: ${ok(r.endedReached)} | 이벤트 ${r.fired.length}건`)
   for (const e of r.fired) {
-    console.log(`  ${e.date} (${e.age})  ${e.title}${e.picked ? `  → ${e.picked}` : ''}`)
+    const g = `[의심 ${e.의심} 신망 ${e.신망} 영향도 ${e.영향도}]`
+    console.log(`  ${e.date} (${e.age})  ${e.title}${e.picked ? `  → ${e.picked}` : ''}  ${g}`)
   }
   console.log('영향도 추이:', r.influenceTrack.join('  '), `| 최저 ${r.minInfluence}`)
   console.log('최종 자원:', JSON.stringify(r.resources))

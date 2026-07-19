@@ -212,21 +212,24 @@ log('=== E. 정치 현안 「변경의 불빛」 ===')
 const actx = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
 const apage = await actx.newPage()
 
-/** 현안 조건(13세+, 즉위 2년+)을 만족하는 세이브를 심고 불러온다. */
-async function seedAffairSave(p, stats) {
+/** 현안 조건을 만족하는 세이브를 심고 불러온 뒤, 한 턴 넘겨 현안을 발동시킨다. */
+async function seedAffairSave(p, stats, when = { year: 2, season: 'summer', age: 13 }, seen = []) {
   await p.goto(APP_URL, { waitUntil: 'networkidle' })
-  await p.evaluate((s) => {
+  await p.evaluate(({ s, w, seenIds }) => {
+    // 이미 지나간 이벤트는 seen flag 를 심어 재발동을 막는다(실제 플레이와 동일한 상태).
+    const flags = {}
+    for (const id of seenIds) flags[`event:${id}`] = true
     localStorage.setItem('queening.save', JSON.stringify({
       version: 4, savedAt: '2026-03-03T00:00:00.000Z', state: {
-        date: { year: 2, season: 'summer' }, age: 13,
+        date: { year: w.year, season: w.season }, age: w.age,
         stats: s,
         wellbeing: 80, tutorTrust: 30, regentSuspicion: 30, regentRapport: 30,
-        courtInfluence: 30, actionPoints: 3, plannedActivityIds: [], flags: {},
+        courtInfluence: 30, actionPoints: 3, plannedActivityIds: [], flags,
         phase: 'schedule', lastTurnReport: null, pendingEventIds: [],
         currentOutfitId: 'casual',
       },
     }))
-  }, stats)
+  }, { s: stats, w: when, seenIds: seen })
   await p.reload({ waitUntil: 'networkidle' })
   await p.waitForTimeout(300)
   await p.getByRole('button', { name: '불러오기' }).click()
@@ -260,13 +263,14 @@ await apage.waitForTimeout(300)
 const inflAfter = await readGauge(apage, '국정 영향도')
 const suspAfter = await readGauge(apage, '섭정 의심')
 log(`E6 위임 → 영향도 ${inflBefore}→${inflAfter} (-5 기대):`, ok(inflAfter === inflBefore - 5))
-log(`E7 위임 → 의심 ${suspBefore}→${suspAfter} (-8 기대):`, ok(suspAfter === suspBefore - 8))
+log(`E7 위임 → 의심 ${suspBefore}→${suspAfter} (-4 기대):`, ok(suspAfter === suspBefore - 4))
 await apage.getByRole('button', { name: /다음 계절로|계속/ }).click()
 await apage.waitForTimeout(200)
 await apage.getByRole('button', { name: '저장', exact: true }).click()
 await apage.waitForTimeout(250)
 const affairSave = await apage.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('E8 people_burdened flag 기록:', ok(affairSave.state.flags.people_burdened === true))
+log('E8 people_burdened_frontier flag 기록:',
+  ok(affairSave.state.flags.people_burdened_frontier === true))
 log('E9 세이브 버전 그대로 (구조 변경 없음):', affairSave.version, ok(affairSave.version === 4))
 
 // (2) 재정·무예 요구를 못 채운 경우 — 직접 결정은 잠기고 위임만 열려야 한다
@@ -280,6 +284,69 @@ const lockText2 = await ch2.first().innerText()
 log('E11 잠금 사유 표시:', JSON.stringify(lockText2.split('\n').pop()),
   ok(lockText2.includes('재정 30 이상')))
 await apage.screenshot({ path: `${OUT}/08-state-affair.png`, fullPage: false })
+
+// --- 현안 2: 제국의 청구서 (15세+, 즉위 4년+, 가을) ---
+const EMPIRE_WHEN = { year: 4, season: 'summer', age: 15 }
+await seedAffairSave(apage,
+  { statecraft: 20, finance: 44, rhetoric: 10, martial: 45, courtcraft: 10 }, EMPIRE_WHEN, ['issue-frontier-raid'])
+log('E12 제국의 청구서 발동 (15세 + 즉위 4년 + 가을):',
+  await apage.locator('article h1').innerText(),
+  ok((await apage.locator('article h1').innerText()) === '제국의 청구서'))
+const ec = choiceButtons(apage)
+let eEnabled = 0
+for (let i = 0; i < 4; i++) if (await ec.nth(i).isEnabled()) eEnabled++
+log('E13 선택지 4개 · 스탯 충족 시 전부 활성:', `${await ec.count()}개 / ${eEnabled}활성`,
+  ok((await ec.count()) === 4 && eEnabled === 4))
+const eInflBefore = await readGauge(apage, '국정 영향도')
+const eFinBefore = await readGauge(apage, '재정')
+await ec.filter({ hasText: '교역 조건' }).click()
+await apage.waitForTimeout(300)
+log(`E14 교역 → 영향도 ${eInflBefore}→${await readGauge(apage, '국정 영향도')} (+8):`,
+  ok((await readGauge(apage, '국정 영향도')) === eInflBefore + 8))
+log(`E15 교역 → 재정 ${eFinBefore}→${await readGauge(apage, '재정')} (+4):`,
+  ok((await readGauge(apage, '재정')) === eFinBefore + 4))
+
+await seedAffairSave(apage,
+  { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, EMPIRE_WHEN, ['issue-frontier-raid'])
+const ec2 = choiceButtons(apage)
+const eStates = []
+for (let i = 0; i < 4; i++) eStates.push((await ec2.nth(i).isEnabled()) ? '열림' : '잠김')
+log('E16 스탯 미충족 시:', eStates.join(' / '), ok(eStates.join(',') === '잠김,잠김,열림,열림'))
+
+// --- 현안 3: 선왕이 남긴 방 (16세+, 즉위 5년+, 여름) ---
+const COMMONS_WHEN = { year: 5, season: 'spring', age: 16 }
+await seedAffairSave(apage,
+  { statecraft: 20, finance: 10, rhetoric: 50, martial: 10, courtcraft: 50 }, COMMONS_WHEN, ['issue-frontier-raid', 'issue-empire-tribute'])
+log('E17 선왕이 남긴 방 발동 (16세 + 즉위 5년 + 여름):',
+  await apage.locator('article h1').innerText(),
+  ok((await apage.locator('article h1').innerText()) === '선왕이 남긴 방'))
+const hc = choiceButtons(apage)
+let hEnabled = 0
+for (let i = 0; i < 4; i++) if (await hc.nth(i).isEnabled()) hEnabled++
+log('E18 선택지 4개 · 스탯 충족 시 전부 활성:', `${await hc.count()}개 / ${hEnabled}활성`,
+  ok((await hc.count()) === 4 && hEnabled === 4))
+const hInflBefore = await readGauge(apage, '국정 영향도')
+await hc.filter({ hasText: '어전에서 존속을 선포' }).click()
+await apage.waitForTimeout(300)
+log(`E19 선포 → 영향도 ${hInflBefore}→${await readGauge(apage, '국정 영향도')} (+15):`,
+  ok((await readGauge(apage, '국정 영향도')) === hInflBefore + 15))
+await apage.getByRole('button', { name: /다음 계절로|계속/ }).click()
+await apage.waitForTimeout(250)
+await apage.getByRole('button', { name: '저장', exact: true }).click()
+await apage.waitForTimeout(250)
+const hSave = await apage.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+log('E20 house_commons_defended + people_relieved_commons 기록:',
+  ok(hSave.state.flags.house_commons_defended === true &&
+     hSave.state.flags.people_relieved_commons === true))
+log('E21 세이브 버전 그대로:', hSave.version, ok(hSave.version === 4))
+
+await seedAffairSave(apage,
+  { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, COMMONS_WHEN, ['issue-frontier-raid', 'issue-empire-tribute'])
+const hc2 = choiceButtons(apage)
+const hStates = []
+for (let i = 0; i < 4; i++) hStates.push((await hc2.nth(i).isEnabled()) ? '열림' : '잠김')
+log('E22 스탯 미충족 시:', hStates.join(' / '), ok(hStates.join(',') === '잠김,잠김,열림,열림'))
+await apage.screenshot({ path: `${OUT}/09-house-of-commons.png`, fullPage: false })
 
 log('')
 log('=== D. 반응형 ===')
