@@ -15,6 +15,7 @@
     "verify:providers": "node tools/verify/ai-providers.mjs",
     "verify:talk": "node tools/verify/ai-talk.mjs",
     "verify:romance": "node tools/verify/romance.mjs",
+    "verify:sheets": "node tools/verify/character-sheets.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
     "gen:characters": "node tools/verify/gen-characters.mjs"

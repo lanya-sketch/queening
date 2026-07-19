@@ -25,7 +25,7 @@ import type { GameState } from '../types/game'
  * ★ 완성된 프롬프트에는 숫자가 하나도 들어가지 않는다. 검증에서 이걸 직접 확인한다.
  */
 
-function bandText(bands: PersonaBand[], value: number): string | null {
+export function bandText(bands: PersonaBand[], value: number): string | null {
   for (const band of bands) {
     if (value <= band.upTo) return band.text
   }
