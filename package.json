@@ -11,10 +11,12 @@
     "verify": "node tools/verify/regression.mjs",
     "verify:fallback": "node tools/verify/fallback.mjs",
     "verify:flags": "node tools/verify/regent-flags.mjs",
+    "verify:ai": "node tools/verify/ai-infra.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.112.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^4.5.5"
