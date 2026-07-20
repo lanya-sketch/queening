@@ -68,6 +68,22 @@ export const ACTIVITIES: Activity[] = [
     tags: ['court'],
   },
   {
+    id: 'royal-hunt',
+    name: '사냥 대회',
+    description:
+      '왕실 사냥터를 열고 각국에 전령을 보낸다. 무를 겨루는 자리에는 무를 좋아하는 자들이 모인다.',
+    apCost: 2,
+    requires: { minAge: 14 },
+    effects: [
+      { target: { kind: 'stat', key: 'martial' }, amount: 4, variance: 2 },
+      // 섭정은 "정치보다 놀이"로 읽는다. 경계가 풀리는 대신 정무는 손에서 멀어진다.
+      { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -4 },
+      { target: { kind: 'resource', key: 'courtInfluence' }, amount: -2 },
+      { target: { kind: 'resource', key: 'wellbeing' }, amount: -18 },
+    ],
+    tags: ['physical', 'court'],
+  },
+  {
     id: 'attend-council',
     name: '정무 배석',
     description: '섭정공 옆에 앉아 정무를 지켜보게 한다. 배우는 자세를 보이면 그는 경계를 늦춘다.',

@@ -32,6 +32,11 @@ export type EffectTarget =
   | { kind: 'stat'; key: StatKey }
   | { kind: 'resource'; key: ResourceKey }
   | { kind: 'affection'; charId: string }
+  /**
+   * 계절 단위 타이머. 규칙은 하나뿐 — **매 턴 1씩 줄고 0에서 멈춘다.**
+   * 체류 기간 같은 "몇 계절 뒤에 끝나는 것"을 엔진 코드 없이 데이터로만 쓴다.
+   */
+  | { kind: 'counter'; key: string }
 
 /** 군주·캐릭터의 성별. 마나 설정상 사회적 위치에는 차이가 없다(배경일 뿐). */
 export type Gender = 'male' | 'female'
@@ -44,8 +49,16 @@ export interface Character {
   /** ★ 하드코딩하지 않고 데이터로 둔다 — (다) 전면 성별 선택 대비. */
   gender: Gender
   startingAffection: number
-  /** 로맨스 해금 조건. 기존 Condition 을 그대로 쓴다. */
+  /** 로맨스 해금 조건(영구 관문). 한 번 열리면 닫히지 않는다. */
   romanceUnlock: Condition
+  /**
+   * 상주하지 않는 인물의 현재 체류 여부.
+   *
+   * ★ romanceUnlock 과 일부러 분리했다. "아직 조건이 안 됐다"(잠금)와
+   *   "열렸지만 지금 궁에 없다"(부재)는 플레이어에게 전혀 다른 정보다.
+   *   이 필드가 없으면 지금까지처럼 상주 인물로 취급한다.
+   */
+  presence?: { flag: string; awayNote: string }
   portraitId: string
 }
 
@@ -73,6 +86,34 @@ export interface Effect {
 
 export type FlagSet = Record<string, boolean>
 
+/**
+ * 확률 발동 규칙.
+ *
+ * ★ 이건 특정 이벤트를 위한 장치가 아니다. condition 을 통과한 이벤트가
+ *   "그래서 이번 계절에 실제로 터지는가"를 정하는 **일반 틀**이며,
+ *   M2b-4 의 AI 돌발 현안(흉년·귀족 파벌)이 그대로 이 필드를 쓴다.
+ *
+ * 주사위는 항상 코드가 굴린다(엔진에 rng 주입). AI 는 이 계산에 관여하지 않는다.
+ *
+ * 순수 무작위를 쓰지 않는 이유는 pity 에 있다 — 운이 나빠도 반드시 도달하고,
+ * lures 로 "운이 아니라 자원을 지불해 확률을 사는" 길을 연다.
+ */
+export interface ChanceRule {
+  /** 계절당 기본 확률 0~1. */
+  base: number
+  /** 호감도가 100 일 때 더해지는 양. 선형 보간한다. */
+  perAffection?: { charId: string; at100: number }
+  /** 그 턴에 수행한 활동 id → 가산량. 여러 개면 모두 더한다. */
+  lures?: Record<string, number>
+  /**
+   * 천장. 조건은 맞았는데 판정에 떨어진 횟수가 after 를 넘으면 매회 step 씩
+   * 오르고, guarantee 회에 도달하면 무조건 발동한다.
+   */
+  pity?: { after: number; step: number; guarantee: number }
+  /** 발동 후 이만큼의 계절 동안 재발동하지 않는다. */
+  cooldown?: number
+}
+
 /** 활동·이벤트가 공유하는 선언적 발동 조건. 지정한 항목만 검사한다. */
 export interface Condition {
   minYear?: number
@@ -82,6 +123,8 @@ export interface Condition {
   maxAge?: number
   stats?: Partial<Record<StatKey, { min?: number; max?: number }>>
   resources?: Partial<Record<GaugeKey, { min?: number; max?: number }>>
+  /** 계절 타이머 검사. 없는 카운터는 0 으로 본다. */
+  counters?: Record<string, { min?: number; max?: number }>
   /** 해당 flag 가 지정한 값과 일치해야 한다. */
   flags?: FlagSet
 }
@@ -127,8 +170,13 @@ export interface GameEvent {
   condition: Condition
   /** 기본 true. 발동 시 flag `event:<id>` 가 자동 기록된다. */
   once?: boolean
-  /** 큰 값이 먼저 발동. 기본 0. */
+  /** 큰 값이 먼저 발동. 기본 0. 대역 규칙은 data/events/priority.ts 참고. */
   priority?: number
+  /**
+   * 있으면 condition 을 통과해도 확률 판정을 한 번 더 거친다.
+   * 없으면 지금까지와 완전히 동일하게 조건만으로 발동한다.
+   */
+  chance?: ChanceRule
   effects?: Effect[]
   setFlags?: FlagSet
   choices?: Choice[]
@@ -213,6 +261,11 @@ export interface GameState {
   /** 캐릭터별 호감도 0~100. 키는 charId. */
   affection: Record<string, number>
   plannedActivityIds: string[]
+  /**
+   * 계절 타이머. 매 턴 전부 1씩 줄고 0 에서 멈춘다.
+   * `__pity:<id>` / `__cooldown:<id>` 는 확률 엔진이 스스로 관리하는 내부 키다.
+   */
+  counters: Record<string, number>
   flags: FlagSet
   phase: Phase
   lastTurnReport: TurnReport | null

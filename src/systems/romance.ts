@@ -19,6 +19,22 @@ export function isRomanceUnlocked(character: Character, game: GameState): boolea
   return matchesCondition(game, character.romanceUnlock)
 }
 
+/**
+ * 지금 궁에 있는지. presence 가 없는 인물(상주)은 언제나 true.
+ *
+ * ★ isRomanceUnlocked 와 일부러 나눠 둔다. 해금은 영구적이고 되돌아가지 않지만
+ *   체류는 계절마다 바뀐다. 둘을 하나로 합치면 "잠김"과 "부재"가 구분되지 않는다.
+ */
+export function isPresent(character: Character, game: GameState): boolean {
+  if (!character.presence) return true
+  return game.flags[character.presence.flag] === true
+}
+
+/** 실제로 지금 대화를 걸 수 있는지 — 해금됐고, 궁에 있고. */
+export function canConverse(character: Character, game: GameState): boolean {
+  return isRomanceUnlocked(character, game) && isPresent(character, game)
+}
+
 /** 호감도가 문턱을 넘었는지. 고유장치가 열리는 기준. */
 export function isDeepBond(game: GameState, charId: string): boolean {
   return affectionOf(game, charId) >= DEEP_BOND_THRESHOLD

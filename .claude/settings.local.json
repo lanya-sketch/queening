@@ -3,7 +3,8 @@
     "allow": [
       "PowerShell(node \"C:\\\\Users\\\\D.Y\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--queening\\\\82d7ac89-c8e4-44fe-bf8a-04e5ba1e9e39\\\\scratchpad\\\\gen-outfits.mjs\")",
       "Skill(claude-api)",
-      "Skill(claude-api:*)"
+      "Skill(claude-api:*)",
+      "Bash(npm run *)"
     ]
   }
 }

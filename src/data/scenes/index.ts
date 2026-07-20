@@ -32,6 +32,54 @@ export const SCENES: Scene[] = [
       },
     ],
   },
+
+  // ── ③ 제국 왕족의 등장/퇴장 (M2b-3b-3)
+  // 이 인물은 상주하지 않는다. 씬의 역할은 "왔다"가 아니라
+  // **"언제든 떠날 수 있는 사람이 지금 여기 있다"**를 매번 상기시키는 것이다.
+  {
+    id: 'scene-prince-arrival',
+    lines: [
+      {
+        speaker: 'narration',
+        text:
+          '전령보다 수행단이 먼저 도착했다. 제국의 왕족은 통보를 하지 손님이 되지 않는다.\n' +
+          '사냥철이라 했고, 그 말 외에 다른 설명은 없었다.',
+      },
+      {
+        speaker: 'prince',
+        text: '"국경을 넘는 김에 들렀습니다. 며칠 신세 지지요."',
+      },
+      {
+        speaker: 'narration',
+        text: '허락을 구하는 문장이 아니었다. 이미 말에서 내린 뒤였다.',
+      },
+      {
+        speaker: 'prince',
+        text: '"이 나라 정치는 관심 없습니다. 사슴이 좋다길래 왔을 뿐이니 신경 쓰지 마시고."',
+      },
+      {
+        speaker: 'narration',
+        text:
+          '무례한 말인데, 무례하려고 한 말은 아니었다. 그는 정말로 관심이 없었다.\n' +
+          '{왕}은 그 점이 이 궁에서 가장 낯설다는 것을 알아차렸다.',
+      },
+    ],
+  },
+  {
+    id: 'scene-prince-departure',
+    lines: [
+      {
+        speaker: 'narration',
+        text: '새벽에 수행단이 짐을 실었다. 떠난다는 말도, 다시 오겠다는 말도 남기지 않았다.',
+      },
+      {
+        speaker: 'narration',
+        text:
+          '이 궁의 사람들은 {왕}의 곁을 떠나지 못한다. 자리가 그들을 붙들기 때문이다.\n' +
+          '떠날 수 있는 사람은 그 하나뿐이고, 그래서 그가 다시 오는 것은 언제나 선택이다.',
+      },
+    ],
+  },
 ]
 
 export const SCENE_BY_ID: Record<string, Scene> = Object.fromEntries(

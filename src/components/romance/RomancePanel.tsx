@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import { CHARACTERS, DEEP_BOND_THRESHOLD } from '../../data/characters'
 import { CHARACTER_TERMS } from '../../data/lexicon'
-import { affectionOf, isDeepBond, isRomanceUnlocked } from '../../systems/romance'
+import { affectionOf, isDeepBond, isPresent, isRomanceUnlocked } from '../../systems/romance'
 import { resolveText } from '../../systems/text'
+import { useAiEnabled } from '../../store/aiStore'
 import { useGame } from '../../store/gameStore'
+import { talkLocked, useTalk } from '../../store/talkStore'
 import { Button } from '../ui/Button'
 import { StatBar } from '../ui/StatBar'
 
@@ -15,6 +17,9 @@ import { StatBar } from '../ui/StatBar'
  */
 export function RomancePanel({ onClose }: { onClose: () => void }) {
   const game = useGame((s) => s.game)
+  const aiEnabled = useAiEnabled()
+  const openTalk = useTalk((s) => s.openTalk)
+  const locked = talkLocked(game.phase)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -45,8 +50,11 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
           <div>
             <h1 className="text-lg font-semibold text-slate-100">인연</h1>
             <p className="mt-1 text-xs text-slate-400">
-              깊은 관계는 호감도 {DEEP_BOND_THRESHOLD} 이상입니다. 여러 사람과 동시에
-              쌓을 수 있습니다.
+              {aiEnabled
+                ? '해금된 사람을 누르면 대화가 시작됩니다.'
+                : 'AI 설정에서 키를 넣으면 대화할 수 있습니다.'}{' '}
+              깊은 관계는 호감도 {DEEP_BOND_THRESHOLD} 이상이고, 여러 사람과 동시에 쌓을 수
+              있습니다.
             </p>
           </div>
           <button
@@ -61,16 +69,26 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
         <ul className="mt-4 space-y-3">
           {CHARACTERS.map((character) => {
             const unlocked = isRomanceUnlocked(character, game)
+            const present = isPresent(character, game)
+            const away = unlocked && !present
             const deep = isDeepBond(game, character.id)
             const terms = CHARACTER_TERMS[character.gender]
+            const canTalk = unlocked && present && aiEnabled && !locked
             return (
               <li
                 key={character.id}
+                role={canTalk ? 'button' : undefined}
+                tabIndex={canTalk ? 0 : undefined}
+                onClick={() => {
+                  if (!canTalk) return
+                  openTalk({ kind: 'character', charId: character.id })
+                  onClose()
+                }}
                 className={`rounded-xl border p-3 ${
                   deep
                     ? 'border-amber-400 bg-amber-950/20'
                     : 'border-slate-800 bg-slate-900/60'
-                }`}
+                } ${canTalk ? 'cursor-pointer active:border-amber-500 active:bg-slate-800' : ''}`}
               >
                 <div className="flex items-center gap-2">
                   <img
@@ -95,10 +113,19 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
                   {!unlocked && (
                     <span className="ml-auto text-[11px] text-slate-500">🔒 잠김</span>
                   )}
+                  {/* 부재는 잠금이 아니다 — 조건은 이미 채웠고 지금 자리에 없을 뿐. */}
+                  {away && (
+                    <span className="ml-auto text-[11px] text-sky-300/80">✈ 부재</span>
+                  )}
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-slate-400">
                   {resolveText(character.role, game)}
                 </p>
+                {away && character.presence && (
+                  <p className="mt-1 text-xs leading-relaxed text-sky-300/70">
+                    {resolveText(character.presence.awayNote, game)}
+                  </p>
+                )}
                 <div className="mt-2">
                   <StatBar
                     label="호감도"

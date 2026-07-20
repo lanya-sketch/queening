@@ -12,6 +12,7 @@ const OUT = shotsDir('simulate')
 
 const CEDE = '정무를 섭정공께 맡긴다'
 const RECLAIM = '직접 재가한다'
+const HUNT = '사냥 대회'
 
 const STAT_TO_ACTIVITY = {
   통치학: '통치학 수업',
@@ -85,6 +86,27 @@ const RUNS = [
     ],
     expect: {},
   },
+  {
+    /**
+     * ★ M2b-3b-3 밸런스 실측 전용 빌드.
+     *
+     * D(회유 루트)와 정책을 똑같이 두고 **사냥 대회로 의심을 낮추는 것만** 다르게 한다.
+     * 물어야 할 것은 하나다: 새 활동이 의심 감소의 지름길이 되어
+     * 회유를 거저 만들어 주는가? D 와 나란히 놓고 비교하는 게 유일한 답이다.
+     */
+    name: 'G. 회유 루트 + 사냥 남용 (사냥 밸런스 실측)',
+    targets: { 궁정처세: 55, 통치학: 45 },
+    huntOver: 25,
+    choices: [
+      [/왕대비의 초대/, /예의만/],
+      [/문서고의 밤/, /섭정공에게 보인다/],
+      [/성년식/, /공동 통치/],
+      [/첫 친정/, /인사를 개편/],
+      [/귀족들의 견제/, /한발 굽히/],
+      [/섭정공과의 담판/, /손을 잡는다/],
+    ],
+    expect: {},
+  },
 ]
 
 function planTurn(panel, run) {
@@ -111,6 +133,8 @@ function planTurn(panel, run) {
 
   // 국정 배석/맡기기는 신망을 올리면서 의심을 낮추는 수단
   if (run.cedeOver !== undefined && suspicion > run.cedeOver) push(CEDE, 1)
+  // 사냥 대회로 의심을 관리하는 대안 경로 (G 빌드). 14세부터 해금이고 AP 2 를 먹는다.
+  if (run.huntOver !== undefined && age >= 14 && suspicion > run.huntOver) push(HUNT, 2)
   if (run.reclaim && age >= 14 && statecraft >= 35) push(RECLAIM, 2)
 
   while (ap >= 1) {

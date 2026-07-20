@@ -10,6 +10,8 @@ export function targetLabel(target: EffectTarget): string {
   if (target.kind === 'affection') {
     return `${CHARACTER_BY_ID[target.charId]?.name ?? target.charId} 호감도`
   }
+  // 카운터는 내부 타이머라 결과 화면에 보일 이름이 없다.
+  if (target.kind === 'counter') return `__counter:${target.key}`
   return RESOURCE_META[target.key].label
 }
 
@@ -25,6 +27,7 @@ function read(state: GameState, target: EffectTarget): number {
   if (target.kind === 'affection') {
     return state.affection[target.charId] ?? CHARACTER_BY_ID[target.charId]?.startingAffection ?? 0
   }
+  if (target.kind === 'counter') return state.counters?.[target.key] ?? 0
   return state[target.key]
 }
 
@@ -35,6 +38,8 @@ function clamp(target: EffectTarget, value: number, state: GameState): number {
   if (target.kind === 'affection') {
     return Math.min(GAME_CONFIG.resourceMax, Math.max(GAME_CONFIG.resourceMin, value))
   }
+  // 계절 타이머는 0 이상이면 그만. 100 상한을 적용할 대상이 아니다.
+  if (target.kind === 'counter') return Math.max(0, value)
   if (target.key === 'actionPoints') return Math.max(0, value)
   // 국정 영향도만 나이에 따라 상한이 움직인다.
   const max =
@@ -45,6 +50,7 @@ function clamp(target: EffectTarget, value: number, state: GameState): number {
 function write(state: GameState, target: EffectTarget, value: number): void {
   if (target.kind === 'stat') state.stats[target.key] = value
   else if (target.kind === 'affection') state.affection[target.charId] = value
+  else if (target.kind === 'counter') state.counters[target.key] = value
   else state[target.key] = value
 }
 
@@ -61,6 +67,7 @@ export function applyEffects(
     ...state,
     stats: { ...state.stats },
     affection: { ...state.affection },
+    counters: { ...(state.counters ?? {}) },
   }
   if (!effects?.length) return { state: next, deltas: [] }
 
@@ -76,7 +83,8 @@ export function applyEffects(
   }
 
   const deltas: Delta[] = [...totals.entries()]
-    .filter(([, amount]) => amount !== 0)
+    // 계절 타이머는 플레이어에게 보고할 "변화"가 아니다.
+    .filter(([label, amount]) => amount !== 0 && !label.startsWith('__counter:'))
     .map(([label, amount]) => ({ label, amount }))
 
   return { state: next, deltas }

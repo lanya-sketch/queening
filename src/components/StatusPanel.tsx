@@ -185,7 +185,7 @@ export function StatusPanel() {
                 variant="primary"
                 className="mt-2 w-full"
                 disabled={locked}
-                onClick={openTalk}
+                onClick={() => openTalk({ kind: 'monarch' })}
               >
                 {resolveText('{왕}', game)}과 대화하기
               </Button>

@@ -16,6 +16,7 @@ import type { Delta, GameDate, GameEvent, GameState } from '../types/game'
  */
 const MAX_EVENTS_PER_TURN = 2
 import { applyEffects, type Rng } from './effects'
+import { rollChance, tickCounters } from './chance'
 import { findTriggeredEvents, seenFlagId } from './eventEngine'
 
 export function createInitialState(): GameState {
@@ -29,6 +30,7 @@ export function createInitialState(): GameState {
     monarchGender: 'male',
     affection: initialAffection(),
     plannedActivityIds: [],
+    counters: {},
     flags: {},
     phase: 'schedule',
     lastTurnReport: null,
@@ -81,24 +83,34 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   next.date = advanced.date
   next.age = advanced.age
 
+  // 2-b. 계절 타이머 감소.
+  // 이벤트 검사보다 **먼저** 돌려야 "체류가 끝났다"를 퇴장 이벤트가 조건으로 볼 수 있다.
+  next.counters = tickCounters(next.counters ?? {})
+
   // 3. 이벤트
   // 한 번에 목록을 뽑지 않고 하나씩 적용하며 다시 검사한다.
   // 앞선 이벤트가 세운 flag 를 뒤 이벤트가 조건으로 볼 수 있어야
   // 단서 → 진실 회수 같은 연쇄가 같은 턴 안에서도 성립한다.
   const triggered: GameEvent[] = []
   const eventDeltas: Delta[] = []
-  const firedThisTurn = new Set<string>()
+  const settled = new Set<string>()
 
-  for (let guard = 0; guard < MAX_EVENTS_PER_TURN; guard++) {
-    const event = findTriggeredEvents(next).find((e) => !firedThisTurn.has(e.id))
+  while (triggered.length < MAX_EVENTS_PER_TURN) {
+    const event = findTriggeredEvents(next).find((e) => !settled.has(e.id))
     if (!event) break
+
+    // ★ 확률 판정에 떨어진 이벤트는 이번 턴 상한을 소모하지 않는다.
+    //   소모시키면 확률 이벤트가 늘어날수록 실제 서사 이벤트가 굶는다.
+    const roll = rollChance(event, next, state.plannedActivityIds, rng)
+    next.counters = { ...next.counters, ...roll.counters }
+    settled.add(event.id)
+    if (!roll.fired) continue
 
     const result = applyEffects(next, event.effects, rng)
     next = result.state
     mergeDeltas(eventDeltas, result.deltas)
     next.flags = { ...next.flags, ...event.setFlags, [seenFlagId(event.id)]: true }
 
-    firedThisTurn.add(event.id)
     triggered.push(event)
   }
 

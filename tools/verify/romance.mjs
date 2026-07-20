@@ -2,7 +2,7 @@
 //
 // ★ 핵심: 왕/여왕 양쪽으로 돌려 복합어(선왕·왕국·왕당파·왕대비·옥좌)가 깨지지 않는지,
 //   그리고 여왕 플레이가 텍스트상 일관되는지.
-import { APP_URL, launch, log, ok, overflow, shotsDir } from './helpers.mjs'
+import { APP_URL, launch, log, ok, overflow, shotsDir, SAVE_VERSION } from './helpers.mjs'
 
 const OUT = shotsDir('romance')
 
@@ -183,11 +183,11 @@ await page.waitForTimeout(300)
 await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(300)
 const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('F1 세이브 버전 5:', saved.version, ok(saved.version === 5))
+log('F1 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('F2 호감도 저장:', ok(typeof saved.state.affection === 'object'))
 log('F3 군주 성별 저장:', saved.state.monarchGender, ok(saved.state.monarchGender === 'female'))
 
-// v4 세이브 → v5 마이그레이션
+// v4 세이브 → 현재 버전까지 연쇄 마이그레이션 (v4→v5→v6…)
 await page.evaluate(() => {
   localStorage.setItem('queening.save', JSON.stringify({
     version: 4, savedAt: '2026-05-05T00:00:00.000Z', state: {
@@ -207,7 +207,10 @@ await page.waitForTimeout(400)
 await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(300)
 const migrated = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('F4 v4 → v5 마이그레이션:', migrated.version, ok(migrated.version === 5))
+log('F4 v4 → 현재 버전 연쇄 마이그레이션:', migrated.version,
+  ok(migrated.version === SAVE_VERSION))
+log('F4b 계절 타이머 필드 주입(v5→v6):', JSON.stringify(migrated.state.counters),
+  ok(typeof migrated.state.counters === 'object'))
 log('F5 호감도 기본값 주입:', JSON.stringify(migrated.state.affection),
   ok(migrated.state.affection.heir === 0 && migrated.state.affection.loyalist === 20))
 log('F6 군주 성별 기본값 male:', ok(migrated.state.monarchGender === 'male'))

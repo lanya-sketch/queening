@@ -34,6 +34,12 @@ export function matchesCondition(state: GameState, c: Condition): boolean {
     }
   }
 
+  if (c.counters) {
+    for (const [key, range] of Object.entries(c.counters)) {
+      if (!inRange(state.counters?.[key] ?? 0, range)) return false
+    }
+  }
+
   if (c.flags) {
     for (const [flag, expected] of Object.entries(c.flags)) {
       if ((state.flags[flag] ?? false) !== expected) return false

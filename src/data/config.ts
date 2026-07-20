@@ -21,7 +21,7 @@ export const GAME_CONFIG = {
 
   saveKey: 'queening.save',
   /** 올릴 때마다 systems/save.ts 의 MIGRATIONS 에 변환을 추가할 것. */
-  saveVersion: 5,
+  saveVersion: 6,
 } as const
 
 export const SEASON_LABEL: Record<GameDate['season'], string> = {

@@ -83,7 +83,7 @@ for (const id of IDS) {
 log('B1 다섯 모두 낮음/높음이 갈림:',
   ok(IDS.every((id) => low[id] !== high[id])))
 log('B2 ① 낙차 (반감 → 헌신):',
-  ok(low.heir.includes('냉기가 있다') && high.heir.includes('아버지를 버릴 각오')))
+  ok(low.heir.includes('그 안에 아무것도 없다') && high.heir.includes('아버지를 버릴 각오')))
 log('B3 ③ 낙차 (얕봄 → 인정):',
   ok(low.prince.includes('얕본다') && high.prince.includes('매인 데 없는 애정')))
 log('B4 ⑤ 낙차 (격식 → 해방):',

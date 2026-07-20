@@ -5,7 +5,7 @@
 //   ("내가 키운 대로 군주가 반응한다" 가 진짜 되는지의 증명)
 //
 // 네트워크는 전부 가로챈다 — 실제 키도 과금도 없다.
-import { APP_URL, launch, log, ok, overflow, shotsDir } from './helpers.mjs'
+import { APP_URL, launch, log, ok, overflow, shotsDir, SAVE_VERSION } from './helpers.mjs'
 
 const OUT = shotsDir('ai-talk')
 
@@ -184,7 +184,7 @@ log('')
 log('=== C. 스트리밍 · 델타 (Anthropic) ===')
 await talkButton.click()
 await page.waitForTimeout(300)
-const dialog = page.getByRole('dialog', { name: '군주와의 대화' })
+const dialog = page.getByRole('dialog', { name: '대화' })
 log('C1 대화 모달 열림:', ok(await dialog.isVisible()))
 
 const trustBefore = await page.evaluate(() =>
@@ -259,7 +259,7 @@ await page.waitForTimeout(400)
 await page.evaluate((p) => window.__queeningAi.setGame(p), TIMID)
 await page.getByRole('button', { name: '왕과 대화하기' }).click()
 await page.waitForTimeout(300)
-const d2 = page.getByRole('dialog', { name: '군주와의 대화' })
+const d2 = page.getByRole('dialog', { name: '대화' })
 await d2.locator('input').fill('안녕하십니까')
 await d2.getByRole('button', { name: '보내기' }).click()
 await page.waitForFunction(() => !document.body.innerText.includes('▌'), { timeout: 15000 })
@@ -300,7 +300,8 @@ await page.keyboard.press('Escape')
 await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(300)
 const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('G1 세이브 버전 유지 (M2b-3a 에서 5 로 상승):', saved.version, ok(saved.version === 5))
+log('G1 세이브 버전 유지 (대화는 세이브 구조를 바꾸지 않는다):', saved.version,
+  ok(saved.version === SAVE_VERSION))
 log('G2 대화 로그가 세이브에 없음:',
   ok(!JSON.stringify(saved).includes('숙부께서 듣고')))
 

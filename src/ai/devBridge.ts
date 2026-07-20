@@ -1,5 +1,7 @@
+import { EVENTS, EVENT_BY_ID } from '../data/events'
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
+import { chanceOf } from '../systems/chance'
 import { resolveText } from '../systems/text'
 import { buildPersona } from './characterPersona'
 import { buildMonarchPrompt } from './persona'
@@ -37,6 +39,15 @@ export function installDevBridge(): void {
     },
     providers: Object.keys(AI_PROVIDERS),
 
+    /** 지금 게임 상태를 그대로 읽는다(카운터·flag 관측용). */
+    get state() {
+      return useGame.getState().game
+    },
+    /** 전 이벤트의 우선순위 — 동률 검사용. */
+    priorities() {
+      return EVENTS.map((e) => ({ id: e.id, priority: e.priority ?? 0 }))
+    },
+
     /** 게임 상태를 갈아끼운다(검증에서 대조적인 두 군주를 만들 때). */
     setGame(patch: Record<string, unknown>) {
       useGame.setState({ game: { ...useGame.getState().game, ...patch } as never })
@@ -52,6 +63,48 @@ export function installDevBridge(): void {
     /** 연애 대상의 조립된 시스템 프롬프트. */
     persona(charId: string) {
       return buildPersona(charId, useGame.getState().game)
+    },
+
+    /**
+     * 확률 발동 실측용.
+     *
+     * ★ 확률 곡선은 "이럴 것이다"로 보고할 수 없는 종류의 주장이라
+     *   검증 스크립트가 실제 함수를 시행해 분포를 직접 세게 한다.
+     *   여기서 굴리는 주사위도 전부 코드 소유다.
+     */
+    chance: {
+      /** 지금 상태에서의 계절당 발동 확률. */
+      of(eventId: string, activityIds: string[] = []) {
+        const event = EVENT_BY_ID[eventId]
+        if (!event?.chance) return null
+        return chanceOf(event.chance, useGame.getState().game, eventId, activityIds)
+      },
+      /**
+       * 등장까지 걸리는 계절 수를 trials 회 시뮬레이션한다.
+       * pity 를 포함한 실제 규칙을 그대로 돌린다(별도 구현이 아니라 같은 함수).
+       */
+      waitSamples(eventId: string, affection: number, activityIds: string[] = [], trials = 10000) {
+        const event = EVENT_BY_ID[eventId]
+        if (!event?.chance) return null
+        const base = useGame.getState().game
+        const samples: number[] = []
+        for (let t = 0; t < trials; t++) {
+          let misses = 0
+          for (let season = 1; season <= 100; season++) {
+            const state = {
+              ...base,
+              affection: { ...base.affection, prince: affection },
+              counters: { [`__pity:${eventId}`]: misses },
+            }
+            if (Math.random() < chanceOf(event.chance!, state as never, eventId, activityIds)) {
+              samples.push(season)
+              break
+            }
+            misses++
+          }
+        }
+        return samples
+      },
     },
   }
 }

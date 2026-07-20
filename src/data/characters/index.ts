@@ -36,6 +36,12 @@ export const CHARACTERS: Character[] = [
     gender: 'male',
     startingAffection: 5,
     romanceUnlock: { flags: { romance_unlocked: true } },
+    // ★ 해금(영구)과 체류(현재)를 분리한다 — "아직 조건이 안 됐다"와
+    //   "열렸지만 지금 궁에 없다"는 플레이어에게 전혀 다른 정보다.
+    presence: {
+      flag: 'prince_present',
+      awayNote: '지금은 궁에 없다. 사냥철이 되면 예고 없이 들른다.',
+    },
     portraitId: 'prince',
   },
   {

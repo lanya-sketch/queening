@@ -1,21 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
 import { SEASON_LABEL } from '../../data/config'
 import { RESOURCE_META } from '../../data/stats'
+import { CHARACTER_BY_ID } from '../../data/characters'
 import { resolveOutfit } from '../../systems/outfits'
 import { resolveText } from '../../systems/text'
 import { useGame } from '../../store/gameStore'
-import { CALL_SOFT_LIMIT, useTalk } from '../../store/talkStore'
+import { CALL_SOFT_LIMIT, targetInfo, targetKey, useTalk } from '../../store/talkStore'
 import { Button } from '../ui/Button'
 
-/** 군주와의 자유 대화 (M2b-2). 게임 상태를 진행시키지 않으므로 오버레이로 둔다. */
+/**
+ * 대화 화면 (M2b-2 군주 → M2b-3b-2 대상 중립).
+ * 대상만 바뀌고 스트리밍·폴백·비용 가드는 전부 공유 경로다.
+ */
 export function TalkModal() {
-  const open = useTalk((s) => s.open)
+  const target = useTalk((s) => s.target)
   const close = useTalk((s) => s.closeTalk)
-  const turns = useTalk((s) => s.turns)
+  const logs = useTalk((s) => s.logs)
   const streaming = useTalk((s) => s.streaming)
   const busy = useTalk((s) => s.busy)
   const error = useTalk((s) => s.error)
   const callCount = useTalk((s) => s.callCount)
+  const helpSeen = useTalk((s) => s.helpSeen)
+  const dismissHelp = useTalk((s) => s.dismissHelp)
   const ask = useTalk((s) => s.ask)
   const retry = useTalk((s) => s.retry)
   const skip = useTalk((s) => s.skipStreaming)
@@ -27,7 +33,7 @@ export function TalkModal() {
   const logRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!open) return
+    if (!target) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
     }
@@ -38,16 +44,26 @@ export function TalkModal() {
       window.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previous
     }
-  }, [open, close])
+  }, [target, close])
+
+  const turns = target ? (logs[targetKey(target)] ?? []) : []
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
-  }, [turns, streaming])
+  }, [turns.length, streaming])
 
-  if (!open) return null
+  if (!target) return null
 
-  const outfit = resolveOutfit(manifest, game.currentOutfitId)
-  const monarch = resolveText('{왕}', game)
+  const info = targetInfo(target)
+  const isMonarch = target.kind === 'monarch'
+  // 군주는 현재 착장 초상을, 연애 대상은 캐릭터 초상을 쓴다.
+  const portraitSrc = isMonarch
+    ? resolveOutfit(manifest, game.currentOutfitId).thumbSrc
+    : info.portrait
+  const affectionLabel =
+    !isMonarch && CHARACTER_BY_ID[target.charId]
+      ? `${resolveText(CHARACTER_BY_ID[target.charId].name, game)} 호감도`
+      : null
 
   const submit = () => {
     const text = draft
@@ -61,7 +77,7 @@ export function TalkModal() {
       onClick={close}
       role="dialog"
       aria-modal="true"
-      aria-label="군주와의 대화"
+      aria-label="대화"
     >
       <div
         className="flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950"
@@ -69,16 +85,21 @@ export function TalkModal() {
       >
         {/* 머리 */}
         <div className="flex items-center gap-3 border-b border-slate-800 px-4 py-3">
-          <img
-            src={outfit.thumbSrc}
-            alt=""
-            draggable={false}
-            className="h-11 w-9 shrink-0 rounded object-cover object-top"
-          />
+          {portraitSrc && (
+            <img
+              src={portraitSrc}
+              alt=""
+              draggable={false}
+              className="h-11 w-9 shrink-0 rounded object-cover object-top"
+            />
+          )}
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-amber-200">{monarch}과의 대화</p>
+            <p className="truncate text-sm font-semibold text-amber-200">
+              {isMonarch ? `${info.name}과의 대화` : info.name}
+            </p>
             <p className="text-xs text-slate-400">
-              즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]} · {monarch} {game.age}세
+              즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]} · {resolveText('{왕}', game)}{' '}
+              {game.age}세
             </p>
           </div>
           <button
@@ -90,15 +111,38 @@ export function TalkModal() {
           </button>
         </div>
 
+        {/* 첫 진입 도움말 — 1회만 */}
+        {!helpSeen && (
+          <div className="border-b border-slate-800 bg-slate-900/60 px-4 py-3">
+            <p className="text-[11px] leading-relaxed text-slate-300">
+              무엇이든 물어보거나 말을 걸어 보세요. 상대는 지금까지의 관계와 겪은 일에 따라
+              다르게 답합니다. 말이 상대에게 가 닿으면 호감도나 심신이 조금씩 움직이고, 그
+              변화는 대사 아래에 표시됩니다.
+            </p>
+            <Button className="mt-2 px-3" onClick={dismissHelp}>
+              알겠습니다
+            </Button>
+          </div>
+        )}
+
         {/* 대화 로그 */}
         <div
           ref={logRef}
           className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4"
           onClick={() => streaming !== null && skip()}
         >
+          {/* 캐릭터별 맥락 프레이밍 */}
+          {info.framing && (
+            <p className="border-l-2 border-slate-700 pl-3 text-xs italic leading-relaxed text-slate-500">
+              {info.framing}
+            </p>
+          )}
+
           {turns.length === 0 && streaming === null && !error && (
-            <p className="py-8 text-center text-sm text-slate-500">
-              무엇이든 물어보세요. {monarch}은 지금까지 자란 대로 답합니다.
+            <p className="py-6 text-center text-sm text-slate-500">
+              {isMonarch
+                ? `무엇이든 물어보세요. ${info.name}은 지금까지 자란 대로 답합니다.`
+                : '먼저 말을 걸어 보세요.'}
             </p>
           )}
 
@@ -116,20 +160,24 @@ export function TalkModal() {
                 ))}
                 {turn.deltas && turn.deltas.length > 0 && (
                   <span className="mt-2 flex flex-wrap gap-1">
-                    {turn.deltas.map((d) => (
-                      <span
-                        key={d.target}
-                        className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
-                          d.amount > 0
-                            ? 'bg-slate-800 text-emerald-300'
-                            : 'bg-slate-800 text-rose-300'
-                        }`}
-                      >
-                        {RESOURCE_META[d.target as 'tutorTrust' | 'wellbeing'].label}{' '}
-                        {d.amount > 0 ? '+' : ''}
-                        {d.amount}
-                      </span>
-                    ))}
+                    {turn.deltas.map((d) => {
+                      const label = String(d.target).startsWith('affection:')
+                        ? (affectionLabel ?? '호감도')
+                        : RESOURCE_META[d.target as 'tutorTrust' | 'wellbeing'].label
+                      return (
+                        <span
+                          key={String(d.target)}
+                          className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
+                            d.amount > 0
+                              ? 'bg-slate-800 text-emerald-300'
+                              : 'bg-slate-800 text-rose-300'
+                          }`}
+                        >
+                          {label} {d.amount > 0 ? '+' : ''}
+                          {d.amount}
+                        </span>
+                      )
+                    })}
                   </span>
                 )}
               </div>
@@ -189,10 +237,15 @@ export function TalkModal() {
                 }
               }}
               disabled={busy}
-              placeholder={busy ? `${monarch}이 생각하고 있습니다…` : '무엇을 물어볼까요'}
+              placeholder={busy ? '생각하고 있습니다…' : '무엇을 말할까요'}
               className="min-h-[44px] flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-slate-100 disabled:opacity-60"
             />
-            <Button variant="primary" className="px-4" onClick={submit} disabled={busy || !draft.trim()}>
+            <Button
+              variant="primary"
+              className="px-4"
+              onClick={submit}
+              disabled={busy || !draft.trim()}
+            >
               보내기
             </Button>
           </div>

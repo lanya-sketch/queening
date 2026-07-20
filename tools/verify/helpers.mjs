@@ -55,6 +55,14 @@ export async function launch() {
   return chromium.launch({ executablePath: findChrome(), headless: true })
 }
 
+/**
+ * 현재 세이브 버전. 콘텐츠 라운드마다 오르므로 각 스크립트에 숫자를 박지 말고
+ * 여기서 가져다 쓴다 — 예전에 일괄 치환으로 "캐릭터 5인" 같은 무관한 단언까지
+ * 함께 깨뜨린 적이 있어서, 버전만 한 곳에 모아 둔다.
+ * (src/data/config.ts 의 GAME_CONFIG.saveVersion 과 맞춰야 한다)
+ */
+export const SAVE_VERSION = 6
+
 export const ok = (b) => (b ? 'PASS' : '*** FAIL ***')
 export const log = (...a) => console.log(...a)
 

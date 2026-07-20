@@ -23,6 +23,9 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
   3: (state) => ({ ...state, courtInfluence: INITIAL_RESOURCES.courtInfluence }),
   // v4 -> v5 : 연애 기반(호감도·군주 성별) 도입. 기존 세이브는 왕(male)로 본다.
   4: (state) => ({ ...state, affection: initialAffection(), monarchGender: 'male' }),
+  // v5 -> v6 : 확률 발동 + 계절 타이머 도입. 빈 카운터로 시작하면 되고,
+  //            ③ 는 부재 상태에서 다음 확률 판정을 기다린다(천장도 0 부터).
+  5: (state) => ({ ...state, counters: {} }),
 }
 
 function migrate(state: any, fromVersion: number): GameState | null {
