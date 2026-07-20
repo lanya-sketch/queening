@@ -38,13 +38,20 @@ FAIL 이 뜨면 먼저 그 빌드만 단독으로 다시 돌려보고(`npm run s
 
 - `QUEENING_URL` — 개발 서버 주소 (기본 `http://localhost:5173/`)
 - `QUEENING_CHROME` — Chrome/Edge 실행 파일 경로 (자동 탐색 실패 시)
-- `QUEENING_LIVE_KEY` — **실제 키로 대화를 돌려 진짜 대사를 보고 싶을 때.**
-  `verify:chars` 가 네트워크 가로채기를 끄고 실제 호출을 한다(과금 발생).
-  모델이 시트대로 다른 목소리를 내는지는 이 방법으로만 확인할 수 있다.
+- `QUEENING_LIVE_KEY` — **실제 키가 필요한 실측 두 가지에 쓴다.**
 
   ```
-  QUEENING_LIVE_KEY=sk-ant-... npm run verify:chars
+  QUEENING_LIVE_KEY=sk-ant-... npm run verify:chars            # 다섯의 목소리가 실제로 다른가
+  QUEENING_LIVE_KEY=sk-ant-... npm run verify:live-affection   # 호감도가 회당 얼마나 오르는가
   ```
+
+  `verify:live-affection` 은 회당 호감도 상승을 실측해 **깊은 관계(70)까지 몇 회가
+  필요한지**를 계산하고, 세션 호출 상한(60)을 넘으면 조정 후보를 제시한다.
+  키 없이 돌리면 무엇을 재는지 안내하고 종료한다(과금 없음).
+  옵션: `QUEENING_LIVE_CHAR`(기본 prince) / `QUEENING_LIVE_ROUNDS`(기본 12) / `QUEENING_LIVE_MODEL`
+
+  ★ 두 스크립트의 **배선은 네트워크를 가로채 검증했지만, 모델의 실제 행동은
+  키 없이 확인할 수 없다.** 그게 이 스크립트들이 존재하는 이유다.
 
 ## 콘텐츠를 추가한 뒤에 볼 것
 

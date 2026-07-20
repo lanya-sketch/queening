@@ -4,6 +4,7 @@ import { DEVICE_EVENTS } from '../data/events/devices'
 import { TOPICS, TOPIC_BY_ID } from '../data/topics'
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
+import { useTalk } from '../store/talkStore'
 import { chanceOf } from '../systems/chance'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { availableTopics } from '../systems/topics'
@@ -68,6 +69,12 @@ export function installDevBridge(): void {
     /** 정치 고유장치 이벤트 id. */
     deviceIds() {
       return DEVICE_EVENTS.map((e) => e.id)
+    },
+    /** 캐릭터 대화창을 연다(라이브 호감도 실측용). */
+    openTalk(charId?: string) {
+      useTalk
+        .getState()
+        .openTalk(charId ? { kind: 'character', charId } : { kind: 'monarch' })
     },
     /** 지금 이 캐릭터에게 열린 화제들. */
     topics(charId: string) {
