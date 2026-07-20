@@ -303,6 +303,21 @@ await page.waitForTimeout(12000)
 const stillWaiting = await page.getByRole('button', { name: /위병을 전부 보낸다/ }).isVisible()
 log('F11 ★ 12초가 지나도 자동 선택되지 않음 (무제한):', ok(stillWaiting))
 await page.screenshot({ path: `${OUT}/03-timer-off.png` })
+
+/**
+ * ★ F12 는 같은 누수의 **다른 얼굴**을 본다.
+ *   앞 사건이 시간 초과로 끝났으면 timedOut 이 true 로 남는다. 그 상태에서
+ *   다음 사건을 **직접 골랐는데도** "머뭇거리는 사이"가 뜨면, 하지도 않은 일을
+ *   플레이어에게 뒤집어씌우는 셈이다. F11 만으로는 이걸 못 잡는다.
+ */
+await page.getByRole('button', { name: /위병을 전부 보낸다/ }).click()
+await page.waitForTimeout(400)
+const falseTimeout = await page.getByText('머뭇거리는 사이').isVisible().catch(() => false)
+log('F12 ★ 직접 고른 뒤에는 "머뭇거렸다"가 뜨지 않음 (앞 사건의 잔상 없음):',
+  ok(!falseTimeout))
+const manualResult = await page.getByText('궁이 텅 비었다').isVisible().catch(() => false)
+log('F13 직접 고른 선택지의 결과가 표시됨:', ok(manualResult))
+
 await page.evaluate(() => window.__queeningAi.setIncidentTimer(true))
 
 // ─────────────────────────────────────────────────────────────

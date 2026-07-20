@@ -39,17 +39,19 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
     incidentHasChoices(eventId) && chosenIndex === undefined
 
   /**
-   * ★ 사건이 바뀌면 카운트다운 상태를 반드시 초기화한다.
+   * ★ 새 사건이 오면 카운트다운 상태를 초기화한다.
    *
-   *   이게 없으면 앞 사건이 시간 초과로 끝났을 때 left 가 0 인 채로 남고,
-   *   다음 사건에서 타이머가 꺼져 있어 아래 effect 가 early-return 하면
-   *   0 이 그대로 유지되어 **고를 기회도 없이 즉시 자동 선택**된다.
-   *   (검증 F11 이 이 상태 누수를 잡았다)
+   *   의존성이 eventId 가 아니라 **incident 객체**인 것이 중요하다.
+   *   돌발 이벤트 id 는 두 종류뿐이라 연달아 같은 id 로 사건이 뜨는 일이 흔하고,
+   *   그때 eventId 로는 effect 가 재실행되지 않는다. 앞 사건이 시간 초과로 끝났으면
+   *   left=0 과 timedOut=true 가 그대로 남아, 다음 사건에서
+   *   고를 기회 없이 자동 선택되거나 "머뭇거렸다"는 문구가 잘못 뜬다.
+   *   (검증 F11 이 이 누수를 잡았고, 처음 고칠 때 의존성을 eventId 로 잘못 잡았다)
    */
   useEffect(() => {
     setLeft(null)
     setTimedOut(false)
-  }, [eventId])
+  }, [incident])
 
   // 타이머 시작 — 서술이 렌더된 다음 프레임부터.
   useEffect(() => {
