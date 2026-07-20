@@ -1,9 +1,13 @@
 import { EVENTS, EVENT_BY_ID } from '../data/events'
 import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
+import { DEVICE_EVENTS } from '../data/events/devices'
+import { TOPICS, TOPIC_BY_ID } from '../data/topics'
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
 import { chanceOf } from '../systems/chance'
 import { findTriggeredEvents } from '../systems/eventEngine'
+import { availableTopics } from '../systems/topics'
+import type { TalkTopic } from '../types/game'
 import { resolveText } from '../systems/text'
 import { buildPersona } from './characterPersona'
 import { buildMonarchPrompt } from './persona'
@@ -60,6 +64,30 @@ export function installDevBridge(): void {
     /** 혈서 계열 이벤트 id (의존 단방향성 대조에서 "새 콘텐츠"의 정의). */
     bloodOathIds() {
       return BLOOD_OATH_EVENTS.map((e) => e.id)
+    },
+    /** 정치 고유장치 이벤트 id. */
+    deviceIds() {
+      return DEVICE_EVENTS.map((e) => e.id)
+    },
+    /** 지금 이 캐릭터에게 열린 화제들. */
+    topics(charId: string) {
+      return availableTopics(charId, useGame.getState().game).map((t) => ({
+        id: t.id,
+        label: t.label,
+      }))
+    },
+    /**
+     * ★ 런타임에 화제를 얹고 걷어낸다 — "키워드 틀이 일반적이다"를 시연하기 위한 것.
+     *   일반적이라고 주장하는 대신 검증이 실제로 다른 캐릭터에 얹어 본다.
+     */
+    addTopic(topic: TalkTopic) {
+      TOPICS.push(topic)
+      TOPIC_BY_ID[topic.id] = topic
+    },
+    removeTopic(topicId: string) {
+      const index = TOPICS.findIndex((t) => t.id === topicId)
+      if (index >= 0) TOPICS.splice(index, 1)
+      delete TOPIC_BY_ID[topicId]
     },
     /** 지금 상태에서 발동 가능한 이벤트 id — 우선순위 순. */
     triggerable() {

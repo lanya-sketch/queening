@@ -115,6 +115,27 @@ const RUNS = [
     expect: { bloodOath: true },
   },
   {
+    /**
+     * ★ M2b-3c-2 두루마리 실측 전용 빌드.
+     *
+     * 시뮬 플래너는 대화를 하지 않으므로 호감도를 올릴 수단이 없다. 그래서
+     * **시작 시 ④ 호감도만 시드해** "로맨스를 완주한 플레이"를 흉내 낸다.
+     * 나머지는 F(실권 극대화)와 같은 정책이라, F 와 나란히 놓으면
+     * 두루마리 +18 이 엔드게임 영향도에 실제로 얼마를 보태는지가 보인다.
+     */
+    name: 'I. 두루마리 루트 (④ 로맨스 완주 가정)',
+    targets: { 통치학: 60 },
+    reclaim: true,
+    seedAffection: { hero: 75 },
+    choices: [
+      [/성년식/, /친정을 선포/],
+      [/첫 친정/, /인사를 개편|국고|군제/],
+      [/귀족들의 견제/, /정면으로 반박/],
+      [/국고의 장부/, /밝히게/],
+    ],
+    expect: { scroll: true },
+  },
+  {
     name: 'G. 회유 루트 + 사냥 남용 (사냥 밸런스 실측)',
     targets: { 궁정처세: 55, 통치학: 45 },
     huntOver: 25,
@@ -179,6 +200,18 @@ async function runSimulation(browser, run) {
   await page.evaluate(() => localStorage.clear())
   await page.reload({ waitUntil: 'networkidle' })
   await page.waitForTimeout(300)
+
+  /**
+   * ★ 호감도 시드. 플래너는 대화를 하지 않아서 호감도를 올릴 방법이 없으므로,
+   *   로맨스 완주를 전제로 하는 장치(두루마리 등)를 재려면 시작값을 넣어 줘야 한다.
+   *   이건 "로맨스를 끝까지 탄 플레이"의 대역이지 실제 대화 시뮬이 아니다.
+   */
+  if (run.seedAffection) {
+    await page.evaluate((seed) => {
+      const game = window.__queeningAi.state
+      window.__queeningAi.setGame({ affection: { ...game.affection, ...seed } })
+    }, run.seedAffection)
+  }
 
   const prefs = [...(run.choices ?? []), ...COMMON_CHOICES]
   const fired = []
@@ -310,6 +343,18 @@ for (const run of only ? RUNS.filter((r) => r.name.startsWith(only)) : RUNS) {
       caught ? '| 발각(queen_poison_path)' : '',
       run.expect.bloodOath === undefined
         ? '' : ok(!!r.flags.blood_oath_complete === run.expect.bloodOath))
+  }
+
+  // 정치 고유장치 (M2b-3c-2). 예약 flag 는 "열림"까지만이라는 게 보이도록 그대로 찍는다.
+  const devices = [
+    r.flags.scroll_offered ? '두루마리(+18)' : null,
+    r.flags.military_route_open ? '군사노선 열림' : null,
+    r.flags.union_possible ? '공동왕조 열림' : null,
+  ].filter(Boolean)
+  if (devices.length || run.expect.scroll !== undefined) {
+    console.log('고유장치:', devices.length ? devices.join(', ') : '없음',
+      run.expect.scroll === undefined
+        ? '' : ok(!!r.flags.scroll_offered === run.expect.scroll))
   }
 
   const accord = !!r.flags.regent_won_over

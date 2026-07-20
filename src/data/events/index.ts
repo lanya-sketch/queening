@@ -3,6 +3,7 @@ import { ADULT_EVENTS } from './adult'
 import { AFFAIR_EVENTS } from './affairs'
 import { BLOOD_OATH_EVENTS } from './bloodoath'
 import { CHARACTER_EVENTS } from './characters'
+import { DEVICE_EVENTS } from './devices'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
 import { ROMANCE_EVENTS } from './romance'
@@ -21,6 +22,7 @@ const RAW_EVENTS: GameEvent[] = [
   ...ROMANCE_EVENTS,
   ...CHARACTER_EVENTS,
   ...BLOOD_OATH_EVENTS,
+  ...DEVICE_EVENTS,
 ]
 
 /**

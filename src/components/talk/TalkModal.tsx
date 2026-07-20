@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { SEASON_LABEL } from '../../data/config'
 import { RESOURCE_META } from '../../data/stats'
 import { CHARACTER_BY_ID } from '../../data/characters'
+import { TOPIC_BY_ID } from '../../data/topics'
 import { resolveOutfit } from '../../systems/outfits'
 import { resolveText } from '../../systems/text'
+import { availableTopics } from '../../systems/topics'
+import { ScenePlayer } from '../scene/ScenePlayer'
 import { useGame } from '../../store/gameStore'
 import { CALL_SOFT_LIMIT, targetInfo, targetKey, useTalk } from '../../store/talkStore'
 import { Button } from '../ui/Button'
@@ -25,6 +28,9 @@ export function TalkModal() {
   const ask = useTalk((s) => s.ask)
   const retry = useTalk((s) => s.retry)
   const skip = useTalk((s) => s.skipStreaming)
+  const activeTopicId = useTalk((s) => s.activeTopicId)
+  const pickTopic = useTalk((s) => s.pickTopic)
+  const endTopic = useTalk((s) => s.endTopic)
 
   const game = useGame((s) => s.game)
   const manifest = useGame((s) => s.outfitManifest)
@@ -56,6 +62,7 @@ export function TalkModal() {
 
   const info = targetInfo(target)
   const isMonarch = target.kind === 'monarch'
+  const topics = isMonarch ? [] : availableTopics(target.charId, game)
   // 군주는 현재 착장 초상을, 연애 대상은 캐릭터 초상을 쓴다.
   const portraitSrc = isMonarch
     ? resolveOutfit(manifest, game.currentOutfitId).thumbSrc
@@ -138,7 +145,17 @@ export function TalkModal() {
             </p>
           )}
 
-          {turns.length === 0 && streaming === null && !error && (
+          {/* 고정 화제 씬 — 재생 중에는 이것만 보여준다 */}
+          {activeTopicId && (
+            <div className="rounded-xl border border-amber-900/50 bg-slate-900/60 p-3">
+              <ScenePlayer
+                sceneId={TOPIC_BY_ID[activeTopicId].sceneId}
+                onFinished={endTopic}
+              />
+            </div>
+          )}
+
+          {!activeTopicId && turns.length === 0 && streaming === null && !error && (
             <p className="py-6 text-center text-sm text-slate-500">
               {isMonarch
                 ? `무엇이든 물어보세요. ${info.name}은 지금까지 자란 대로 답합니다.`
@@ -221,6 +238,24 @@ export function TalkModal() {
 
         {/* 입력 */}
         <div className="border-t border-slate-800 p-3">
+          {/*
+            해금된 고정 화제. 미해금이면 이 영역 자체가 없다.
+            AI 호출이 아니라 미리 쓴 씬이라 키가 없어도 눌린다.
+          */}
+          {topics.length > 0 && !activeTopicId && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {topics.map((topic) => (
+                <button
+                  key={topic.id}
+                  onClick={() => pickTopic(topic.id)}
+                  disabled={busy}
+                  className="min-h-[44px] rounded-lg border border-amber-800/70 bg-amber-950/20 px-3 text-xs text-amber-200 active:bg-amber-900/30 disabled:opacity-50"
+                >
+                  {resolveText(topic.label, game)}
+                </button>
+              ))}
+            </div>
+          )}
           {callCount >= CALL_SOFT_LIMIT && (
             <p className="mb-2 text-[11px] text-amber-400">
               이번 세션에서 {callCount}번 호출했습니다. 비용이 쌓이고 있으니 확인해 주세요.

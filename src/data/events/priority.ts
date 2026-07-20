@@ -39,6 +39,11 @@ export const PRIORITY: Record<string, number> = {
   // ── 60–69 캐릭터 등장/퇴장
   // 퇴장이 등장보다 위: 체류가 끝난 계절에 퇴장이 먼저 처리돼야
   // "떠나기도 전에 또 온다"가 생기지 않는다.
+  // 고유장치는 로맨스를 끝까지 끌고 가야만 열리는 희소한 순간이라,
+  // 같은 계절에 겹쳐도 체류 사이클보다 먼저 표시한다.
+  'hero-sacred-scroll': 68,
+  'commander-father-audience': 66,
+  'union-possible': 64,
   'prince-departure': 62,
   'prince-arrival': 60,
 

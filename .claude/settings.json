@@ -6,7 +6,9 @@
       "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:talk','verify:romance','verify:chars','verify:chance'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })",
       "Bash(python -c ' *)",
       "PowerShell(cd c:\\\\queening; npm run typecheck; foreach \\($t in @\\('verify','verify:chance','verify:sheets','verify:providers','verify:ai','verify:flags','verify:fallback','verify:talk','verify:romance','verify:chars'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })",
-      "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })"
+      "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })",
+      "Bash(npm run *)",
+      "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:devices','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })"
     ]
   }
 }

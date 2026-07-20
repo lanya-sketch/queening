@@ -76,6 +76,29 @@ export interface Scene {
   lines: SceneLine[]
 }
 
+/**
+ * 대화 중 해금되는 고정 화제 (M2b-3c-2).
+ *
+ * ★ 엔진에 캐릭터 분기가 없다. ①의 아버지 이야기든 ④의 전장 이야기든
+ *   `TOPICS` 배열에 객체 하나를 더하는 것으로 끝나야 한다.
+ *
+ * AI 감지가 아니라 **결정론적 해금**이다 — 관계가 깊어지면 그 사람의 핵심 화제에
+ * 닿을 수 있고, 열린 화제는 고정 대사로 재생된다. 그래서 effects 는 코드가 소유하는
+ * 확실한 보상이고, 모델 응답 품질에 좌우되지 않는다.
+ */
+export interface TalkTopic {
+  id: string
+  charId: string
+  /** 대화 화면에 뜰 선택지 문구. */
+  label: string
+  /** 해금 조건. 이벤트와 같은 Condition 을 그대로 쓴다. */
+  unlock: Condition
+  sceneId: string
+  /** 고른 뒤 확정 적용되는 효과. AI 와 무관한 고정값. */
+  effects?: Effect[]
+  setFlags?: FlagSet
+}
+
 export interface Effect {
   target: EffectTarget
   /** 음수 가능. */

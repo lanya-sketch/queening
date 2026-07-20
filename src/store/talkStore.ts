@@ -6,7 +6,9 @@ import { AiError, describeAiError } from '../ai/types'
 import type { AiDeltaTarget, ClampedReply } from '../ai/types'
 import { CHARACTER_BY_ID } from '../data/characters'
 import { CHARACTER_SHEETS } from '../data/persona/characters'
+import { TOPIC_BY_ID } from '../data/topics'
 import { applyEffects } from '../systems/effects'
+import { applyTopic, availableTopics } from '../systems/topics'
 import { resolveText } from '../systems/text'
 import type { Effect } from '../types/game'
 import { useAi } from './aiStore'
@@ -52,8 +54,14 @@ interface TalkStore {
   callCount: number
   helpSeen: boolean
 
+  /** 지금 재생 중인 화제 씬. null 이면 평소 대화 화면. */
+  activeTopicId: string | null
+
   openTalk: (target?: TalkTarget) => void
   closeTalk: () => void
+  /** 고정 화제를 꺼낸다 — AI 호출 없이 씬 재생 + 확정 효과. */
+  pickTopic: (topicId: string) => void
+  endTopic: () => void
   dismissHelp: () => void
   reset: () => void
   ask: (text: string) => Promise<void>
@@ -113,8 +121,28 @@ export const useTalk = create<TalkStore>()((set, get) => ({
   callCount: 0,
   helpSeen: readHelpSeen(),
 
-  openTalk: (target = { kind: 'monarch' }) => set({ target, error: null }),
-  closeTalk: () => set({ target: null }),
+  activeTopicId: null,
+
+  openTalk: (target = { kind: 'monarch' }) =>
+    set({ target, error: null, activeTopicId: null }),
+  closeTalk: () => set({ target: null, activeTopicId: null }),
+
+  /**
+   * ★ AI 를 부르지 않는다. 화제는 미리 쓴 고정 씬이고 효과도 데이터에 적힌 값이다.
+   *   그래서 키 없이도 완전히 동작하고, 모델 응답 품질에 좌우되지 않는다.
+   */
+  pickTopic: (topicId) => {
+    if (get().busy || get().activeTopicId) return
+    const topic = TOPIC_BY_ID[topicId]
+    if (!topic) return
+    const game = useGame.getState().game
+    // 조건이 그새 바뀌었을 수 있으니 적용 직전에 한 번 더 본다.
+    if (!availableTopics(topic.charId, game).some((t) => t.id === topicId)) return
+    useGame.setState({ game: applyTopic(game, topic) })
+    set({ activeTopicId: topicId })
+  },
+
+  endTopic: () => set({ activeTopicId: null }),
 
   dismissHelp: () => {
     try {
