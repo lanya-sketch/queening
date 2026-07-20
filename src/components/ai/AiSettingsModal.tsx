@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AI_PROVIDERS } from '../../ai/providers'
 import { maskKey } from '../../ai/keyStore'
 import { useAi } from '../../store/aiStore'
+import { useIncidents } from '../../store/incidentStore'
 import type { AiProviderId } from '../../ai/types'
 import { Button } from '../ui/Button'
 
@@ -57,6 +58,8 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
   const baseUrl = useAi((s) => s.baseUrl)
   const setBaseUrl = useAi((s) => s.setBaseUrl)
   const generation = useAi((s) => s.generation)
+  const timerEnabled = useIncidents((s) => s.timerEnabled)
+  const setTimerEnabled = useIncidents((s) => s.setTimerEnabled)
   const setGeneration = useAi((s) => s.setGeneration)
   const samplingOk = useAi((s) => s.samplingSupported())
   const persistSettings = useAi((s) => s.persistSettings)
@@ -267,6 +270,26 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
             />
           </div>
         </details>
+
+        {/*
+          돌발 현안의 제한 시간. 기본은 켜짐이지만 끄기가 쉬워야 한다 —
+          시간 압박은 사람에 따라 재미가 아니라 장벽이 된다.
+        */}
+        <label className="mt-4 flex items-start gap-3 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
+          <input
+            type="checkbox"
+            checked={timerEnabled}
+            onChange={(e) => setTimerEnabled(e.target.checked)}
+            className="mt-0.5 h-5 w-5 shrink-0"
+          />
+          <span>
+            <span className="block text-sm text-slate-200">돌발 현안 제한 시간</span>
+            <span className="mt-0.5 block text-[11px] leading-relaxed text-slate-500">
+              아주 급한 일에만 10초가 주어집니다. 끄면 언제나 무제한으로 고를 수 있습니다.
+              시간을 넘겨도 손해는 없고, 가장 신중한 쪽으로 흘러갈 뿐입니다.
+            </span>
+          </span>
+        </label>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Button onClick={persistSettings} disabled={busy}>

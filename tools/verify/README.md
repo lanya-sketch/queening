@@ -32,6 +32,7 @@ FAIL 이 뜨면 먼저 그 빌드만 단독으로 다시 돌려보고(`npm run s
 | `npm run verify:bloodoath` | 혈서 — **의존 단방향성을 이벤트 정의에서 정적 대조**, 실마리 완화, 발각 성공/실패, **발각 후 재기 실측**, 두 반쪽 배타, 합체 | ~1.5분 |
 | `npm run verify:devices` | 정치 고유장치 — **M3 예약이 지켜지는지 정적 대조**, **키워드 틀에 임시 화제를 실제로 얹어 일반성 시연**, 두루마리 보상, 씬 겹침 순차 표시 | ~1.5분 |
 | `npm run verify:ablation` | **진짜 ablation** — 3c 콘텐츠를 실제로 들어낸 빌드와 정상 빌드를 결정론 모드로 나란히 돌려 미스터리 로그 대조 | ~40분 |
+| `npm run verify:incidents` | 돌발 현안 — 키 없으면 비활성, **방어 실험(규칙을 전부 어긴 응답 주입)**, 통보/선택지형, **10초 타이머 실제 화면** | ~1.5분 |
 | `npm run gen:outfits` | 플레이스홀더 착장 SVG 8장 재생성 | 즉시 |
 | `npm run gen:characters` | 플레이스홀더 캐릭터 초상 SVG 5장 재생성 | 즉시 |
 
@@ -75,8 +76,29 @@ FAIL 이 뜨면 먼저 그 빌드만 단독으로 다시 돌려보고(`npm run s
 
 디버깅용 환경변수:
 - `QUEENING_DETERMINISTIC=1` — variance 0 (simulate 에 직접 걸 수도 있다)
-- `QUEENING_ABLATE=bloodoath,devices,topics` — 그 콘텐츠를 런타임에서 제거
+- `QUEENING_ABLATE=bloodoath,devices,topics,incidents` — 그 콘텐츠를 런타임에서 제거
 - `QUEENING_ABLATION_REPLAY=1` — 저장된 로그로 판정만 다시 (시뮬 재실행 없음)
+- `QUEENING_ABLATION_MODE=incidents` — 돌발 현안 ablation (양쪽 팔 모두 돌발을 켠다)
+- `QUEENING_INCIDENTS=1` — 시뮬에서 돌발을 켠다(고정 응답 가로채기 + 확률 0.9)
+
+**돌발 ablation 은 확률을 정상보다 10배 이상 올려서 돌린다.** 정상 빈도(6~8%)는
+결정론 모드(rng 0.5)에서 절대 통과하지 않아 "제거해도 같다"가 공허해진다.
+과다 투여 상태에서 비교하는 편이 더 센 조건이기도 하다.
+
+## ★ 실제 AI 호출을 내지 않는다
+
+네트워크를 쓰지 않는 검증인데 **키를 설정하는** 스크립트가 여럿 있다. 그런 곳에서
+AI 기능이 하나라도 자동 실행되면 진짜 호출이 나가고, 실제 키가 설정된 환경이면
+**과금까지 된다.** 실제로 돌발 현안을 넣은 직후 `verify:devices` 가 401 을 내면서
+이 구멍이 드러났다(그 테스트는 가짜 키를 쓰고 네트워크를 스텁하지 않았다).
+
+그래서 키를 설정하는 스크립트는 둘 중 하나를 해야 한다:
+- `page.route(...)` 로 응답을 스텁하거나
+- `blockAiNetwork(page)` 로 원천 차단하고, 끝에서 차단 건수가 0 인지 단언하거나
+
+돌발이 관심사가 아닌 검증은 `window.__queeningAi.setIncidentRate(0)` 으로 눌러 둘 것.
+라이브 스크립트(`verify:live-affection`)도 재려는 것과 무관한 호출이 과금되지 않도록
+같은 처리를 해 두었다.
 
 ## 콘텐츠를 추가한 뒤에 볼 것
 

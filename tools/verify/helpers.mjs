@@ -63,6 +63,28 @@ export async function launch() {
  */
 export const SAVE_VERSION = 6
 
+/**
+ * 실제 AI 엔드포인트로 나가는 요청을 전부 막는다.
+ *
+ * ★ 네트워크를 쓰지 않는 검증인데 키를 설정하는 스크립트가 여럿 있다.
+ *   그런 스크립트에서 AI 기능이 하나라도 자동 실행되면 **진짜 호출이 나가고,
+ *   실제 키가 설정된 환경이면 과금까지 된다.** 실제로 verify:devices 가
+ *   돌발 현안 도입 후 401 을 내면서 이 구멍이 드러났다.
+ *
+ * 돌려주는 함수를 호출하면 그동안 차단된 요청 수를 알려준다 —
+ * "나갈 뻔했다"는 사실 자체를 단언할 수 있도록.
+ */
+export async function blockAiNetwork(page) {
+  const blocked = []
+  for (const pattern of ['**/v1/messages', '**/chat/completions', '**/v1/chat/**']) {
+    await page.route(pattern, (route) => {
+      blocked.push(route.request().url())
+      return route.abort('blockedbyclient')
+    })
+  }
+  return () => blocked
+}
+
 export const ok = (b) => (b ? 'PASS' : '*** FAIL ***')
 export const log = (...a) => console.log(...a)
 

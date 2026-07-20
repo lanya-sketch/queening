@@ -5,7 +5,9 @@
 //      "일반적으로 설계했다"는 말은 증명이 아니다. 얹어 보면 증명이다.
 //   2) ③⑤ 판정이 **M3 로 예약됐는지** — 예약 flag 를 읽는 condition 이 0건인지
 //      이벤트 정의를 정적으로 대조한다. 읽는 곳이 생기면 판정이 앞당겨진 것이다.
-import { APP_URL, advanceScene, launch, log, ok, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import {
+  APP_URL, advanceScene, blockAiNetwork, launch, log, ok, shotsDir, SAVE_VERSION,
+} from './helpers.mjs'
 
 const OUT = shotsDir('devices')
 
@@ -18,6 +20,10 @@ page.on('response', (r) => {
     errors.push(`HTTP ${r.status()}: ${r.url()}`)
   }
 })
+
+// 이 검증은 네트워크를 쓰지 않는다. 그런데 C 절에서 키를 설정하므로
+// 돌발 현안이 자동으로 생성을 시도할 수 있다 — 실제 호출을 원천 차단한다.
+const blockedCalls = await blockAiNetwork(page)
 
 await page.goto(APP_URL, { waitUntil: 'networkidle' })
 await page.evaluate(() => localStorage.clear())
@@ -32,6 +38,9 @@ const triggerable = (patch) =>
     window.__queeningAi.setGame(p)
     return window.__queeningAi.triggerable()
   }, patch)
+
+// 돌발 현안은 이 검증의 관심사가 아니다. 확률을 0 으로 눌러 끼어들지 않게 한다.
+await page.evaluate(() => window.__queeningAi.setIncidentRate(0))
 
 const SEEN_OTHERS = await page.evaluate(() => {
   const own = new Set([
@@ -329,6 +338,10 @@ log('G2 장치 flag 보존:',
 // 화제 사용 기록의 영속성은 C13 에서 확인했다(여기 flags 는 뒤 절들이 갈아끼운 것).
 log('G3 호감도·카운터 보존:',
   ok(typeof saved.state.affection === 'object' && typeof saved.state.counters === 'object'))
+
+log('')
+log('G5 ★ 실제 AI 호출이 한 건도 나가지 않음:',
+  `차단 ${blockedCalls().length}건`, ok(blockedCalls().length === 0))
 
 log('')
 log('런타임 에러:', errors.length === 0 ? 'PASS (없음)' : errors.join('\n  '))

@@ -211,8 +211,11 @@ export interface GameEvent {
    */
   sceneId?: string
   /**
-   * 기본 'scripted'. 엔진은 이 값을 읽지 않는다 —
-   * M2b 에서 AI 가 같은 구조로 돌발 이벤트를 주입할 때를 위한 표식일 뿐.
+   * 기본 'scripted'.
+   *
+   * ★ 'ai_generated' 는 **내용을 AI 가 채우는 자리표시자**다(M2b-4).
+   *   엔진은 이 값을 딱 한 가지 목적으로만 읽는다 — 키가 없으면 후보에서 제외.
+   *   "발동은 했는데 보여줄 게 없다"를 막기 위해서다. 그 외의 판단은 하지 않는다.
    */
   source?: 'scripted' | 'ai_generated'
   /**

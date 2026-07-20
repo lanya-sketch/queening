@@ -1,10 +1,13 @@
 import { EVENTS, EVENT_BY_ID } from '../data/events'
 import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
 import { DEVICE_EVENTS } from '../data/events/devices'
+import { INCIDENT_EVENTS } from '../data/events/incidents'
 import { TOPICS, TOPIC_BY_ID } from '../data/topics'
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
+import { useIncidents } from '../store/incidentStore'
 import { useTalk } from '../store/talkStore'
+import { parseIncident } from './incident'
 import { chanceOf } from '../systems/chance'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { setDeterministic } from '../systems/rng'
@@ -67,6 +70,58 @@ export function installDevBridge(): void {
     bloodOathIds() {
       return BLOOD_OATH_EVENTS.map((e) => e.id)
     },
+    /** 돌발 현안 — 모델 응답을 클램프까지 통과시킨 결과. 방어 실험용. */
+    parseIncident(raw: string, withChoices: boolean) {
+      return parseIncident(raw, withChoices)
+    },
+    /**
+     * ★ 공격 응답을 **실제로 게임 상태에 적용 시도**한다.
+     *   파싱 결과만 보면 "클램프가 걸렀다"까지밖에 못 본다.
+     *   진짜 확인할 것은 그 뒤 게임 상태가 정말 안 움직였는가다.
+     */
+    applyIncidentAttack(raw: string) {
+      const incident = parseIncident(raw, true)
+      if (!incident) return null
+      for (const choice of incident.choices) {
+        useIncidents.setState({
+          byEvent: { __attack: { ...incident, choices: [choice] } },
+          chosen: {},
+        })
+        useIncidents.getState().choose('__attack', 0)
+      }
+      return incident
+    },
+    resetIncidents() {
+      useIncidents.getState().reset()
+    },
+    /** 이벤트를 화면에 강제로 띄운다 — 확률과 싸우지 않고 UI 만 검증하기 위해. */
+    forceEvent(eventId: string) {
+      const game = useGame.getState().game
+      useGame.setState({ game: { ...game, pendingEventIds: [eventId], phase: 'event' } })
+    },
+    setIncidentTimer(on: boolean) {
+      useIncidents.getState().setTimerEnabled(on)
+    },
+    /**
+     * 돌발 발동 확률을 올린다 — ablation 전용.
+     *
+     * 결정론 모드는 rng 를 0.5 로 고정하므로 6~8% 확률은 절대 통과하지 않는다.
+     * 그러면 "제거해도 같다"가 공허해진다(애초에 안 나오니까).
+     * 확률을 0.5 위로 올려 **정상보다 훨씬 자주** 터뜨린 상태에서 대조하면,
+     * 과다 투여에도 미스터리가 흔들리지 않는지를 본다. 더 센 조건이다.
+     */
+    setIncidentRate(rate: number) {
+      for (const event of INCIDENT_EVENTS) {
+        if (event.chance) event.chance.base = rate
+      }
+      for (const event of EVENTS) {
+        if (event.source === 'ai_generated' && event.chance) event.chance.base = rate
+      }
+    },
+    clearKey() {
+      useAi.setState({ apiKey: '' })
+    },
+
     /** 정치 고유장치 이벤트 id. */
     deviceIds() {
       return DEVICE_EVENTS.map((e) => e.id)
@@ -102,6 +157,7 @@ export function installDevBridge(): void {
       }
       if (packs.includes('bloodoath')) drop(BLOOD_OATH_EVENTS)
       if (packs.includes('devices')) drop(DEVICE_EVENTS)
+      if (packs.includes('incidents')) drop(INCIDENT_EVENTS)
       if (packs.includes('topics')) TOPICS.splice(0, TOPICS.length)
       return { removed, remainingEvents: EVENTS.length, remainingTopics: TOPICS.length }
     },

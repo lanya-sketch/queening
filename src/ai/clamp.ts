@@ -59,6 +59,58 @@ export interface ClampOptions {
    * 예: 군주 대화는 tutorTrust·wellbeing 만 허용.
    */
   allow?: AiDeltaTarget[]
+  /**
+   * 대상별 상한을 더 좁힌다. 전역 MAX_ABS 보다 **작은 값만** 의미가 있다 —
+   * 여기로 상한을 올릴 수는 없다(Math.min 으로 겹친다).
+   * 돌발 현안이 심신을 ±3 으로 쓰는 데 필요하다(전역은 5).
+   */
+  maxAbs?: Partial<Record<AiDeltaTarget, number>>
+}
+
+/**
+ * ★ AI 가 세울 수 있는 flag 의 전체 목록 (M2b-4).
+ *
+ * 패턴 매칭(`/^people_/`)이 아니라 **열거**다. 패턴을 쓰면 모델이
+ * `people_burdened_모후독살` 같은 이름을 지어낼 수 있고, 그건 아무도 읽지 않는
+ * 쓰레기가 세이브에 쌓인다는 뜻이다. 여기 없는 이름은 전부 버린다.
+ *
+ * 핵심 서사 flag(clue_*, truth_*, blood_oath_*, regent_*)가 이 목록에
+ * 하나도 없다는 것이 이 방어선의 전부다.
+ */
+export const AI_ALLOWED_FLAGS = [
+  'people_relieved_frontier',
+  'people_burdened_frontier',
+  'people_relieved_empire',
+  'people_burdened_empire',
+  'people_relieved_commons',
+  'people_burdened_commons',
+  'people_relieved_harvest',
+  'people_burdened_harvest',
+] as const
+
+/**
+ * 모델이 제안한 flag 중 허용된 것만 남긴다.
+ * 값도 검사한다 — 민심 flag 는 세우기만 하고 지우지 않는다(false 는 무의미).
+ */
+export function clampFlags(
+  raw: unknown,
+): { flags: Record<string, boolean>; rejected: string[] } {
+  const flags: Record<string, boolean> = {}
+  const rejected: string[] = []
+  if (!raw || typeof raw !== 'object') return { flags, rejected }
+
+  for (const [name, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!(AI_ALLOWED_FLAGS as readonly string[]).includes(name)) {
+      rejected.push(`${name} (허용되지 않은 flag)`)
+      continue
+    }
+    if (value !== true) {
+      rejected.push(`${name} (true 가 아님)`)
+      continue
+    }
+    flags[name] = true
+  }
+  return { flags, rejected }
 }
 
 /** 모델 제안을 게임이 받아들일 수 있는 형태로 깎는다. */
@@ -115,7 +167,8 @@ export function clampReply(raw: AiReply, options: ClampOptions = {}): ClampedRep
       continue
     }
 
-    const limit = MAX_ABS[target]
+    // 화면별 상한은 전역 상한을 좁히기만 한다 — 올릴 수는 없다.
+    const limit = Math.min(MAX_ABS[target], options.maxAbs?.[target] ?? Infinity)
     if (limit === 0) {
       rejected.push({ target, amount, reason: `${labelOf(target)}는 AI 가 바꿀 수 없음` })
       continue

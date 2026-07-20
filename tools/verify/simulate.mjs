@@ -22,6 +22,34 @@ const STAT_TO_ACTIVITY = {
   궁정처세: '연회 참석',
 }
 
+/** 시뮬에서 돌발 현안이 켜졌을 때 쓰는 고정 응답(실제 API 를 부르지 않는다). */
+const SIM_INCIDENT = JSON.stringify({
+  title: '늦서리',
+  text: '늦서리가 내려 남쪽 고을의 보리가 상했다.',
+  urgent: false,
+  choices: [
+    { label: '창고를 연다', resultText: '고을이 한숨 돌렸다.', cautious: false,
+      deltas: [{ target: 'wellbeing', amount: -1 }], flags: { people_relieved_harvest: true } },
+    { label: '지켜본다', resultText: '아무 일도 하지 않았다.', cautious: true,
+      deltas: [], flags: {} },
+  ],
+})
+
+const SIM_INCIDENT_SSE = (() => {
+  const chunks = SIM_INCIDENT.match(/[\s\S]{1,60}/g) ?? [SIM_INCIDENT]
+  const out = [
+    `event: message_start\ndata: ${JSON.stringify({ type: 'message_start', message: { id: 'm', type: 'message', role: 'assistant', model: 'claude-opus-4-8', content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 10, output_tokens: 0 } } })}\n\n`,
+    `event: content_block_start\ndata: ${JSON.stringify({ type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } })}\n\n`,
+  ]
+  for (const c of chunks) {
+    out.push(`event: content_block_delta\ndata: ${JSON.stringify({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: c } })}\n\n`)
+  }
+  out.push(`event: content_block_stop\ndata: ${JSON.stringify({ type: 'content_block_stop', index: 0 })}\n\n`)
+  out.push(`event: message_delta\ndata: ${JSON.stringify({ type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 20 } })}\n\n`)
+  out.push(`event: message_stop\ndata: ${JSON.stringify({ type: 'message_stop' })}\n\n`)
+  return out.join('')
+})()
+
 const COMMON_CHOICES = [
   [/덮인 밤/, /혼자 삼킨다/],
   [/어머니의 필적/, /아무에게도/],
@@ -212,6 +240,23 @@ async function runSimulation(browser, run) {
    */
   if (process.env.QUEENING_DETERMINISTIC === '1') {
     await page.evaluate(() => window.__queeningAi.setDeterministic(true))
+  }
+  /**
+   * 돌발 현안을 켠 채로 돌린다(ablation 대조군용).
+   * 실제 API 는 부르지 않고 고정 응답을 가로채 넣는다 — 검증은 네트워크와 무관해야 한다.
+   * 확률은 정상(6~8%)보다 훨씬 높게 올려 **과다 투여** 상태를 만든다.
+   */
+  if (process.env.QUEENING_INCIDENTS === '1') {
+    await page.route('**/v1/messages', (route) =>
+      route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        body: SIM_INCIDENT_SSE,
+      }))
+    await page.evaluate(() => {
+      window.__queeningAi.configure('anthropic', 'sk-ant-fake-for-simulation')
+      window.__queeningAi.setIncidentRate(0.9)
+    })
   }
   if (process.env.QUEENING_ABLATE) {
     const packs = process.env.QUEENING_ABLATE.split(',').map((s) => s.trim()).filter(Boolean)

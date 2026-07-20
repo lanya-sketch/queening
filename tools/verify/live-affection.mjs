@@ -72,6 +72,8 @@ await page.evaluate(
       counters: {},
       phase: 'schedule',
     })
+    // ★ 돌발 현안이 끼어들면 재려는 것과 무관한 호출이 나가고 과금된다.
+    window.__queeningAi.setIncidentRate(0)
     window.__queeningAi.openTalk(charId)
   },
   [KEY, MODEL ?? '', CHAR],

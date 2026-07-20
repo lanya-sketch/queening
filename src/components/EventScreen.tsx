@@ -5,6 +5,7 @@ import { formatEffect, targetLabel } from '../systems/effects'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
+import { IncidentView } from './IncidentView'
 import { ScenePlayer } from './scene/ScenePlayer'
 import type { Choice, Delta, Effect } from '../types/game'
 import { Button } from './ui/Button'
@@ -123,6 +124,11 @@ export function EventScreen() {
 
   const event = eventId ? EVENT_BY_ID[eventId] : undefined
   if (!event) return null
+
+  // 돌발 현안은 내용이 데이터에 없다 — 화면이 생성해서 그린다.
+  if (event.source === 'ai_generated') {
+    return <IncidentView eventId={event.id} onDone={dismissEvent} />
+  }
 
   const playingScene = Boolean(event.sceneId) && !sceneDone
 

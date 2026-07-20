@@ -3,6 +3,7 @@ import { SEASON_LABEL } from '../data/config'
 import { EVENTS } from '../data/events'
 import { RESOURCE_META, STAT_META } from '../data/stats'
 import type { Condition, GameEvent, GameState, GaugeKey, StatKey } from '../types/game'
+import { isAiAvailable } from './aiGate'
 
 export function seenFlagId(eventId: string): string {
   return `event:${eventId}`
@@ -95,6 +96,10 @@ export function describeCondition(c: Condition | undefined): string[] {
  */
 export function findTriggeredEvents(state: GameState): GameEvent[] {
   return EVENTS.filter((event) => {
+    // ★ AI 가 내용을 만드는 이벤트는 키가 없으면 후보에서 빠진다.
+    //   "발동은 했는데 보여줄 게 없다"를 만들지 않기 위해서다.
+    //   엔진이 아는 것은 source 표식과 불리언 하나뿐이다.
+    if (event.source === 'ai_generated' && !isAiAvailable()) return false
     const once = event.once ?? true
     if (once && state.flags[seenFlagId(event.id)]) return false
     return matchesCondition(state, event.condition)

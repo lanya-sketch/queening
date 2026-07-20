@@ -18,8 +18,19 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { assertServer, log, ok, shotsDir } from './helpers.mjs'
 
-const OUT = shotsDir('ablation')
-const ABLATE = 'bloodoath,devices,topics'
+/**
+ * 두 가지 모드.
+ *   기본        — M2b-3c 장치(혈서·실마리·정치장치)를 들어낸다
+ *   incidents   — M2b-4 돌발 현안을 들어낸다. 양쪽 팔 모두 돌발을 켜고 돌린 뒤
+ *                 한쪽만 제거한다(안 켜면 애초에 안 나와서 대조가 공허하다).
+ */
+const MODE = process.env.QUEENING_ABLATION_MODE ?? 'devices'
+const INCIDENT_MODE = MODE === 'incidents'
+const OUT = shotsDir(INCIDENT_MODE ? 'ablation-incidents' : 'ablation')
+const ABLATE = INCIDENT_MODE ? 'incidents' : 'bloodoath,devices,topics'
+const BASE_ENV = INCIDENT_MODE
+  ? { QUEENING_DETERMINISTIC: '1', QUEENING_INCIDENTS: '1' }
+  : { QUEENING_DETERMINISTIC: '1' }
 
 await assertServer()
 
@@ -78,6 +89,15 @@ function parse(text) {
  *   그걸 받는 빌드에서 영향도가 달라지는 건 **ablation 이 작동했다는 증거**지
  *   미스터리 훼손이 아니다. 둘을 한 통에 넣으면 판정이 흐려진다.
  */
+/** "단서: 6 개 | 민심 flag: a, b" → { count: 6, people: ['a','b'] } */
+function cluesOf(build) {
+  const line = build.summary['단서'] ?? ''
+  const count = Number(line.match(/단서:\s*(\d+)/)?.[1] ?? -1)
+  const people = (line.split('민심 flag:')[1] ?? '')
+    .split(',').map((s) => s.trim()).filter(Boolean).sort()
+  return { count, people }
+}
+
 function mysteryOf(build) {
   const clueEvents = build.events.filter((e) =>
     ['덮인 밤', '어머니의 필적', '봉인된 기록', '문서고의 밤', '사라진 시종',
@@ -86,7 +106,10 @@ function mysteryOf(build) {
     단서순서: clueEvents.map((e) => `${e.date} ${e.title}`),
     얕은진실: build.summary['얕은 진실'] ?? '(없음)',
     깊은진실: build.summary['깊은 진실'] ?? '(없음)',
-    단서: build.summary['단서'] ?? '(없음)',
+    // ★ 개수만 본다. 민심 flag 목록은 따로 검사한다 —
+    //   돌발 현안은 설계상 민심 flag 를 **세우라고 만든 것**이라
+    //   그게 사라지는 건 훼손이 아니라 제거가 작동한 증거다.
+    단서수: cluesOf(build).count,
     섭정: build.summary['섭정'] ?? '(없음)',
   }
 }
@@ -99,7 +122,11 @@ const influenceOf = (build) => build.summary['영향도 추이'] ?? '(없음)'
  * 그래서 영향도가 달라져도 되는 빌드는 두루마리를 받는 빌드뿐이다.
  */
 const RECEIVES_ABLATED_REWARD = (build) =>
-  build.events.some((e) => e.title === '두루마리')
+  INCIDENT_MODE
+    // 돌발은 심신·의심만 건드리고 영향도에는 손대지 못한다(클램프 상한 0).
+    // 그래서 영향도 추이는 어느 빌드에서도 달라지면 안 된다.
+    ? false
+    : build.events.some((e) => e.title === '두루마리')
 
 /**
  * 재분석 모드. 시뮬 3회는 40분이 걸리므로, 판정 로직만 고쳤을 때
@@ -120,10 +147,9 @@ if (REPLAY) {
   log('')
 
   log('▶ 1/2 정상 빌드…')
-  normalOut = await runSimulate({ QUEENING_DETERMINISTIC: '1' }, '정상')
+  normalOut = await runSimulate(BASE_ENV, '정상')
   log('▶ 2/2 제거 빌드…')
-  ablatedOut = await runSimulate(
-    { QUEENING_DETERMINISTIC: '1', QUEENING_ABLATE: ABLATE }, '제거')
+  ablatedOut = await runSimulate({ ...BASE_ENV, QUEENING_ABLATE: ABLATE }, '제거')
 
   writeFileSync(join(OUT, 'normal.log'), normalOut)
   writeFileSync(join(OUT, 'ablated.log'), ablatedOut)
@@ -133,11 +159,13 @@ const normal = parse(normalOut)
 const ablated = parse(ablatedOut)
 
 // 제거된 콘텐츠가 실제로 사라졌는지부터 — 안 사라졌으면 비교가 무의미하다
-const ABLATED_TITLES = [
-  '달이 없는 밤', '지나간 발소리', '먼저 한 거짓말', '들켰다', '가문 수색',
-  '세 번째 궤', '맞춰진 반쪽', '길을 터 두었습니다',
-  '두루마리', '문 앞에 선 가문', '두 개의 왕관',
-]
+const ABLATED_TITLES = INCIDENT_MODE
+  ? ['늦서리']
+  : [
+      '달이 없는 밤', '지나간 발소리', '먼저 한 거짓말', '들켰다', '가문 수색',
+      '세 번째 궤', '맞춰진 반쪽', '길을 터 두었습니다',
+      '두루마리', '문 앞에 선 가문', '두 개의 왕관',
+    ]
 const leftover = Object.values(ablated).flatMap((b) =>
   b.events.filter((e) => ABLATED_TITLES.includes(e.title)).map((e) => `${e.title}`))
 const presentInNormal = Object.values(normal).flatMap((b) =>
@@ -207,6 +235,38 @@ log('')
 log('D1 ★ 영향도 차이는 두루마리 수령 빌드에만 나타남:', ok(influenceOk))
 log('   → 차이가 "제거된 보상만큼"이라는 것은 ablation 이 작동했다는 증거다.')
 
+// ─────────────────────────────────────────────────────────────
+log('')
+log('=== E. 민심 flag — 제거한 콘텐츠가 만들던 것만 사라지는가 ===')
+// 돌발이 세울 수 있는 민심 flag(clamp 의 열거 목록 중 돌발 소재에 해당하는 것)
+const INCIDENT_FLAGS = ['people_relieved_harvest', 'people_burdened_harvest']
+let peopleOk = true
+for (const key of buildKeys) {
+  const a = cluesOf(normal[key]).people
+  const b = cluesOf(ablated[key]).people
+  const onlyInNormal = a.filter((f) => !b.includes(f))
+  const onlyInAblated = b.filter((f) => !a.includes(f))
+
+  // 제거 빌드에만 있는 flag 는 어느 모드에서도 있으면 안 된다
+  if (onlyInAblated.length) {
+    peopleOk = false
+    log(`   ${normal[key].name}  *** 제거 빌드에만 있는 flag: ${onlyInAblated.join(', ')} ***`)
+    continue
+  }
+  // 정상 빌드에만 있는 것은, 돌발 모드에서는 돌발이 만든 것이어야 한다
+  const unexpected = onlyInNormal.filter(
+    (f) => !(INCIDENT_MODE && INCIDENT_FLAGS.includes(f)),
+  )
+  if (unexpected.length) {
+    peopleOk = false
+    log(`   ${normal[key].name}  *** 설명되지 않는 차이: ${unexpected.join(', ')} ***`)
+  } else if (onlyInNormal.length) {
+    log(`   ${normal[key].name}  — 사라진 flag: ${onlyInNormal.join(', ')} (돌발이 만들던 것)`)
+  }
+}
+log('')
+log('E1 ★ 손으로 쓴 이벤트의 민심 flag 는 그대로:', ok(peopleOk))
+
 // 결정론 모드가 실제로 결정론적인지 — 이게 안 되면 위 비교가 성립하지 않는다
 log('')
 log('=== C. 비교의 전제 — 결정론 모드가 정말 결정론적인가 ===')
@@ -216,7 +276,7 @@ if (REPLAY) {
   repeatOut = readFileSync(join(OUT, 'normal-repeat.log'), 'utf8')
 } else {
   log('   정상 빌드를 한 번 더 돌려 자기 자신과 대조합니다…')
-  repeatOut = await runSimulate({ QUEENING_DETERMINISTIC: '1' }, '정상(재실행)')
+  repeatOut = await runSimulate(BASE_ENV, '정상(재실행)')
   writeFileSync(join(OUT, 'normal-repeat.log'), repeatOut)
 }
 const repeat = parse(repeatOut)
@@ -232,9 +292,17 @@ log('C1 ★ 같은 설정 두 번 → 완전 동일 (변동폭 제거 확인):',
 log('   → C1 이 통과해야 B1 의 "일치"가 의미를 갖는다.')
 
 log('')
-log(allSame && selfSame && influenceOk
-  ? '★ 결론: 3c 장치를 실제로 들어내도 미스터리 로그가 동일하다.\n' +
-    '  유일한 차이는 두루마리(+18)를 받는 빌드의 영향도이고, 그건 제거된 보상 그 자체다.\n' +
-    '  무손상이 의도가 아니라 결과로 확정됐다.'
-  : '★ 결론: 예상 밖의 차이가 있다. 위 불일치 항목을 확인할 것.')
+const passed = allSame && selfSame && influenceOk && peopleOk
+if (!passed) {
+  log('★ 결론: 예상 밖의 차이가 있다. 위 불일치 항목을 확인할 것.')
+} else if (INCIDENT_MODE) {
+  log('★ 결론: 돌발 현안을 정상보다 10배 이상 자주 터뜨린 상태에서도,')
+  log('  실제로 들어냈을 때 미스터리 로그가 동일하다.')
+  log('  차이는 돌발이 만들던 민심 flag 하나뿐 — 제거한 콘텐츠의 산출물 그 자체다.')
+  log('  "돌발은 양념"이 의도가 아니라 결과로 확정됐다.')
+} else {
+  log('★ 결론: 3c 장치를 실제로 들어내도 미스터리 로그가 동일하다.')
+  log('  유일한 차이는 두루마리(+18)를 받는 빌드의 영향도이고, 그건 제거된 보상 그 자체다.')
+  log('  무손상이 의도가 아니라 결과로 확정됐다.')
+}
 log('로그:', OUT)

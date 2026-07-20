@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { clampReply } from '../ai/clamp'
+import { setAiAvailable } from '../systems/aiGate'
 import {
   clearKey,
   loadBaseUrl,
@@ -207,3 +208,13 @@ export const useAi = create<AiStore>()((set, get) => ({
 export function useAiEnabled(): boolean {
   return useAi((s) => s.apiKey.trim().length > 0)
 }
+
+/**
+ * 키 유무를 엔진 쪽 게이트에 흘려보낸다.
+ *
+ * 이벤트 엔진은 순수 함수라 스토어를 볼 수 없다. 그래서 키가 바뀔 때마다
+ * 불리언 하나만 건너편에 놓아 준다 — 돌발 현안이 키 없이 발동하지 않도록.
+ * 구독을 한 곳에 두면 setApiKey·clearKey·saveSettings 를 각각 손댈 필요가 없다.
+ */
+setAiAvailable(useAi.getState().apiKey.trim().length > 0)
+useAi.subscribe((state) => setAiAvailable(state.apiKey.trim().length > 0))

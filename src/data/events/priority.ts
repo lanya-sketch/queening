@@ -76,6 +76,12 @@ export const PRIORITY: Record<string, number> = {
   'youth-sealed-record': 20,
   'youth-mother-tea': 16,
   'first-audience': 12,
+
+  // ★ 돌발 현안은 배경 대역의 **바닥**이다.
+  //   양념이므로 무엇에도 앞서지 않는다. 바쁜 계절에 굶어도 되고,
+  //   쿨다운이 있으니 다음 기회가 온다.
+  'ai-incident-choice': 11,
+  'ai-incident-notice': 10,
 }
 
 /**
