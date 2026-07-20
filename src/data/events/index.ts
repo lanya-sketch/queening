@@ -1,6 +1,7 @@
 import type { GameEvent } from '../../types/game'
 import { ADULT_EVENTS } from './adult'
 import { AFFAIR_EVENTS } from './affairs'
+import { BLOOD_OATH_EVENTS } from './bloodoath'
 import { CHARACTER_EVENTS } from './characters'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
@@ -19,6 +20,7 @@ const RAW_EVENTS: GameEvent[] = [
   ...AFFAIR_EVENTS,
   ...ROMANCE_EVENTS,
   ...CHARACTER_EVENTS,
+  ...BLOOD_OATH_EVENTS,
 ]
 
 /**

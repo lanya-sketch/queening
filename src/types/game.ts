@@ -125,6 +125,8 @@ export interface Condition {
   resources?: Partial<Record<GaugeKey, { min?: number; max?: number }>>
   /** 계절 타이머 검사. 없는 카운터는 0 으로 본다. */
   counters?: Record<string, { min?: number; max?: number }>
+  /** 캐릭터별 호감도 검사. 키는 charId. 없으면 startingAffection 으로 본다. */
+  affection?: Record<string, { min?: number; max?: number }>
   /** 해당 flag 가 지정한 값과 일치해야 한다. */
   flags?: FlagSet
 }

@@ -27,6 +27,11 @@ const COMMON_CHOICES = [
   [/어머니의 필적/, /아무에게도/],
   [/문서고의 밤/, /초안을 감춘다/],
   [/봉인된 기록/, /물러난다/],
+  // ★ 가문 수색은 되돌릴 수 없는 결렬이다. 플래너의 기본값("첫 선택지")이
+  //   강행이라, 지정하지 않으면 모든 빌드가 자동으로 섭정과 갈라선다 —
+  //   실제로 B 빌드가 중립에서 결렬로 뒤집혔다. 옵트인 설계에 맞춰 기본은 물러남으로
+  //   두고, 강탈 경로는 전용 빌드(H)가 덮는다.
+  [/가문 수색/, /물러난다/],
 ]
 
 const RUNS = [
@@ -94,6 +99,22 @@ const RUNS = [
      * 물어야 할 것은 하나다: 새 활동이 의심 감소의 지름길이 되어
      * 회유를 거저 만들어 주는가? D 와 나란히 놓고 비교하는 게 유일한 답이다.
      */
+    /**
+     * ★ M2b-3c-1 혈서 확증 루트 전용 빌드.
+     * A 와 같은 궁정처세 특화지만 가문 수색을 **강행**해 두 반쪽을 다 모은다.
+     * 침실 수색 성공(궁정처세 68) + 강탈 → blood_oath_complete 도달을 실측한다.
+     */
+    name: 'H. 혈서 확증 루트 (침실 수색 + 강탈)',
+    targets: { 궁정처세: 72, 통치학: 50, 변론: 60 },
+    reclaim: true,
+    choices: [
+      [/왕대비의 초대/, /아버지 이야기/],
+      [/달이 없는 밤/, /숨는다/],
+      [/가문 수색/, /수색을 강행한다/],
+    ],
+    expect: { bloodOath: true },
+  },
+  {
     name: 'G. 회유 루트 + 사냥 남용 (사냥 밸런스 실측)',
     targets: { 궁정처세: 55, 통치학: 45 },
     huntOver: 25,
@@ -277,6 +298,20 @@ for (const run of only ? RUNS.filter((r) => r.name.startsWith(only)) : RUNS) {
   if (run.expect.deep !== undefined)
     console.log('깊은 진실:', !!r.flags.truth_mother_mastermind,
       ok(!!r.flags.truth_mother_mastermind === run.expect.deep))
+  // 혈서 (M2b-3c-1). 반쪽만으론 확증이 아니라는 것이 보이도록 셋 다 찍는다.
+  const half = [
+    r.flags.blood_oath_half_monarch ? '군주반쪽' : null,
+    r.flags.blood_oath_half_heir ? '후계반쪽' : null,
+  ].filter(Boolean)
+  const caught = !!r.flags.queen_poison_path
+  if (half.length || caught || run.expect.bloodOath !== undefined) {
+    console.log('혈서:', half.length ? half.join('+') : '없음',
+      r.flags.blood_oath_complete ? '→ 확증' : '',
+      caught ? '| 발각(queen_poison_path)' : '',
+      run.expect.bloodOath === undefined
+        ? '' : ok(!!r.flags.blood_oath_complete === run.expect.bloodOath))
+  }
+
   const accord = !!r.flags.regent_won_over
   console.log('섭정:', r.flags.regent_alliance ? '동맹' : accord ? '회유 성사'
     : r.flags.regent_hostile ? '결렬' : '중립',

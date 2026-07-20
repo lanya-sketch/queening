@@ -18,6 +18,7 @@
     "verify:chars": "node tools/verify/character-talk.mjs",
     "verify:sheets": "node tools/verify/character-sheets.mjs",
     "verify:chance": "node tools/verify/chance.mjs",
+    "verify:bloodoath": "node tools/verify/bloodoath.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
     "gen:characters": "node tools/verify/gen-characters.mjs"

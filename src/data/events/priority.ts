@@ -10,7 +10,8 @@
  * 대역:
  *   90–99  진실 회수 — 되돌릴 수 없는 것. 무엇에도 밀리면 안 된다.
  *   70–89  고정 서사 마일스톤 — 날짜가 정해진 것.
- *   50–69  캐릭터 등장/퇴장 — 체류 사이클. 현안에 밀려 굶으면 대화 기회 자체가 사라진다.
+ *   60–69  캐릭터 등장/퇴장 — 체류 사이클. 현안에 밀려 굶으면 대화 기회 자체가 사라진다.
+ *   50–59  미스터리 파생(혈서) — 진실의 하류. 앎을 앞지를 수 없다.
  *   30–49  정치 현안 — 몰려도 순서대로 소화되면 된다.
  *   10–29  배경·단서 — 가장 먼저 양보한다.
  *
@@ -35,11 +36,26 @@ export const PRIORITY: Record<string, number> = {
   'adult-inner-court': 76,
   'teen-first-policy': 74,
 
-  // ── 50–69 캐릭터 등장/퇴장
+  // ── 60–69 캐릭터 등장/퇴장
   // 퇴장이 등장보다 위: 체류가 끝난 계절에 퇴장이 먼저 처리돼야
   // "떠나기도 전에 또 온다"가 생기지 않는다.
   'prince-departure': 62,
   'prince-arrival': 60,
+
+  // ── 50–59 미스터리 파생(혈서). 진실 회수(90+)보다 반드시 아래 —
+  //    확증은 앎의 뒤에 오는 것이지 앎을 앞지를 수 없다.
+  'blood-oath-complete': 59,
+  // 탈출 성공 둘이 먼저 검사되고, 아무것도 안 걸리면 chamber-caught 가 받는다.
+  // 이 세 줄의 순서가 곧 발각 판정이므로 값을 붙여 둔다.
+  'chamber-escape-hide': 58,
+  'chamber-escape-talk': 57,
+  'chamber-caught': 56,
+  'chamber-search': 55,
+  'chamber-search-hinted': 54,
+  // 로맨스 발설이 적대 수색보다 먼저 제시된다 — 되돌릴 수 없는 쪽을 뒤에 둔다.
+  'half-heir-romance': 53,
+  'half-heir-hostile': 52,
+  'loyalist-chamber-hint': 51,
 
   // ── 30–49 정치 현안
   'issue-house-of-commons': 46,

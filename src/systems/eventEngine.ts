@@ -1,3 +1,4 @@
+import { CHARACTER_BY_ID } from '../data/characters'
 import { SEASON_LABEL } from '../data/config'
 import { EVENTS } from '../data/events'
 import { RESOURCE_META, STAT_META } from '../data/stats'
@@ -37,6 +38,14 @@ export function matchesCondition(state: GameState, c: Condition): boolean {
   if (c.counters) {
     for (const [key, range] of Object.entries(c.counters)) {
       if (!inRange(state.counters?.[key] ?? 0, range)) return false
+    }
+  }
+
+  if (c.affection) {
+    for (const [charId, range] of Object.entries(c.affection)) {
+      const value =
+        state.affection?.[charId] ?? CHARACTER_BY_ID[charId]?.startingAffection ?? 0
+      if (!inRange(value, range)) return false
     }
   }
 

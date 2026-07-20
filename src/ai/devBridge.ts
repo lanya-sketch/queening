@@ -1,7 +1,9 @@
 import { EVENTS, EVENT_BY_ID } from '../data/events'
+import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
 import { chanceOf } from '../systems/chance'
+import { findTriggeredEvents } from '../systems/eventEngine'
 import { resolveText } from '../systems/text'
 import { buildPersona } from './characterPersona'
 import { buildMonarchPrompt } from './persona'
@@ -46,6 +48,22 @@ export function installDevBridge(): void {
     /** 전 이벤트의 우선순위 — 동률 검사용. */
     priorities() {
       return EVENTS.map((e) => ({ id: e.id, priority: e.priority ?? 0 }))
+    },
+    /**
+     * 이벤트 정의를 그대로 넘긴다.
+     * 검증이 "새 콘텐츠가 기존 flag 를 쓰는가"를 조건식에서 직접 읽기 위한 것 —
+     * 플레이해서 관찰하는 대신 의존 관계를 정적으로 대조한다.
+     */
+    events() {
+      return JSON.parse(JSON.stringify(EVENTS))
+    },
+    /** 혈서 계열 이벤트 id (의존 단방향성 대조에서 "새 콘텐츠"의 정의). */
+    bloodOathIds() {
+      return BLOOD_OATH_EVENTS.map((e) => e.id)
+    },
+    /** 지금 상태에서 발동 가능한 이벤트 id — 우선순위 순. */
+    triggerable() {
+      return findTriggeredEvents(useGame.getState().game).map((e) => e.id)
     },
 
     /** 게임 상태를 갈아끼운다(검증에서 대조적인 두 군주를 만들 때). */
