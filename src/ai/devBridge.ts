@@ -7,6 +7,7 @@ import { useGame } from '../store/gameStore'
 import { useTalk } from '../store/talkStore'
 import { chanceOf } from '../systems/chance'
 import { findTriggeredEvents } from '../systems/eventEngine'
+import { setDeterministic } from '../systems/rng'
 import { availableTopics } from '../systems/topics'
 import type { TalkTopic } from '../types/game'
 import { resolveText } from '../systems/text'
@@ -69,6 +70,40 @@ export function installDevBridge(): void {
     /** 정치 고유장치 이벤트 id. */
     deviceIds() {
       return DEVICE_EVENTS.map((e) => e.id)
+    },
+
+    /**
+     * ★ 결정론 모드 — variance 를 0 으로 만든다.
+     *   ablation 비교의 전제다. 난수가 살아 있으면 두 빌드의 차이가
+     *   제거 때문인지 운 때문인지 가릴 수 없다.
+     */
+    setDeterministic(on = true) {
+      setDeterministic(on)
+    },
+
+    /**
+     * ★ 실제 제거(ablation) — 지정한 콘텐츠 팩을 런타임에서 들어낸다.
+     *
+     *   정적 대조("직접 참조 없음")는 의도를 보고, 이건 결과를 본다.
+     *   우선순위 경쟁이나 턴 예산 소모 같은 **간접 영향**은 실제로 들어내 봐야만 잡힌다.
+     *   EVENTS 는 배열이라 splice 로 제자리에서 비운다 — findTriggeredEvents 가
+     *   매번 이 배열을 훑으므로 즉시 반영된다.
+     */
+    ablate(packs: string[]) {
+      const removed: string[] = []
+      const drop = (events: { id: string }[]) => {
+        for (const e of events) {
+          const index = EVENTS.findIndex((x) => x.id === e.id)
+          if (index >= 0) {
+            EVENTS.splice(index, 1)
+            removed.push(e.id)
+          }
+        }
+      }
+      if (packs.includes('bloodoath')) drop(BLOOD_OATH_EVENTS)
+      if (packs.includes('devices')) drop(DEVICE_EVENTS)
+      if (packs.includes('topics')) TOPICS.splice(0, TOPICS.length)
+      return { removed, remainingEvents: EVENTS.length, remainingTopics: TOPICS.length }
     },
     /** 캐릭터 대화창을 연다(라이브 호감도 실측용). */
     openTalk(charId?: string) {

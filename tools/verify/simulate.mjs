@@ -202,6 +202,24 @@ async function runSimulation(browser, run) {
   await page.waitForTimeout(300)
 
   /**
+   * ★ ablation / 결정론 모드.
+   *
+   *   QUEENING_DETERMINISTIC=1 → variance 0. 두 실행을 수치까지 비교할 수 있게 한다.
+   *   QUEENING_ABLATE=bloodoath,devices,topics → 그 콘텐츠를 실제로 들어낸다.
+   *
+   *   둘을 함께 쓰면 "얹은 것을 들어내도 로그가 같은가"를 결과로 증명할 수 있다.
+   *   (tools/verify/ablation.mjs 가 이 두 변수로 같은 시뮬을 두 번 돌려 대조한다)
+   */
+  if (process.env.QUEENING_DETERMINISTIC === '1') {
+    await page.evaluate(() => window.__queeningAi.setDeterministic(true))
+  }
+  if (process.env.QUEENING_ABLATE) {
+    const packs = process.env.QUEENING_ABLATE.split(',').map((s) => s.trim()).filter(Boolean)
+    const result = await page.evaluate((p) => window.__queeningAi.ablate(p), packs)
+    console.log(`  [ablation] 제거 ${result.removed.length}건 | 남은 이벤트 ${result.remainingEvents}`)
+  }
+
+  /**
    * ★ 호감도 시드. 플래너는 대화를 하지 않아서 호감도를 올릴 방법이 없으므로,
    *   로맨스 완주를 전제로 하는 장치(두루마리 등)를 재려면 시작값을 넣어 줘야 한다.
    *   이건 "로맨스를 끝까지 탄 플레이"의 대역이지 실제 대화 시뮬이 아니다.

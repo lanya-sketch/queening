@@ -6,6 +6,7 @@ import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '..
 import { applyEffects } from '../systems/effects'
 import { matchesCondition } from '../systems/eventEngine'
 import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/outfits'
+import { rng } from '../systems/rng'
 import { clearSave, getSavedAt, loadGame, saveGame } from '../systems/save'
 import { createInitialState, endTurn, hasReachedEnd } from '../systems/turn'
 
@@ -128,7 +129,8 @@ export const useGame = create<GameStore>()((set, get) => ({
     })
   },
 
-  endTurn: () => set({ game: endTurn(get().game), lastChoiceOutcome: null }),
+  // 난수는 systems/rng 한 곳에서만 나온다 — 검증이 갈아끼울 수 있도록.
+  endTurn: () => set({ game: endTurn(get().game, rng), lastChoiceOutcome: null }),
 
   continueFromResult: () => {
     const { game } = get()
@@ -144,7 +146,7 @@ export const useGame = create<GameStore>()((set, get) => ({
     if (!choice) return
     if (choice.requires && !matchesCondition(game, choice.requires)) return
 
-    const { state, deltas } = applyEffects(game, choice.effects)
+    const { state, deltas } = applyEffects(game, choice.effects, rng)
     set({
       game: { ...state, flags: { ...state.flags, ...choice.setFlags } },
       lastChoiceOutcome: { eventId, choiceId, deltas },
