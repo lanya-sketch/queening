@@ -9,6 +9,7 @@ import { useIncidents } from '../store/incidentStore'
 import { useTalk } from '../store/talkStore'
 import { parseIncident } from './incident'
 import { chanceOf } from '../systems/chance'
+import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { setDeterministic } from '../systems/rng'
 import { availableTopics } from '../systems/topics'
@@ -54,6 +55,17 @@ export function installDevBridge(): void {
     get state() {
       return useGame.getState().game
     },
+    /**
+     * 엔딩 판정. state 를 주면 그것을, 없으면 현재 게임을 판정한다.
+     * 무작위 세이브 전수 시행이 이 경로로 돈다.
+     */
+    judgeEnding(state?: Record<string, unknown>) {
+      return judgeEnding((state ?? useGame.getState().game) as never)
+    },
+    endingThresholds() {
+      return ENDING_THRESHOLDS
+    },
+
     /** 전 이벤트의 우선순위 — 동률 검사용. */
     priorities() {
       return EVENTS.map((e) => ({ id: e.id, priority: e.priority ?? 0 }))

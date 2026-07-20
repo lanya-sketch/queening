@@ -25,7 +25,8 @@
       "PowerShell($ok=$false; for\\($i=0;$i -lt 20;$i++\\){ try { $c=\\(Invoke-WebRequest -Uri http://localhost:5173/ -TimeoutSec 2 -UseBasicParsing\\).StatusCode; if\\($c -eq 200\\){ $ok=$true; break } } catch {} }; if\\($ok\\){\"dev server: UP\"}else{\"dev server: STILL DOWN\"})",
       "PowerShell(cd c:\\\\queening; for\\($i=1;$i -le 3;$i++\\){ \"=== 실행 $i ===\"; npm run verify:incidents 2>&1 | Select-String -Pattern \"^F\\\\d|FAIL|런타임\" })",
       "PowerShell(cd c:\\\\queening; npm run typecheck; if \\($?\\) { for\\($i=1;$i -le 3;$i++\\){ \"=== 실행 $i ===\"; npm run verify:incidents 2>&1 | Select-String -Pattern \"^F1[0-3]|^F6|FAIL|런타임\" } })",
-      "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:incidents','verify:devices','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback','verify:live-affection'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔|건너뜁니다\" })"
+      "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:incidents','verify:devices','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback','verify:live-affection'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔|건너뜁니다\" })",
+      "PowerShell(cd c:\\\\queening; npm run typecheck; foreach \\($t in @\\('verify','verify:ending','verify:incidents','verify:devices','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })"
     ]
   }
 }

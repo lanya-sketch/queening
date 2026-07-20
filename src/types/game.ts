@@ -260,6 +260,36 @@ export interface Delta {
   amount: number
 }
 
+/**
+ * 엔딩 판정 결과 (M3-1).
+ *
+ * ★ 여기에는 연출이 없다. "이 세이브가 어떤 엔딩 조합인가"라는 **구조**만 담는다.
+ *   텍스트와 씬은 M3-2 가 이 구조를 받아서 만든다.
+ */
+export type EndingTier =
+  | '친정' | '공존' | '허수아비'
+  | '배드:꼭두각시' | '배드:군부종속' | '배드:제국복속'
+
+export type EndingDisposal = '정당' | '폭군' | '회유' | '못함'
+
+export type EndingTruth = '모름' | '섭정관여' | '모후주모'
+
+export interface EndingResult {
+  tier: EndingTier
+  disposal: EndingDisposal
+  truthLevel: EndingTruth
+  /** 깊은 관계인 캐릭터 중 호감도가 가장 높은 하나. 없으면 'none'. */
+  romance: string | 'none'
+  /** 나라의 향방을 이루는 flag 들. 배타가 아니라 수집이다. */
+  nationFlags: string[]
+  /** 엔딩의 색을 정하는 수식들. 역시 복수 수집. */
+  modifiers: string[]
+  /** 어느 위기를 한 번의 유예로 면했는지. 판정을 사후에 설명하기 위해 남긴다. */
+  reprieve: { used: boolean; from: string | null }
+  /** 국력. 판정 근거를 남긴다. */
+  power: number
+}
+
 /** 'ended' = 20세를 넘겨 이번 단계의 끝점에 도달한 상태(엔딩은 M3). */
 export type Phase = 'schedule' | 'result' | 'event' | 'ended'
 

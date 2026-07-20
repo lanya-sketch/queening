@@ -35,6 +35,9 @@ export const PRIORITY: Record<string, number> = {
   'hero-at-court': 78,
   'adult-inner-court': 76,
   'teen-first-policy': 74,
+  // 엔딩 직전의 갈림길. 마일스톤 대역의 아래쪽 —
+  // 진실 회수(90+)보다는 반드시 뒤에 와야 한다(증거를 얻은 뒤에 처분한다).
+  'regent-disposal': 72,
 
   // ── 60–69 캐릭터 등장/퇴장
   // 퇴장이 등장보다 위: 체류가 끝난 계절에 퇴장이 먼저 처리돼야

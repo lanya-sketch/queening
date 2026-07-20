@@ -23,6 +23,7 @@
     "verify:live-affection": "node tools/verify/live-affection.mjs",
     "verify:ablation": "node tools/verify/ablation.mjs",
     "verify:incidents": "node tools/verify/incidents.mjs",
+    "verify:ending": "node tools/verify/ending.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
     "gen:characters": "node tools/verify/gen-characters.mjs"

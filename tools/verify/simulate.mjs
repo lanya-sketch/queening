@@ -60,6 +60,10 @@ const COMMON_CHOICES = [
   //   실제로 B 빌드가 중립에서 결렬로 뒤집혔다. 옵트인 설계에 맞춰 기본은 물러남으로
   //   두고, 강탈 경로는 전용 빌드(H)가 덮는다.
   [/가문 수색/, /물러난다/],
+  // ★ 처분도 되돌릴 수 없다. 플래너 기본값("첫 선택지")이 심판/폭정이라
+  //   지정하지 않으면 모든 빌드가 자동으로 숙부를 친다. 기본은 보류로 두고,
+  //   폭군 경로는 전용 빌드(J)가 덮는다. (가문 수색에서 배운 것과 같은 규칙)
+  [/숙부의 처분/, /그대로 둔다/],
 ]
 
 const RUNS = [
@@ -132,15 +136,18 @@ const RUNS = [
      * A 와 같은 궁정처세 특화지만 가문 수색을 **강행**해 두 반쪽을 다 모은다.
      * 침실 수색 성공(궁정처세 68) + 강탈 → blood_oath_complete 도달을 실측한다.
      */
-    name: 'H. 혈서 확증 루트 (침실 수색 + 강탈)',
+    name: 'H. 혈서 확증 루트 (침실 수색 + 강탈 + 심판)',
     targets: { 궁정처세: 72, 통치학: 50, 변론: 60 },
     reclaim: true,
     choices: [
       [/왕대비의 초대/, /아버지 이야기/],
       [/달이 없는 밤/, /숨는다/],
       [/가문 수색/, /수색을 강행한다/],
+      // 확증까지 모은 루트의 자연스러운 종착점 — 그리고 '정당' 처분을
+      // 실제 플레이로 밟는 유일한 빌드다(J 는 폭군, 나머지는 보류).
+      [/숙부의 처분/, /명분을 들어 심판한다/],
     ],
-    expect: { bloodOath: true },
+    expect: { bloodOath: true, just: true },
   },
   {
     /**
@@ -162,6 +169,23 @@ const RUNS = [
       [/국고의 장부/, /밝히게/],
     ],
     expect: { scroll: true },
+  },
+  {
+    /**
+     * ★ M3-1 폭군 경로 전용 빌드.
+     * F(실권 극대화)와 정책이 같고 **처분만 강행**한다.
+     * 진실도 확증도 없이 힘으로 숙부를 치면 어떤 엔딩으로 수렴하는지 실측한다.
+     */
+    name: 'J. 폭군 루트 (명분 없이 처분)',
+    targets: { 통치학: 60 },
+    reclaim: true,
+    choices: [
+      [/성년식/, /친정을 선포/],
+      [/첫 친정/, /인사를 개편|국고|군제/],
+      [/귀족들의 견제/, /정면으로 반박/],
+      [/숙부의 처분/, /명분 없이 처분한다/],
+    ],
+    expect: { tyrant: true },
   },
   {
     name: 'G. 회유 루트 + 사냥 남용 (사냥 밸런스 실측)',
@@ -361,8 +385,16 @@ async function runSimulation(browser, run) {
     await page.screenshot({ path: `${OUT}/ended-${run.name[0]}.png`, fullPage: true })
   }
 
+  // ★ 엔딩 판정 (M3-1). 모든 빌드가 정확히 하나의 결과로 수렴하는지 실측한다.
+  const ending = endedReached
+    ? await page.evaluate(() => window.__queeningAi.judgeEnding())
+    : null
+
   await ctx.close()
-  return { endedReached, fired, flags, stats, resources, errors, turns, influenceTrack, minInfluence }
+  return {
+    endedReached, fired, flags, stats, resources, errors, turns,
+    influenceTrack, minInfluence, ending,
+  }
 }
 
 const browser = await launch()
@@ -424,6 +456,26 @@ for (const run of only ? RUNS.filter((r) => r.name.startsWith(only)) : RUNS) {
   console.log('섭정:', r.flags.regent_alliance ? '동맹' : accord ? '회유 성사'
     : r.flags.regent_hostile ? '결렬' : '중립',
     run.expect.accord === undefined ? '' : ok(accord === run.expect.accord))
+  // ★ 엔딩 판정 (M3-1). "엔딩 없음"이 하나라도 나오면 그 자리에서 드러난다.
+  if (r.ending) {
+    const e = r.ending
+    const parts = [e.tier, e.disposal, e.truthLevel]
+    if (e.romance !== 'none') parts.push(`인연:${e.romance}`)
+    console.log('엔딩:', parts.join(' / '),
+      e.modifiers.length ? `[${e.modifiers.join('·')}]` : '',
+      `| 국력 ${e.power}`,
+      e.reprieve.used ? `| 유예: ${e.reprieve.from}` : '')
+    if (e.nationFlags.length) console.log('  나라 향방:', e.nationFlags.join(', '))
+    if (run.expect.tyrant !== undefined) {
+      console.log('  폭군 판정:', ok((e.disposal === '폭군') === run.expect.tyrant))
+    }
+    if (run.expect.just !== undefined) {
+      console.log('  정당 처분 판정:', ok((e.disposal === '정당') === run.expect.just))
+    }
+  } else if (r.endedReached) {
+    console.log('엔딩: *** 판정 실패 ***')
+  }
+
   if (r.errors.length) console.log('*** 런타임 에러:', r.errors.join(' | '))
 }
 
