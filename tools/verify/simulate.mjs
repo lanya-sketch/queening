@@ -372,6 +372,8 @@ async function runSimulation(browser, run) {
   const endedReached = (await phaseOf(page)) === 'ended'
   let flags = {}, stats = {}, resources = {}
   if (endedReached) {
+    // 엔딩 씬(M3-2)을 넘겨야 결산 화면의 저장 버튼이 나온다.
+    await advanceScene(page)
     await page.getByRole('button', { name: '이 기록 저장' }).click()
     await page.waitForTimeout(200)
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))

@@ -1,5 +1,5 @@
 import { CHARACTER_BY_ID } from '../data/characters'
-import { SEASON_LABEL } from '../data/config'
+import { GAME_CONFIG, SEASON_LABEL } from '../data/config'
 import { EVENTS } from '../data/events'
 import { RESOURCE_META, STAT_META } from '../data/stats'
 import type { Condition, GameEvent, GameState, GaugeKey, StatKey } from '../types/game'
@@ -100,6 +100,10 @@ export function findTriggeredEvents(state: GameState): GameEvent[] {
     //   "발동은 했는데 보여줄 게 없다"를 만들지 않기 위해서다.
     //   엔진이 아는 것은 source 표식과 불리언 하나뿐이다.
     if (event.source === 'ai_generated' && !isAiAvailable()) return false
+    // ★ 엔딩에 도달한 마지막 턴에는 **새 확률 이벤트**를 띄우지 않는다.
+    //   결산 직전에 뜬금없는 돌발·등장이 끼는 것을 막는다. 진행 중이던 체류의
+    //   퇴장씬(chance 없음)은 확률 이벤트가 아니라 그대로 발동한다.
+    if (event.chance && state.age > GAME_CONFIG.endAge) return false
     const once = event.once ?? true
     if (once && state.flags[seenFlagId(event.id)]) return false
     return matchesCondition(state, event.condition)

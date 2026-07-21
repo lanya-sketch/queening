@@ -10,6 +10,7 @@ import { useTalk } from '../store/talkStore'
 import { parseIncident } from './incident'
 import { chanceOf } from '../systems/chance'
 import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
+import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { setDeterministic } from '../systems/rng'
 import { availableTopics } from '../systems/topics'
@@ -64,6 +65,12 @@ export function installDevBridge(): void {
     },
     endingThresholds() {
       return ENDING_THRESHOLDS
+    },
+    /** 엔딩 씬을 조립해 돌려준다. 조립 완전성 검증이 이 경로로 돈다. */
+    buildEndingScene(state?: Record<string, unknown>) {
+      const result = judgeEnding((state ?? useGame.getState().game) as never)
+      const scene = buildEndingScene(result)
+      return { skeletonId: endingSkeletonId(result), scene, result }
     },
 
     /** 전 이벤트의 우선순위 — 동률 검사용. */
@@ -215,6 +222,10 @@ export function installDevBridge(): void {
     /** 토큰 치환 결과를 직접 확인한다(복합어가 안 깨지는지). */
     resolve(text: string) {
       return resolveText(text, useGame.getState().game)
+    },
+    /** 임의의 상태로 토큰을 치환한다 — 조립 검증이 세이브마다 다른 성별을 쓰기 위해. */
+    resolveWith(text: string, state: Record<string, unknown>) {
+      return resolveText(text ?? '', state as never)
     },
     /** 연애 대상의 조립된 시스템 프롬프트. */
     persona(charId: string) {

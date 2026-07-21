@@ -132,7 +132,9 @@ export async function phaseOf(p) {
   if (await p.getByText('수행한 활동').isVisible().catch(() => false)) return 'result'
   // 이벤트 화면 라벨은 category 에 따라 '사건' 또는 '국정 현안'
   if (await p.getByText(/^(사건|국정 현안)$/).first().isVisible().catch(() => false)) return 'event'
-  if (await p.getByText('9년이 지났다').isVisible().catch(() => false)) return 'ended'
+  // 엔딩(M3-2): 먼저 조립 씬("아홉 해의 끝"), 씬을 넘기면 요약("결산"·"세가 되었다").
+  if (await p.getByText('아홉 해의 끝').isVisible().catch(() => false)) return 'ended'
+  if (await p.getByText(/세가 되었다/).isVisible().catch(() => false)) return 'ended'
   return 'unknown'
 }
 

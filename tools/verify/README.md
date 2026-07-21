@@ -34,6 +34,7 @@ FAIL 이 뜨면 먼저 그 빌드만 단독으로 다시 돌려보고(`npm run s
 | `npm run verify:ablation` | **진짜 ablation** — 3c 콘텐츠를 실제로 들어낸 빌드와 정상 빌드를 결정론 모드로 나란히 돌려 미스터리 로그 대조 | ~40분 |
 | `npm run verify:incidents` | 돌발 현안 — 키 없으면 비활성, **방어 실험(규칙을 전부 어긴 응답 주입)**, 통보/선택지형, **10초 타이머 실제 화면** | ~1.5분 |
 | `npm run verify:ending` | 엔딩 판정 — **무작위 세이브 1만 개 전수 시행으로 완전성 증명**, 임계값, 유예 1회, 폭군 조합 판정 | ~40초 |
+| `npm run verify:ending-scene` | 엔딩 연출 — **1만 세이브가 빈 씬·미치환 토큰 없이 조립되는지**, 전용 삽입(A빌드 비극·given/seized·독 회피), 마지막 턴 확률 이벤트 차단 | ~40초 |
 | `npm run gen:outfits` | 플레이스홀더 착장 SVG 8장 재생성 | 즉시 |
 | `npm run gen:characters` | 플레이스홀더 캐릭터 초상 SVG 5장 재생성 | 즉시 |
 

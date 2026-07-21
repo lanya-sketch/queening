@@ -77,6 +77,42 @@ export interface Scene {
 }
 
 /**
+ * 엔딩 조립 (M3-2).
+ *
+ * ★ 조합 폭발(tier×disposal×truth×romance×nation×modifier = 수백)을
+ *   골격(뼈대) + 삽입(문단)으로 감당한다. 골격은 tier 로 갈리고, 나머지 축은
+ *   골격 안의 anchor 자리에 삽입이 조건부로 끼워진다.
+ *
+ * 판정(M3-1)은 건드리지 않는다. 조립은 EndingResult 를 **읽기만** 한다.
+ */
+export type EndingAnchor =
+  | 'opening' | 'truth' | 'disposal' | 'special' | 'romance' | 'nation' | 'closing'
+
+/** 골격의 한 줄. text 면 고정 문장, anchor 면 삽입이 들어갈 자리. */
+export interface EndingLine {
+  speaker: 'narration' | 'monarch'
+  text?: string
+  anchor?: EndingAnchor
+}
+
+export interface EndingSkeleton {
+  id: string
+  /** 이 골격이 받는 조건. catch-all 골격은 () => true. */
+  match: (r: EndingResult) => boolean
+  /** 여러 골격이 매칭되면 큰 값이 이긴다. catch-all 은 0. */
+  priority: number
+  lines: EndingLine[]
+}
+
+export interface EndingInsert {
+  anchor: EndingAnchor
+  match: (r: EndingResult) => boolean
+  /** 전용 삽입이 일반 삽입을 이긴다. */
+  priority: number
+  lines: SceneLine[]
+}
+
+/**
  * 대화 중 해금되는 고정 화제 (M2b-3c-2).
  *
  * ★ 엔진에 캐릭터 분기가 없다. ①의 아버지 이야기든 ④의 전장 이야기든

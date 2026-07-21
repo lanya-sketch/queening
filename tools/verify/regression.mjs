@@ -127,7 +127,14 @@ for (let i = 0; i < 10 && !fired; i++) {
   await page.waitForTimeout(150)
   const d = await dateText(page)
   await page.getByRole('button', { name: /다음 계절로|무슨 일이/ }).click()
-  await page.waitForTimeout(150)
+  // ★ 고정 대기 대신 화면이 실제로 전환될 때까지 기다린다.
+  //   부하가 걸리면 150ms 안에 렌더가 안 끝나 이벤트 화면을 놓쳐, 15종 스윕에서
+  //   B10 이 가짜로 실패했다(단독 4/4 통과). 조건 대기로 그 취약성을 없앤다.
+  await page.waitForFunction(() => {
+    const settled = ['활동 선택', '9년', '세가 되었다', '아홉 해의 끝']
+    if (document.querySelector('article h1')) return true
+    return settled.some((t) => document.body.innerText.includes(t))
+  }, { timeout: 8000 }).catch(() => {})
   while ((await phaseOf(page)) === 'event') {
     const title = await page.locator('article h1').innerText()
     log(`    ${d} → 이벤트 "${title}"`)
