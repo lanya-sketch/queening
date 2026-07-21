@@ -165,6 +165,36 @@ const tyrant = await sceneText(base({ courtInfluence: 80, flags: { tyrant_purge:
 log('C3 폭군 골격 (tier 가로채기):', tyrant.skeleton,
   ok(tyrant.skeleton === 'tyrant' && tyrant.text.includes('물어서 답이 없을 것')))
 
+// ★ 이번 라운드에 채운 네 골격 — 플레이스홀더가 아니라 실제 텍스트인지.
+const coexist = await sceneText(base({ courtInfluence: 55 }))
+log('C3a 공존 골격 (미완이되 앞이 열림):', coexist.skeleton,
+  ok(coexist.skeleton === 'coexist' && coexist.text.includes('지지 않은 것도 이긴 것')))
+
+const poison = await sceneText(base({
+  courtInfluence: 30, flags: { queen_poison_path: true },
+  wellbeing: 10, stats: { statecraft: 10, finance: 0, rhetoric: 0, martial: 0, courtcraft: 10 },
+}))
+log('C3b 배드:꼭두각시 (몸을 빼앗김):', poison.skeleton,
+  ok(poison.skeleton === 'bad-puppet-poison' && poison.text.includes('그 손을 움직이는 것이 누구인지')))
+
+const junta = await sceneText(base({
+  courtInfluence: 40, flags: { military_route_open: true },
+}))
+log('C3c 배드:군부종속 (⑤ 복선 회수):', junta.skeleton,
+  ok(junta.skeleton === 'bad-junta' &&
+     junta.text.includes('왕을 세우고 갈아치울 수 있는 자리')))
+
+const subjugated = await sceneText(base({
+  courtInfluence: 10, flags: { union_possible: true },
+  stats: { statecraft: 0, finance: 20, rhetoric: 0, martial: 20, courtcraft: 0 },
+}))
+log('C3d 배드:제국복속 (삼켜짐, "왕이 아니라"):', subjugated.skeleton,
+  ok(subjugated.skeleton === 'bad-subjugated' && subjugated.text.includes('왕이 아니라')))
+
+log('C3e ★ 이제 catch-all 외에 플레이스홀더 골격이 없음:',
+  ok([autonomy, puppet, tyrant, coexist, poison, junta, subjugated]
+    .every((s) => s.skeleton !== 'catch-all')))
+
 // nation 복수 삽입
 const manyNation = await sceneText(base({
   courtInfluence: 80,
