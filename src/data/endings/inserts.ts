@@ -102,16 +102,9 @@ export const ENDING_INSERTS: EndingInsert[] = [
   },
 
   // ─────────────────────────────────────────── @romance
-  // ① heir — given/seized 로 뉘앙스가 갈린다(전용 2번을 여기서 처리).
-  {
-    anchor: 'romance',
-    match: (r) => r.romance === 'heir' && mod(r, '정복의 전리품'),
-    priority: 30,
-    lines: [line(
-      '곁에는 그를 판 대가로 얻은 사람이 있었다. {그:heir}는 아버지를 잃었고,\n' +
-      '{왕}은 {그:heir}를 얻었다. 두 사람 다 그것이 사랑인지 전리품인지 말하지 않았다.',
-    )],
-  },
+  // ★ 하드 배타성: @romance 는 **확정된 사람**에게만 뜬다(r.romance 는 확정값).
+  //   given/seized 의 나머지 갈래(강탈+처형/관용)는 로맨스가 아니므로 @purge 가 맡는다.
+  //   여기서 갈리는 건 "확정했는데 그가 아버지까지 스스로 판(연인의 희생)" 경우다.
   {
     anchor: 'romance',
     match: (r) => r.romance === 'heir' && mod(r, '연인의 희생'),
@@ -181,6 +174,67 @@ export const ENDING_INSERTS: EndingInsert[] = [
     match: (r) => mod(r, '불신의 공치'),
     priority: 15,
     lines: [line('동맹은 맺어졌으나 신뢰는 아니었다. 두 사람은 같은 편에 서서 서로의 손을 감시했다.')],
+  },
+
+  // ─────────────────────────────────────────── @purge (숙청/관용, 복수)
+  // ① — given/seized × executed/spared 로 갈린다(명세의 세 갈래).
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'heir_executed') && mod(r, '정복의 전리품'),
+    priority: 40,
+    lines: [line(
+      '섭정공의 핏줄은 아버지와 함께 정리되었다. 강탈한 증거로 아버지를 치고,\n' +
+      '그 아들까지 남기지 않았다. {왕}은 그것을 뒷일이라 불렀고, 뒷일에는 이름이 없었다.',
+    )],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'heir_executed'),
+    priority: 35,
+    lines: [line('섭정공의 아들은 역적의 핏줄로 처형되었다. 아버지의 죄가 아들에게로 흘렀다.')],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'heir_spared') && (mod(r, '정복의 전리품') || mod(r, '연인의 희생')),
+    priority: 35,
+    lines: [line('섭정공의 아들은 살아남았다. {왕}은 죄를 아버지에게만 물었다 — 그 관용이 훗날 무엇이 될지는 몰랐다.')],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'loyalist_scapegoat'),
+    priority: 30,
+    lines: [line('충신 가문의 딸은 급진의 상징으로 몰려 희생되었다. 늘 옳은 편에 섰던 대가였다.')],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'hero_isolated'),
+    priority: 30,
+    lines: [line('평민 영웅은 작위를 받고 어디에도 속하지 못하게 되었다. 포상이라는 이름의 두 번째 족쇄였다.')],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'commander_purged'),
+    priority: 30,
+    lines: [line('친위 지휘관은 반역 혐의로 청산되었다. 아홉 대를 지킨 자리가, {왕}의 손에 무너졌다.')],
+  },
+  // 관용의 대가 — 살려둔 불씨. 숙청과 겹치지 않을 때만 조용히 뜬다.
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'commander_spared'),
+    priority: 15,
+    lines: [line('오랜 무관 가문은 건드리지 않았다. 갈아치울 힘은 그대로 남았고, {왕}은 그 위험을 안고 갔다.')],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'heir_spared') && !mod(r, '정복의 전리품') && !mod(r, '연인의 희생'),
+    priority: 15,
+    lines: [line('섭정공의 아들은 살아남았다. 역적의 핏줄이 남았다는 사실을, {왕}은 안고 가기로 했다.')],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => mod(r, '고독한 옥좌'),
+    priority: 45,
+    lines: [line('옥좌 곁에는 아무도 남지 않았다. {왕}이 하나씩 치웠고, 마지막에는 정말로 혼자였다.')],
   },
 
   // ─────────────────────────────────────────── @closing (수식)

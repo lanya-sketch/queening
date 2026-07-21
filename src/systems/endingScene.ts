@@ -37,8 +37,8 @@ function insertsFor(anchor: string, result: EndingResult): SceneLine[] {
   const matched = ENDING_INSERTS.filter((i) => i.anchor === anchor && i.match(result))
   if (matched.length === 0) return []
 
-  if (anchor === 'nation') {
-    // 나라 향방은 배타가 아니다 — 매칭된 것을 priority 순으로 모두 잇는다.
+  if (anchor === 'nation' || anchor === 'purge') {
+    // 나라 향방·숙청은 배타가 아니다 — 매칭된 것을 priority 순으로 모두 잇는다.
     return [...matched]
       .sort((a, b) => b.priority - a.priority)
       .flatMap((i) => i.lines)

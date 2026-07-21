@@ -3,8 +3,10 @@ import { ADULT_EVENTS } from './adult'
 import { AFFAIR_EVENTS } from './affairs'
 import { BLOOD_OATH_EVENTS } from './bloodoath'
 import { CHARACTER_EVENTS } from './characters'
+import { DECISIVE_EVENTS } from './decisive'
 import { DEVICE_EVENTS } from './devices'
 import { DISPOSAL_EVENTS } from './disposal'
+import { RECKONING_AFTERMATH, RECKONING_EVENTS } from './reckoning'
 import { INCIDENT_EVENTS } from './incidents'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
@@ -26,6 +28,9 @@ const RAW_EVENTS: GameEvent[] = [
   ...BLOOD_OATH_EVENTS,
   ...DEVICE_EVENTS,
   ...DISPOSAL_EVENTS,
+  ...DECISIVE_EVENTS,
+  ...RECKONING_EVENTS,
+  ...RECKONING_AFTERMATH,
   ...INCIDENT_EVENTS,
 ]
 

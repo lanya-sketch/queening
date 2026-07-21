@@ -19,15 +19,19 @@ import { join } from 'node:path'
 import { assertServer, log, ok, shotsDir } from './helpers.mjs'
 
 /**
- * 두 가지 모드.
- *   기본        — M2b-3c 장치(혈서·실마리·정치장치)를 들어낸다
- *   incidents   — M2b-4 돌발 현안을 들어낸다. 양쪽 팔 모두 돌발을 켜고 돌린 뒤
- *                 한쪽만 제거한다(안 켜면 애초에 안 나와서 대조가 공허하다).
+ * 세 가지 모드.
+ *   기본          — M2b-3c 장치(혈서·실마리·정치장치)를 들어낸다
+ *   incidents     — M2b-4 돌발 현안을 들어낸다(양쪽 팔 모두 돌발 켜고).
+ *   hardexclusive — 결정적 씬·청산을 들어낸다. 시뮬에서 결정적 씬은 호감도가 없어
+ *                   안 뜨지만 청산은 19세+ 에 뜨므로, 제거 전후 미스터리 불변을 본다.
  */
 const MODE = process.env.QUEENING_ABLATION_MODE ?? 'devices'
 const INCIDENT_MODE = MODE === 'incidents'
-const OUT = shotsDir(INCIDENT_MODE ? 'ablation-incidents' : 'ablation')
-const ABLATE = INCIDENT_MODE ? 'incidents' : 'bloodoath,devices,topics'
+const HARDEX_MODE = MODE === 'hardexclusive'
+const OUT = shotsDir(`ablation${MODE === 'devices' ? '' : '-' + MODE}`)
+const ABLATE = INCIDENT_MODE ? 'incidents'
+  : HARDEX_MODE ? 'hardexclusive'
+  : 'bloodoath,devices,topics'
 const BASE_ENV = INCIDENT_MODE
   ? { QUEENING_DETERMINISTIC: '1', QUEENING_INCIDENTS: '1' }
   : { QUEENING_DETERMINISTIC: '1' }
@@ -122,8 +126,8 @@ const influenceOf = (build) => build.summary['영향도 추이'] ?? '(없음)'
  * 그래서 영향도가 달라져도 되는 빌드는 두루마리를 받는 빌드뿐이다.
  */
 const RECEIVES_ABLATED_REWARD = (build) =>
-  INCIDENT_MODE
-    // 돌발은 심신·의심만 건드리고 영향도에는 손대지 못한다(클램프 상한 0).
+  INCIDENT_MODE || HARDEX_MODE
+    // 돌발·청산은 영향도에 손대지 못한다(청산은 flag 만 세운다).
     // 그래서 영향도 추이는 어느 빌드에서도 달라지면 안 된다.
     ? false
     : build.events.some((e) => e.title === '두루마리')
@@ -161,11 +165,14 @@ const ablated = parse(ablatedOut)
 // 제거된 콘텐츠가 실제로 사라졌는지부터 — 안 사라졌으면 비교가 무의미하다
 const ABLATED_TITLES = INCIDENT_MODE
   ? ['늦서리']
-  : [
-      '달이 없는 밤', '지나간 발소리', '먼저 한 거짓말', '들켰다', '가문 수색',
-      '세 번째 궤', '맞춰진 반쪽', '길을 터 두었습니다',
-      '두루마리', '문 앞에 선 가문', '두 개의 왕관',
-    ]
+  : HARDEX_MODE
+    // 시뮬에서 실제로 뜨는 것 — 청산(결정적 씬은 호감도가 없어 안 뜬다).
+    ? ['역적의 핏줄', '급진의 상징', '포상이라는 족쇄', '아홉 대의 자리', '무너진 자리', '남은 이름']
+    : [
+        '달이 없는 밤', '지나간 발소리', '먼저 한 거짓말', '들켰다', '가문 수색',
+        '세 번째 궤', '맞춰진 반쪽', '길을 터 두었습니다',
+        '두루마리', '문 앞에 선 가문', '두 개의 왕관',
+      ]
 const leftover = Object.values(ablated).flatMap((b) =>
   b.events.filter((e) => ABLATED_TITLES.includes(e.title)).map((e) => `${e.title}`))
 const presentInNormal = Object.values(normal).flatMap((b) =>
@@ -300,6 +307,9 @@ if (!passed) {
   log('  실제로 들어냈을 때 미스터리 로그가 동일하다.')
   log('  차이는 돌발이 만들던 민심 flag 하나뿐 — 제거한 콘텐츠의 산출물 그 자체다.')
   log('  "돌발은 양념"이 의도가 아니라 결과로 확정됐다.')
+} else if (HARDEX_MODE) {
+  log('★ 결론: 청산 이벤트를 실제로 들어내도 미스터리 로그가 동일하다.')
+  log('  청산은 flag 만 세우고 미스터리·영향도·민심에 손대지 않는다 — 무손상이 결과로 확정됐다.')
 } else {
   log('★ 결론: 3c 장치를 실제로 들어내도 미스터리 로그가 동일하다.')
   log('  유일한 차이는 두루마리(+18)를 받는 빌드의 영향도이고, 그건 제거된 보상 그 자체다.')

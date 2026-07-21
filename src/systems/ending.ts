@@ -1,4 +1,4 @@
-import { CHARACTERS, DEEP_BOND_THRESHOLD } from '../data/characters'
+import { CHARACTERS } from '../data/characters'
 import type { EndingDisposal, EndingResult, EndingTier, EndingTruth, GameState } from '../types/game'
 
 /**
@@ -138,16 +138,23 @@ function truthOf(state: GameState): EndingTruth {
   return '모름'
 }
 
-/** 깊은 관계 중 호감도가 가장 높은 하나. 동률이면 데이터 순서. */
-function romanceOf(state: GameState): { charId: string | 'none'; multiple: boolean } {
-  const bonds = CHARACTERS.map((c) => ({
-    id: c.id,
-    value: state.affection?.[c.id] ?? c.startingAffection,
-  })).filter((c) => c.value >= DEEP_BOND_THRESHOLD)
+/**
+ * 확정된 로맨스 하나. 하드 배타성(결정적 씬)에서 romance_confirmed:<id> 가
+ * 최대 하나만 참이므로(romance_settled 마스터 게이트가 보장), 스캔이 아니라 조회다.
+ *
+ * ★ 예전엔 "깊은 관계 중 최고치"(여러 명 가능)였다. 하드 배타성으로 바뀌면서
+ *   확정 flag 를 읽는다 — 호감도 70 을 넘겨도 결정적 씬을 수락해야 확정이다.
+ */
+function romanceOf(state: GameState): { charId: string | 'none' } {
+  const confirmed = CHARACTERS.find((c) => flag(state, `romance_confirmed:${c.id}`))
+  return { charId: confirmed?.id ?? 'none' }
+}
 
-  if (bonds.length === 0) return { charId: 'none', multiple: false }
-  const best = bonds.reduce((a, b) => (b.value > a.value ? b : a))
-  return { charId: best.id, multiple: bonds.length > 1 }
+/** 실행된 숙청의 수. 엔딩 수식이 조합으로 읽는다. */
+function purgeCount(state: GameState): number {
+  return ['heir_executed', 'loyalist_scapegoat', 'hero_isolated', 'commander_purged'].filter(
+    (f) => flag(state, f),
+  ).length
 }
 
 export function judgeEnding(state: GameState): EndingResult {
@@ -186,6 +193,11 @@ export function judgeEnding(state: GameState): EndingResult {
     'scroll_offered',
     'legitimacy_sacred',
     'church_support',
+    // 숙청/관용 결과 — 엔딩 @purge 삽입이 개별로 읽는다.
+    'heir_executed', 'heir_spared',
+    'loyalist_scapegoat', 'loyalist_spared',
+    'hero_isolated', 'hero_spared',
+    'commander_purged', 'commander_spared',
   ]) {
     if (flag(state, name)) nationFlags.push(name)
   }
@@ -207,10 +219,15 @@ export function judgeEnding(state: GameState): EndingResult {
   if (flag(state, 'regent_alliance') && (state.regentSuspicion ?? 0) >= T.distrust) {
     modifiers.push('불신의 공치')
   }
-  if (romance.multiple) modifiers.push('복수의 인연')
   if (flag(state, 'blood_oath_given')) modifiers.push('연인의 희생')
   if (flag(state, 'blood_oath_seized')) modifiers.push('정복의 전리품')
   if (flag(state, 'queen_poison_averted')) modifiers.push('독을 알아챘다')
+
+  // ★ 숙청 수식 — 새 지표 없이 실행된 숙청의 수로 조합한다.
+  const purges = purgeCount(state)
+  if (purges >= 2) modifiers.push('청산')
+  if (purges >= 2 && romance.charId === 'none') modifiers.push('고독한 옥좌')
+  if (purges >= 1 && flag(state, 'tyrant_purge')) modifiers.push('피 묻은 손')
 
   return {
     tier,

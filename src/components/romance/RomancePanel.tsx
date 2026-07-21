@@ -53,8 +53,8 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
               {aiEnabled
                 ? '해금된 사람을 누르면 대화가 시작됩니다.'
                 : 'AI 설정에서 키를 넣으면 대화할 수 있습니다.'}{' '}
-              깊은 관계는 호감도 {DEEP_BOND_THRESHOLD} 이상이고, 여러 사람과 동시에 쌓을 수
-              있습니다.
+              호감도 {DEEP_BOND_THRESHOLD} 에 이르면 결정적 순간이 찾아오고, 그때 한 사람을
+              택하면 나머지 인연은 닫힙니다.
             </p>
           </div>
           <button

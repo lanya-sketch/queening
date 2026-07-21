@@ -277,11 +277,18 @@ log('E2 ★ 같은 물건을 얻은 방식이 구분됨:',
   `${given.modifiers} vs ${seized.modifiers}`,
   ok(given.modifiers.includes('연인의 희생') && seized.modifiers.includes('정복의 전리품')))
 
-const romance = await judge(base({
-  courtInfluence: 50, affection: { heir: 80, loyalist: 75, prince: 10, commander: 10, hero: 10 },
+// ★ 하드 배타성: romance 는 호감도가 아니라 **확정 flag** 로 정해진다.
+const highAffNoConfirm = await judge(base({
+  courtInfluence: 50, affection: { heir: 90, loyalist: 90, prince: 10, commander: 10, hero: 10 },
 }))
-log('E3 깊은 관계 중 최고치를 고름:', romance.romance, ok(romance.romance === 'heir'))
-log('E4 복수의 인연 수식:', ok(romance.modifiers.includes('복수의 인연')))
+log('E3 ★ 호감도 90 여럿이어도 확정 안 했으면 철인통치:',
+  highAffNoConfirm.romance, ok(highAffNoConfirm.romance === 'none'))
+const confirmed = await judge(base({
+  courtInfluence: 50, affection: { heir: 90, loyalist: 90 },
+  flags: { 'romance_confirmed:loyalist': true, romance_settled: true },
+}))
+log('E4 ★ 확정된 하나만 인연 (호감도 최고 아님):',
+  confirmed.romance, ok(confirmed.romance === 'loyalist' && !confirmed.modifiers.includes('복수의 인연')))
 
 const lonely = await judge(base({ courtInfluence: 80, flags: { tyrant_purge: true } }))
 log('E5 폭군 + 인연 없음 → 고립:', ok(lonely.modifiers.includes('고립')))

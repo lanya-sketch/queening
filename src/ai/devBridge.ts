@@ -1,7 +1,9 @@
 import { EVENTS, EVENT_BY_ID } from '../data/events'
 import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
+import { DECISIVE_EVENTS } from '../data/events/decisive'
 import { DEVICE_EVENTS } from '../data/events/devices'
 import { INCIDENT_EVENTS } from '../data/events/incidents'
+import { RECKONING_AFTERMATH, RECKONING_EVENTS } from '../data/events/reckoning'
 import { TOPICS, TOPIC_BY_ID } from '../data/topics'
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
@@ -145,6 +147,14 @@ export function installDevBridge(): void {
     deviceIds() {
       return DEVICE_EVENTS.map((e) => e.id)
     },
+    /** 결정적 씬 이벤트 id. */
+    decisiveIds() {
+      return DECISIVE_EVENTS.map((e) => e.id)
+    },
+    /** 청산·후일담 이벤트 id. */
+    reckoningIds() {
+      return [...RECKONING_EVENTS, ...RECKONING_AFTERMATH].map((e) => e.id)
+    },
 
     /**
      * ★ 결정론 모드 — variance 를 0 으로 만든다.
@@ -177,6 +187,9 @@ export function installDevBridge(): void {
       if (packs.includes('bloodoath')) drop(BLOOD_OATH_EVENTS)
       if (packs.includes('devices')) drop(DEVICE_EVENTS)
       if (packs.includes('incidents')) drop(INCIDENT_EVENTS)
+      if (packs.includes('hardexclusive')) {
+        drop([...DECISIVE_EVENTS, ...RECKONING_EVENTS, ...RECKONING_AFTERMATH])
+      }
       if (packs.includes('topics')) TOPICS.splice(0, TOPICS.length)
       return { removed, remainingEvents: EVENTS.length, remainingTopics: TOPICS.length }
     },

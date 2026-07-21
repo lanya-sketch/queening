@@ -135,18 +135,24 @@ log('B1 ★ A빌드 비극 전용 (모후주모 + 못함):',
   ok(tragic.text.includes('가장 무거운 침묵은')))
 log('   골격:', tragic.skeleton, '| 판정:', tragic.result.tier, '/', tragic.result.disposal)
 
-// given vs seized
-const given = await sceneText(base({
-  courtInfluence: 75, affection: { heir: 80, loyalist: 0, prince: 0, commander: 0, hero: 0 },
-  flags: { blood_oath_given: true },
+// ★ 하드 배타성: given/seized 의 갈래가 로맨스 확정 여부로 나뉜다.
+//   확정 + given → @romance "연인의 희생" / 강탈+처형 → @purge "핏줄 청산"(hard-exclusive D2 에서 검증).
+const confirmedGiven = await sceneText(base({
+  courtInfluence: 75,
+  flags: { 'romance_confirmed:heir': true, romance_settled: true, blood_oath_given: true },
 }))
-const seized = await sceneText(base({
-  courtInfluence: 75, affection: { heir: 80, loyalist: 0, prince: 0, commander: 0, hero: 0 },
-  flags: { blood_oath_seized: true },
+log('B2 ★ 확정 + given → 연인의 희생 (@romance):', ok(confirmedGiven.text.includes('제 손으로')))
+
+const seizedNoConfirm = await sceneText(base({
+  courtInfluence: 75, flags: { blood_oath_seized: true },
 }))
-log('B2 ★ given (연인의 희생):', ok(given.text.includes('제 손으로')))
-log('B3 ★ seized (정복의 전리품):', ok(seized.text.includes('사랑인지 전리품인지')))
-log('B4 ★ 같은 heir 인데 뉘앙스가 갈림:', ok(given.text !== seized.text))
+log('B3 ★ 확정 안 한 seized 는 @romance 로 뜨지 않음 (로맨스가 아님):',
+  ok(!seizedNoConfirm.text.includes('제 손으로') && seizedNoConfirm.result.romance === 'none'))
+
+const seizedExecuted = await sceneText(base({
+  courtInfluence: 75, flags: { blood_oath_seized: true, heir_executed: true },
+}))
+log('B4 ★ 강탈 + 처형 → @purge 핏줄 청산:', ok(seizedExecuted.text.includes('아들까지 남기지 않았다')))
 
 // poison averted
 const averted = await sceneText(base({

@@ -1,12 +1,13 @@
 import type { Scene } from '../../types/game'
+import { HARD_EXCLUSIVE_SCENES } from './hardExclusive'
 
 /**
- * 대사 씬 (M2b-3a).
+ * 대사 씬 (M2b-3a~).
  *
  * ★ 모든 씬 대사는 여기(data/)에 둔다 — 컴포넌트 하드코딩 금지.
  *   동양판 이식과 성별 토큰 치환이 텍스트를 다시 쓰지 않고 되게 하기 위함.
  *
- * 이번 단계에는 데뷔탕트 씬 하나만 있다. 캐릭터별 씬은 M2b-3b.
+ * 결정적 씬·청산 후일담은 분량이 커서 hardExclusive.ts 로 분리해 합친다.
  */
 export const SCENES: Scene[] = [
   {
@@ -341,6 +342,7 @@ export const SCENES: Scene[] = [
       },
     ],
   },
+  ...HARD_EXCLUSIVE_SCENES,
 ]
 
 export const SCENE_BY_ID: Record<string, Scene> = Object.fromEntries(

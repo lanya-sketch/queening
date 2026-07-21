@@ -35,6 +35,7 @@ FAIL 이 뜨면 먼저 그 빌드만 단독으로 다시 돌려보고(`npm run s
 | `npm run verify:incidents` | 돌발 현안 — 키 없으면 비활성, **방어 실험(규칙을 전부 어긴 응답 주입)**, 통보/선택지형, **10초 타이머 실제 화면** | ~1.5분 |
 | `npm run verify:ending` | 엔딩 판정 — **무작위 세이브 1만 개 전수 시행으로 완전성 증명**, 임계값, 유예 1회, 폭군 조합 판정 | ~40초 |
 | `npm run verify:ending-scene` | 엔딩 연출 — **1만 세이브가 빈 씬·미치환 토큰 없이 조립되는지**, 전용 삽입(A빌드 비극·given/seized·독 회피), 마지막 턴 확률 이벤트 차단 | ~40초 |
+| `npm run verify:hard-exclusive` | 하드 배타성 — **확정/거절/순차/철인통치**, 청산 게이팅, 판정 단순화 후 완전성(1만), 숙청 조합 수식, ⑤ 3구간 후일담 | ~1분 |
 | `npm run gen:outfits` | 플레이스홀더 착장 SVG 8장 재생성 | 즉시 |
 | `npm run gen:characters` | 플레이스홀더 캐릭터 초상 SVG 5장 재생성 | 즉시 |
 
@@ -81,6 +82,7 @@ FAIL 이 뜨면 먼저 그 빌드만 단독으로 다시 돌려보고(`npm run s
 - `QUEENING_ABLATE=bloodoath,devices,topics,incidents` — 그 콘텐츠를 런타임에서 제거
 - `QUEENING_ABLATION_REPLAY=1` — 저장된 로그로 판정만 다시 (시뮬 재실행 없음)
 - `QUEENING_ABLATION_MODE=incidents` — 돌발 현안 ablation (양쪽 팔 모두 돌발을 켠다)
+- `QUEENING_ABLATION_MODE=hardexclusive` — 청산 ablation (결정적 씬은 시뮬에서 안 뜸)
 - `QUEENING_INCIDENTS=1` — 시뮬에서 돌발을 켠다(고정 응답 가로채기 + 확률 0.9)
 
 **돌발 ablation 은 확률을 정상보다 10배 이상 올려서 돌린다.** 정상 빈도(6~8%)는

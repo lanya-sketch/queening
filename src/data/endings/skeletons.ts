@@ -26,6 +26,8 @@ const body = [
   { speaker: 'narration' as const, anchor: 'special' as const },
   { speaker: 'narration' as const, anchor: 'romance' as const },
   { speaker: 'narration' as const, anchor: 'nation' as const },
+  // 나라의 모양(nation) 다음, 마무리(closing) 앞 — 사람들에게 무슨 일이 있었나.
+  { speaker: 'narration' as const, anchor: 'purge' as const },
   { speaker: 'narration' as const, anchor: 'closing' as const },
 ]
 

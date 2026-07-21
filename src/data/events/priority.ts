@@ -39,15 +39,18 @@ export const PRIORITY: Record<string, number> = {
   // 진실 회수(90+)보다는 반드시 뒤에 와야 한다(증거를 얻은 뒤에 처분한다).
   'regent-disposal': 72,
 
-  // ── 60–69 캐릭터 등장/퇴장
-  // 퇴장이 등장보다 위: 체류가 끝난 계절에 퇴장이 먼저 처리돼야
-  // "떠나기도 전에 또 온다"가 생기지 않는다.
-  // 고유장치는 로맨스를 끝까지 끌고 가야만 열리는 희소한 순간이라,
-  // 같은 계절에 겹쳐도 체류 사이클보다 먼저 표시한다.
+  // ── 60–69 캐릭터: 결정적 씬(홀수) + 고유장치·등장(짝수)
+  // ★ 결정적 씬은 로맨스 확정의 정점이라, 같은 계절에 고유장치와 겹치면
+  //   확정(관계의 큰 매듭)이 장치 해금보다 먼저 표시되게 홀수 슬롯(위)에 둔다.
+  'decisive-heir': 69,
   'hero-sacred-scroll': 68,
+  'decisive-loyalist': 67,
   'commander-father-audience': 66,
+  'decisive-prince': 65,
   'union-possible': 64,
+  'decisive-commander': 63,
   'prince-departure': 62,
+  'decisive-hero': 61,
   'prince-arrival': 60,
 
   // ── 50–59 미스터리 파생(혈서). 진실 회수(90+)보다 반드시 아래 —
@@ -65,18 +68,33 @@ export const PRIORITY: Record<string, number> = {
   'half-heir-hostile': 52,
   'loyalist-chamber-hint': 51,
 
-  // ── 30–49 정치 현안
+  // ── 30–49 정치 현안 + 청산(위쪽)
+  // 청산은 19세+ 의 정치 행위라 이 대역 맨 위에 둔다 — 일상 현안보다 앞서되
+  // 진실·마일스톤·처분보다는 뒤. heir 청산은 disposal(72) 이 regent_disposed 를
+  // 세운 뒤라야 조건이 서므로, disposal 보다 낮은 것이 맞다(같은 턴 연쇄).
+  'heir-reckoning': 49,
+  'loyalist-reckoning': 48,
+  'hero-reckoning': 47,
+  'commander-reckoning': 45,
   'issue-house-of-commons': 46,
   'issue-frontier-raid': 44,
   'issue-empire-tribute': 42,
   'teen-noble-check': 40,
 
-  // ── 10–29 배경·단서
+  // ── 10–29 배경·단서 + 청산 후일담
+  // 후일담은 청산이 flag 를 세운 **다음 턴**에 온다("며칠 뒤"). 서로 배타적인
+  // 호감도 구간이라 실제로 경쟁하지 않지만, 표 규칙상 값은 전부 유일하게 둔다.
+  'commander-aftermath-high': 29,
   'adult-uncle-letters': 28,
+  'commander-aftermath-mid': 27,
   'teen-missing-eunuch': 26,
+  'commander-aftermath-low': 25,
   'teen-audit-ledger': 24,
+  'heir-aftermath-high': 23,
   'youth-archive-night': 22,
+  'loyalist-aftermath-high': 21,
   'youth-sealed-record': 20,
+  'hero-aftermath-high': 19,
   'youth-mother-tea': 16,
   'first-audience': 12,
 

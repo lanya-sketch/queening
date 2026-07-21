@@ -86,7 +86,7 @@ export interface Scene {
  * 판정(M3-1)은 건드리지 않는다. 조립은 EndingResult 를 **읽기만** 한다.
  */
 export type EndingAnchor =
-  | 'opening' | 'truth' | 'disposal' | 'special' | 'romance' | 'nation' | 'closing'
+  | 'opening' | 'truth' | 'disposal' | 'special' | 'romance' | 'nation' | 'purge' | 'closing'
 
 /** 골격의 한 줄. text 면 고정 문장, anchor 면 삽입이 들어갈 자리. */
 export interface EndingLine {
