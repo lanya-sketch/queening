@@ -4,8 +4,11 @@ import { EventScreen } from './components/EventScreen'
 import { PortraitModal } from './components/portrait/PortraitModal'
 import { ScheduleScreen } from './components/ScheduleScreen'
 import { StatusPanel } from './components/StatusPanel'
+import { OnboardingOverlay } from './components/OnboardingOverlay'
 import { TalkModal } from './components/talk/TalkModal'
+import { TitleScreen } from './components/TitleScreen'
 import { TurnResultScreen } from './components/TurnResultScreen'
+import { useApp } from './store/appStore'
 import { useGame } from './store/gameStore'
 
 function Notice() {
@@ -29,6 +32,8 @@ function Notice() {
 }
 
 export default function App() {
+  const screen = useApp((s) => s.screen)
+  const onboarding = useApp((s) => s.onboarding)
   const phase = useGame((s) => s.game.phase)
   const initOutfits = useGame((s) => s.initOutfits)
 
@@ -36,6 +41,9 @@ export default function App() {
   useEffect(() => {
     void initOutfits()
   }, [initOutfits])
+
+  // 앱 진입은 이제 타이틀부터 — 예전엔 게임 중간으로 바로 떨어졌다.
+  if (screen === 'title') return <TitleScreen />
 
   return (
     <div className="min-h-dvh">
@@ -50,6 +58,8 @@ export default function App() {
       </div>
       <PortraitModal />
       <TalkModal />
+      {/* 온보딩은 새 게임 첫 진입에만 뜬다. 게임 화면 위 오버레이. */}
+      {onboarding && <OnboardingOverlay />}
       <Notice />
     </div>
   )

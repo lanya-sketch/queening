@@ -4,7 +4,7 @@
 //   "키가 거부되었습니다"(401 도달) → 브라우저 직접 호출 경로가 열려 있음
 //   "연결에 실패했습니다"(CORS/네트워크) → 헤더 또는 설정 문제
 // 를 구분한다. 유효한 키는 필요 없고, 어떤 비밀도 쓰지 않는다.
-import { APP_URL, launch, log, ok, overflow, shotsDir } from './helpers.mjs'
+import { APP_URL, enterGame, launch, log, ok, overflow, shotsDir } from './helpers.mjs'
 
 const OUT = shotsDir('ai-infra')
 const FAKE_KEY = 'sk-ant-api03-not-a-real-key-0000000000000000000000000000'
@@ -18,6 +18,7 @@ page.on('pageerror', (e) => errors.push('PAGEERROR: ' + e.message))
 await page.goto(APP_URL, { waitUntil: 'networkidle' })
 await page.evaluate(() => localStorage.clear())
 await page.reload({ waitUntil: 'networkidle' })
+await enterGame(page)
 await page.waitForTimeout(300)
 
 log('=== A. 키 없이도 코어 게임이 완전한가 ===')
@@ -110,6 +111,7 @@ log('=== F. 모바일 375px ===')
 const mctx = await browser.newContext({ viewport: { width: 375, height: 812 } })
 const mpage = await mctx.newPage()
 await mpage.goto(APP_URL, { waitUntil: 'networkidle' })
+await enterGame(mpage)
 await mpage.waitForTimeout(300)
 await mpage.getByRole('button', { name: '상세' }).click()
 await mpage.getByRole('button', { name: /AI 설정/ }).click()

@@ -2,7 +2,7 @@
 //
 // ★ 핵심: 왕/여왕 양쪽으로 돌려 복합어(선왕·왕국·왕당파·왕대비·옥좌)가 깨지지 않는지,
 //   그리고 여왕 플레이가 텍스트상 일관되는지.
-import { APP_URL, launch, log, ok, overflow, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import { APP_URL, enterGame, launch, log, ok, overflow, shotsDir, SAVE_VERSION } from './helpers.mjs'
 
 const OUT = shotsDir('romance')
 
@@ -15,6 +15,7 @@ page.on('pageerror', (e) => errors.push('PAGEERROR: ' + e.message))
 await page.goto(APP_URL, { waitUntil: 'networkidle' })
 await page.evaluate(() => localStorage.clear())
 await page.reload({ waitUntil: 'networkidle' })
+await enterGame(page)
 await page.waitForTimeout(400)
 
 log('=== A. 키 없이도 코어 게임 완전 ===')

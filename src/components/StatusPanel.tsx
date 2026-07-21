@@ -48,7 +48,7 @@ export function StatusPanel() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
-              <div className="rounded-lg bg-slate-800 px-2.5 py-1 text-center">
+              <div data-onboard="ap" className="rounded-lg bg-slate-800 px-2.5 py-1 text-center">
                 <p className="text-[10px] leading-none text-slate-400">행동력</p>
                 <p className="text-sm font-semibold tabular-nums leading-tight text-slate-100">
                   {game.actionPoints}
@@ -101,7 +101,7 @@ export function StatusPanel() {
 
           {/* 국정 — 계획에 쓰는 공개 지표 */}
           <p className="mb-2 text-[11px] font-medium text-slate-500">국정</p>
-          <div className="space-y-2.5">
+          <div data-onboard="gauges" className="space-y-2.5">
             <StatBar
               label={RESOURCE_META.courtInfluence.label}
               value={game.courtInfluence}

@@ -18,3 +18,27 @@ body {
 button {
   touch-action: manipulation;
 }
+
+/* 온보딩 툴팁이 가리키는 UI 요소 하이라이트 (D-1). */
+.onboard-highlight {
+  position: relative;
+  z-index: 45; /* 온보딩 오버레이(z-40) 위로 떠서 어둠에 안 묻히게 */
+  border-radius: 0.6rem;
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.9),
+    0 0 20px 4px rgba(251, 191, 36, 0.35);
+  animation: onboard-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes onboard-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(251, 191, 36, 0.9),
+      0 0 20px 4px rgba(251, 191, 36, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(251, 191, 36, 1),
+      0 0 28px 8px rgba(251, 191, 36, 0.5);
+  }
+}

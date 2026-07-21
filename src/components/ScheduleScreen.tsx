@@ -126,7 +126,7 @@ export function ScheduleScreen() {
       </section>
 
       {/* 턴 종료: 폰에선 하단 고정 */}
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
+      <div data-onboard="endTurn" className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
         <Button variant="primary" className="w-full" onClick={endTurn}>
           턴 종료 · 계절 넘기기
         </Button>

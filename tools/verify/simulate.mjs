@@ -5,7 +5,7 @@
 //   node tools/verify/simulate.mjs        전체 빌드
 //   node tools/verify/simulate.mjs D      머리글자가 D 인 빌드만
 import {
-  APP_URL, advanceScene, choiceButtons, launch, ok, phaseOf, readPanel, shotsDir,
+  APP_URL, advanceScene, choiceButtons, enterGame, launch, ok, phaseOf, readPanel, shotsDir,
 } from './helpers.mjs'
 
 const OUT = shotsDir('simulate')
@@ -272,6 +272,7 @@ async function runSimulation(browser, run) {
   await page.goto(APP_URL, { waitUntil: 'networkidle' })
   await page.evaluate(() => localStorage.clear())
   await page.reload({ waitUntil: 'networkidle' })
+  await enterGame(page) // 타이틀 건너뛰기
   await page.waitForTimeout(300)
 
   /**

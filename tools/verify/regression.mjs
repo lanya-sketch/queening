@@ -1,7 +1,7 @@
 // M1 / M2a / M-콘텐츠 회귀 스위트.
 // 착장·초상·모달, 턴 루프, 이벤트, 세이브 연쇄 마이그레이션, 반응형을 실제 브라우저로 검사한다.
 import {
-  card, choiceButtons, clearEvent, dateText, launch, log, ok, overflow, phaseOf,
+  card, choiceButtons, clearEvent, dateText, enterGame, launch, log, ok, overflow, phaseOf,
   portrait, readGauge, shotsDir, APP_URL, SAVE_VERSION,
 } from './helpers.mjs'
 
@@ -32,6 +32,7 @@ page.on('console', (m) => {
 await page.goto(APP_URL, { waitUntil: 'networkidle' })
 await page.evaluate(() => localStorage.clear())
 await page.reload({ waitUntil: 'networkidle' })
+await enterGame(page) // 타이틀 건너뛰기 (이후 reload 도 sessionStorage 로 유지)
 await page.waitForTimeout(300)
 
 log('=== A. 초상 · 모달 · 착장 교체 (375px) ===')
@@ -250,6 +251,7 @@ async function seedAffairSave(p, stats, when = { year: 2, season: 'summer', age:
     }))
   }, { s: stats, w: when, seenIds: seen })
   await p.reload({ waitUntil: 'networkidle' })
+  await enterGame(p)
   await p.waitForTimeout(300)
   await p.getByRole('button', { name: '불러오기' }).click()
   await p.waitForTimeout(250)
@@ -387,6 +389,7 @@ await page.keyboard.press('Escape')
 const dctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
 const dpage = await dctx.newPage()
 await dpage.goto(APP_URL, { waitUntil: 'networkidle' })
+await enterGame(dpage)
 await dpage.waitForTimeout(400)
 log('D4 데스크톱 사이드바 초상 표시:', ok(await portrait(dpage).isVisible()))
 log('D5 데스크톱 스탯 상시 노출:',

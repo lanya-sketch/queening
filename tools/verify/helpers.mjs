@@ -85,6 +85,27 @@ export async function blockAiNetwork(page) {
   return () => blocked
 }
 
+/**
+ * 타이틀 화면을 건너뛰고 게임으로 진입한다 (D-1 이후).
+ *
+ * 앱이 이제 타이틀에서 시작하므로, UI 를 직접 플레이하는 스위트는 이걸 호출해야
+ * 게임 화면(활동 선택 등)에 닿는다. setGame 을 쓰는 스위트는 그게 자동 진입시키므로
+ * 별도 호출이 필요 없다.
+ */
+export async function enterGame(page) {
+  // sessionStorage 플래그를 심어, 이후 reload(localStorage.clear 동반)에도 타이틀에
+  // 다시 막히지 않게 한다. 그리고 지금 화면도 즉시 게임으로 넘긴다.
+  await page.evaluate(() => {
+    try {
+      sessionStorage.setItem('queening.enterGame', '1')
+    } catch {
+      /* 무시 */
+    }
+    window.__queeningAi?.enterGame()
+  })
+  await page.waitForTimeout(120)
+}
+
 export const ok = (b) => (b ? 'PASS' : '*** FAIL ***')
 export const log = (...a) => console.log(...a)
 

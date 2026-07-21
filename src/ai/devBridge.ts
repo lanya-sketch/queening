@@ -9,6 +9,7 @@ import { TOPICS, TOPIC_BY_ID } from '../data/topics'
 import { useAi } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
 import { useIncidents } from '../store/incidentStore'
+import { useApp } from '../store/appStore'
 import { useTalk } from '../store/talkStore'
 import { parseIncident } from './incident'
 import { chanceOf } from '../systems/chance'
@@ -225,8 +226,18 @@ export function installDevBridge(): void {
       return findTriggeredEvents(useGame.getState().game).map((e) => e.id)
     },
 
+    /**
+     * ★ 타이틀 건너뛰고 게임 화면으로 진입한다 (D-1).
+     *   앱이 이제 타이틀에서 시작하므로, 검증 스크립트는 이걸 불러 게임에 들어간다.
+     *   온보딩 없이(검증은 게임 루프를 보므로).
+     */
+    enterGame() {
+      useApp.getState().startGame(false)
+    },
     /** 게임 상태를 갈아끼운다(검증에서 대조적인 두 군주를 만들 때). */
     setGame(patch: Record<string, unknown>) {
+      // 타이틀에 막혀 있으면 자동으로 게임에 들어간다 — 검증 편의.
+      if (useApp.getState().screen !== 'game') useApp.getState().startGame(false)
       useGame.setState({ game: { ...useGame.getState().game, ...patch } as never })
     },
     /** 지금 상태로 조립된 시스템 프롬프트. 숫자가 없는지 검증에서 확인한다. */

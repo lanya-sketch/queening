@@ -1,6 +1,6 @@
 // 착장 매니페스트 안전장치 검사.
 // 유저가 손으로 고치는 파일이므로, 깨졌을 때 게임이 죽지 않는지 확인한다.
-import { APP_URL, launch, log, ok, portrait } from './helpers.mjs'
+import { APP_URL, enterGame, launch, log, ok, portrait } from './helpers.mjs'
 
 const browser = await launch()
 
@@ -19,6 +19,7 @@ const p2 = await c2.newPage()
 await p2.route('**/assets/outfits/manifest.json', (route) =>
   route.fulfill({ status: 200, contentType: 'application/json', body: '{ 이건 JSON 이 아님' }))
 await p2.goto(APP_URL, { waitUntil: 'networkidle' })
+await enterGame(p2)
 await p2.waitForTimeout(400)
 await portrait(p2).click()
 await p2.waitForTimeout(300)
@@ -44,6 +45,7 @@ await p3.route('**/assets/outfits/manifest.json', (route) =>
     }),
   }))
 await p3.goto(APP_URL, { waitUntil: 'networkidle' })
+await enterGame(p3)
 await p3.waitForTimeout(400)
 await portrait(p3).click()
 await p3.waitForTimeout(300)
@@ -69,6 +71,7 @@ await p4.evaluate(() => {
   }))
 })
 await p4.reload({ waitUntil: 'networkidle' })
+await enterGame(p4)
 await p4.waitForTimeout(400)
 await p4.getByRole('button', { name: '상세' }).click()
 await p4.getByRole('button', { name: '불러오기' }).click()

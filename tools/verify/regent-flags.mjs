@@ -1,7 +1,7 @@
 // 섭정 관계 flag 배타성 검사.
 // 회유 성사(regent_won_over/alliance)와 결렬(regent_hostile)이 동시에 서면
 // M3 엔딩 분기가 판정 불가가 되므로, 한 플레이에서 공존하지 않아야 한다.
-import { APP_URL, choiceButtons, launch, log, ok, phaseOf, readPanel } from './helpers.mjs'
+import { APP_URL, choiceButtons, enterGame, launch, log, ok, phaseOf, readPanel } from './helpers.mjs'
 
 const CEDE = '정무를 섭정공께 맡긴다'
 const RECLAIM = '직접 재가한다'
@@ -11,6 +11,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
 await page.goto(APP_URL, { waitUntil: 'networkidle' })
 await page.evaluate(() => localStorage.clear())
 await page.reload({ waitUntil: 'networkidle' })
+await enterGame(page)
 await page.waitForTimeout(300)
 
 const order = []

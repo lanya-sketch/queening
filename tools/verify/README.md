@@ -37,6 +37,7 @@ FAIL 이 뜨면 먼저 그 빌드만 단독으로 다시 돌려보고(`npm run s
 | `npm run verify:ending-scene` | 엔딩 연출 — **1만 세이브가 빈 씬·미치환 토큰 없이 조립되는지**, 전용 삽입(A빌드 비극·given/seized·독 회피), 마지막 턴 확률 이벤트 차단 | ~40초 |
 | `npm run verify:hard-exclusive` | 하드 배타성 — **확정/거절/순차/철인통치**, 청산 게이팅, 판정 단순화 후 완전성(1만), 숙청 조합 수식, ⑤ 3구간 후일담 | ~1분 |
 | `npm run verify:concubine` | 측실 + ③ 정복 — 청산 3갈래, ⑤ 3구간·①②④ 실제 삽입, 정복 능동 발동·네 갈래·union 가로챔, 완전성(1만) | ~1분 |
+| `npm run verify:title` | 타이틀 + 온보딩(D-1) — 진입 흐름·메뉴 상태, 온보딩 순차·툴팁 하이라이트·스킵, 이어하기, 375px | ~40초 |
 | `npm run gen:outfits` | 플레이스홀더 착장 SVG 8장 재생성 | 즉시 |
 | `npm run gen:characters` | 플레이스홀더 캐릭터 초상 SVG 5장 재생성 | 즉시 |
 
@@ -104,6 +105,14 @@ AI 기능이 하나라도 자동 실행되면 진짜 호출이 나가고, 실제
 돌발이 관심사가 아닌 검증은 `window.__queeningAi.setIncidentRate(0)` 으로 눌러 둘 것.
 라이브 스크립트(`verify:live-affection`)도 재려는 것과 무관한 호출이 과금되지 않도록
 같은 처리를 해 두었다.
+
+## 타이틀 화면 진입 (D-1 이후)
+
+앱이 이제 **타이틀 화면에서 시작한다.** UI 를 직접 플레이하는 스위트는 `enterGame(page)`
+(helpers)를 첫 goto/reload 뒤에 한 번 불러 게임에 들어가야 한다 — sessionStorage 플래그를
+심어 이후 reload(localStorage.clear 동반)에도 타이틀에 다시 안 막힌다. **새 컨텍스트마다**
+한 번씩 필요하다(sessionStorage 는 컨텍스트별). `setGame`/`configure` 를 쓰는 스위트는
+setGame 이 자동으로 게임에 진입시키므로 별도 호출이 필요 없다.
 
 ## 콘텐츠를 추가한 뒤에 볼 것
 
