@@ -26,6 +26,7 @@
     "verify:ending": "node tools/verify/ending.mjs",
     "verify:ending-scene": "node tools/verify/ending-scene.mjs",
     "verify:hard-exclusive": "node tools/verify/hard-exclusive.mjs",
+    "verify:concubine": "node tools/verify/concubine.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
     "gen:characters": "node tools/verify/gen-characters.mjs"

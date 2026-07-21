@@ -146,6 +146,25 @@ export const ENDING_INSERTS: EndingInsert[] = [
     lines: [line('제국과는 대등한 자리에서 손을 잡았다. 삼켜지지 않았고, 삼키지도 않았다.')],
   },
   {
+    // ③ 정복 — 로맨스였다면 배신, 아니었다면 무감정.
+    anchor: 'nation',
+    match: (r) => has(r, 'prince_conquered') && mod(r, '사랑을 삼킴'),
+    priority: 42,
+    lines: [line(
+      '{왕}은 그의 나라를 삼켰다. 한때 두 왕관을 나눠 쓰자던 사람의 땅을, 군으로 밟고 지도에 그렸다.\n' +
+      '그의 마음이 어떻게 되었는지는 지도에 적히지 않았다. 사랑이었던 것을 {왕}은 스스로 정복했다.',
+    )],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'prince_conquered'),
+    priority: 41,
+    lines: [line(
+      '{왕}은 제국의 왕족이 다스리던 땅을 삼켰다. 감정도 명분도 없이, 삼킬 수 있어서 삼켰다.\n' +
+      '삼켜지던 나라가 삼키는 나라가 되었다. 그것을 참칭이라 부르는 사람은 이제 없었다.',
+    )],
+  },
+  {
     anchor: 'nation',
     match: (r) => has(r, 'military_king_led'),
     priority: 35,
@@ -217,6 +236,44 @@ export const ENDING_INSERTS: EndingInsert[] = [
     priority: 30,
     lines: [line('친위 지휘관은 반역 혐의로 청산되었다. 아홉 대를 지킨 자리가, {왕}의 손에 무너졌다.')],
   },
+  // ── 측실 — 죽임·관용 옆의 또 다른 잔혹함. 소유이지 사랑이 아니다.
+  //    ★ ①②④ 도 플레이스홀더가 아니라 실제 문장이다(개요를 한 문장으로 압축).
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'commander_concubine'),
+    priority: 32,
+    lines: [line(
+      '친위 지휘관은 가문의 검을 왕실에 바치고 곁에 남았다. 아홉 대를 지킨 검은 창고에 눕고,\n' +
+      '그 사람은 사랑도 자유도 아닌 자리에 묶였다. {왕}은 그것을 곁이라 불렀다.',
+    )],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'heir_concubine'),
+    priority: 32,
+    lines: [line(
+      '섭정공의 아들은 가문이 지워진 채 왕실에 편입되었다. 성도 아버지도 없이,\n' +
+      '오직 {왕}의 소유로만 남았다 — 벗으려던 그늘째로 삼켜져서.',
+    )],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'loyalist_concubine'),
+    priority: 32,
+    lines: [line(
+      '충신 가문의 딸은 왕실에 들었다. 늘 곁에 있던 자리가, 스스로 남을 사람을 굳이 가둔 자리가 되었다.',
+    )],
+  },
+  {
+    anchor: 'purge',
+    match: (r) => has(r, 'hero_concubine'),
+    priority: 32,
+    lines: [line(
+      '평민 영웅은 왕실에 묶였고, 마왕을 벤 검은 알현실 벽에 걸렸다.\n' +
+      '검도 사람도, 이제 아무것도 베지 않는 장식이 되었다.',
+    )],
+  },
+
   // 관용의 대가 — 살려둔 불씨. 숙청과 겹치지 않을 때만 조용히 뜬다.
   {
     anchor: 'purge',
@@ -235,6 +292,13 @@ export const ENDING_INSERTS: EndingInsert[] = [
     match: (r) => mod(r, '고독한 옥좌'),
     priority: 45,
     lines: [line('옥좌 곁에는 아무도 남지 않았다. {왕}이 하나씩 치웠고, 마지막에는 정말로 혼자였다.')],
+  },
+  {
+    // 고독한 옥좌의 대비 — 혼자가 아니라 소유물로 채운 옥좌.
+    anchor: 'purge',
+    match: (r) => mod(r, '소유의 옥좌'),
+    priority: 44,
+    lines: [line('옥좌 곁에는 사람이 있었다. 다만 그들은 곁에 선 것이 아니라, 곁에 놓인 것이었다.')],
   },
 
   // ─────────────────────────────────────────── @closing (수식)

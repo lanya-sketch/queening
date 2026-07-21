@@ -97,7 +97,9 @@ function badCandidates(state: GameState, power: number): BadCandidate[] {
     })
   }
 
-  if (flag(state, 'union_possible') && power < T.unionEqual) {
+  // ★ 정복했으면 삼켜질 수 없다 — 배드:제국복속 후보에서 제외한다.
+  //   (정복 조건상 국력이 unionEqual 을 넘지만, 이후 국력이 떨어져도 안전하게 막는다)
+  if (flag(state, 'union_possible') && power < T.unionEqual && !flag(state, 'prince_conquered')) {
     out.push({
       tier: '배드:제국복속',
       canReprieve: power >= T.unionReprieve,
@@ -150,9 +152,16 @@ function romanceOf(state: GameState): { charId: string | 'none' } {
   return { charId: confirmed?.id ?? 'none' }
 }
 
-/** 실행된 숙청의 수. 엔딩 수식이 조합으로 읽는다. */
+/** 실행된 숙청(죽임)의 수. 엔딩 수식이 조합으로 읽는다. */
 function purgeCount(state: GameState): number {
   return ['heir_executed', 'loyalist_scapegoat', 'hero_isolated', 'commander_purged'].filter(
+    (f) => flag(state, f),
+  ).length
+}
+
+/** 측실로 삼은 수. '소유의 옥좌'를 판정한다. */
+function concubineCount(state: GameState): number {
+  return ['heir_concubine', 'loyalist_concubine', 'hero_concubine', 'commander_concubine'].filter(
     (f) => flag(state, f),
   ).length
 }
@@ -184,7 +193,11 @@ export function judgeEnding(state: GameState): EndingResult {
   if (flag(state, 'military_route_open') && influence >= T.juntaSafe) {
     nationFlags.push('military_king_led')
   }
-  if (flag(state, 'union_possible') && power >= T.unionEqual) {
+  // ★ ③ 정복이 공동왕조 판정을 가로챈다 — 삼켰으면 대등한 결합이 아니다.
+  //   `배드:제국복속`의 거울상: 삼켜짐(배드 tier)이 아니라 삼킴(대외 결말만 바뀜).
+  if (flag(state, 'prince_conquered')) {
+    nationFlags.push('prince_conquered')
+  } else if (flag(state, 'union_possible') && power >= T.unionEqual) {
     nationFlags.push('union_equal')
   }
   for (const name of [
@@ -193,11 +206,11 @@ export function judgeEnding(state: GameState): EndingResult {
     'scroll_offered',
     'legitimacy_sacred',
     'church_support',
-    // 숙청/관용 결과 — 엔딩 @purge 삽입이 개별로 읽는다.
-    'heir_executed', 'heir_spared',
-    'loyalist_scapegoat', 'loyalist_spared',
-    'hero_isolated', 'hero_spared',
-    'commander_purged', 'commander_spared',
+    // 숙청/관용/측실 결과 — 엔딩 @purge 삽입이 개별로 읽는다.
+    'heir_executed', 'heir_spared', 'heir_concubine',
+    'loyalist_scapegoat', 'loyalist_spared', 'loyalist_concubine',
+    'hero_isolated', 'hero_spared', 'hero_concubine',
+    'commander_purged', 'commander_spared', 'commander_concubine',
   ]) {
     if (flag(state, name)) nationFlags.push(name)
   }
@@ -228,6 +241,15 @@ export function judgeEnding(state: GameState): EndingResult {
   if (purges >= 2) modifiers.push('청산')
   if (purges >= 2 && romance.charId === 'none') modifiers.push('고독한 옥좌')
   if (purges >= 1 && flag(state, 'tyrant_purge')) modifiers.push('피 묻은 손')
+
+  // 측실 수식 — 고독한 옥좌의 대비. 혼자가 아니라 소유물로 채운 옥좌.
+  const concubines = concubineCount(state)
+  if (concubines >= 2) modifiers.push('소유의 옥좌')
+
+  // ③ 정복 — 로맨스 여부로 갈린다(사랑을 삼킴 vs 무감정 정복).
+  if (flag(state, 'prince_conquered')) {
+    modifiers.push(romance.charId === 'prince' ? '사랑을 삼킴' : '무감정 정복')
+  }
 
   return {
     tier,

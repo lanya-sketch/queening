@@ -1,5 +1,6 @@
 import { EVENTS, EVENT_BY_ID } from '../data/events'
 import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
+import { CONQUEST_EVENTS } from '../data/events/conquest'
 import { DECISIVE_EVENTS } from '../data/events/decisive'
 import { DEVICE_EVENTS } from '../data/events/devices'
 import { INCIDENT_EVENTS } from '../data/events/incidents'
@@ -188,7 +189,7 @@ export function installDevBridge(): void {
       if (packs.includes('devices')) drop(DEVICE_EVENTS)
       if (packs.includes('incidents')) drop(INCIDENT_EVENTS)
       if (packs.includes('hardexclusive')) {
-        drop([...DECISIVE_EVENTS, ...RECKONING_EVENTS, ...RECKONING_AFTERMATH])
+        drop([...DECISIVE_EVENTS, ...RECKONING_EVENTS, ...RECKONING_AFTERMATH, ...CONQUEST_EVENTS])
       }
       if (packs.includes('topics')) TOPICS.splice(0, TOPICS.length)
       return { removed, remainingEvents: EVENTS.length, remainingTopics: TOPICS.length }

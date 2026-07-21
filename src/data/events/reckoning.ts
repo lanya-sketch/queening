@@ -35,6 +35,14 @@ export const RECKONING_EVENTS: GameEvent[] = [
         resultText: '명이 내려졌고, 그것은 실행되었다.',
       },
       {
+        // ★ 측실 — 죽이지도 놓아주지도 않고 곁에 묶는다. 소유이지 사랑이 아니다.
+        id: 'concubine',
+        label: '가문을 지우고 곁에 묶는다',
+        setFlags: { heir_reckoned: true, heir_concubine: true },
+        hint: '섭정공 가문을 왕실에 편입시키고, 그 아들을 소유로 남긴다',
+        resultText: '섭정공 가문의 문장은 지워졌다. 그 아들은 왕실의 사람으로 남았다.',
+      },
+      {
         id: 'spare',
         label: '아버지의 죄를 아들에게 묻지 않는다',
         setFlags: { heir_reckoned: true, heir_spared: true },
@@ -67,6 +75,13 @@ export const RECKONING_EVENTS: GameEvent[] = [
         setFlags: { loyalist_reckoned: true, loyalist_scapegoat: true },
         hint: '질서는 돌아오지만, 옳은 편에 섰던 사람을 친다',
         resultText: '이름이 명단에 올랐고, 본보기가 세워졌다.',
+      },
+      {
+        id: 'concubine',
+        label: '충성을 소유로 바꾼다',
+        setFlags: { loyalist_reckoned: true, loyalist_concubine: true },
+        hint: '늘 곁에 있던 사람을, 이제는 놓아주지 않는 방식으로 곁에 둔다',
+        resultText: '충신 가문의 딸은 왕실에 들었다. 곁에 있던 자리가, 갇힌 자리가 되었다.',
       },
       {
         id: 'spare',
@@ -103,6 +118,13 @@ export const RECKONING_EVENTS: GameEvent[] = [
         resultText: '작위가 내려졌고, 그는 어디에도 속하지 못하게 되었다.',
       },
       {
+        id: 'concubine',
+        label: '왕실에 묶어 소유한다',
+        setFlags: { hero_reckoned: true, hero_concubine: true },
+        hint: '평민에서 떼어내 왕실에 들이고, 벤 검을 장식으로 걸어 둔다',
+        resultText: '그는 왕실의 사람이 되었다. 마왕을 벤 검은 벽에 걸린 장식이 되었다.',
+      },
+      {
         id: 'spare',
         label: '그를 그대로 둔다',
         setFlags: { hero_reckoned: true, hero_spared: true },
@@ -136,6 +158,15 @@ export const RECKONING_EVENTS: GameEvent[] = [
         setFlags: { commander_reckoned: true, commander_purged: true },
         hint: '위협을 끊지만, 아홉 대를 지킨 가문을 스스로 무너뜨린다',
         resultText: '혐의가 씌워졌고, 아홉 대의 자리가 무너졌다.',
+      },
+      {
+        // ★ 결정적 씬("문 안으로 들어오라")을 뒤집는다 — 자발적 사랑 → 강제 소유.
+        //   가문의 보검을 압수해 "네 힘도 내 것"으로. 감정 무게는 3구간 후일담이 맡는다.
+        id: 'concubine',
+        label: '가문의 검과 함께 곁에 묶는다',
+        setFlags: { commander_reckoned: true, commander_concubine: true },
+        hint: '가문 보검을 왕실이 거두고, 그 사람을 소유로 곁에 둔다',
+        resultText: '아홉 대를 지켜온 검이 왕실 창고로 옮겨졌다. 그리고 그 사람도.',
       },
       {
         id: 'spare',
@@ -210,5 +241,52 @@ export const RECKONING_AFTERMATH: GameEvent[] = [
     sceneId: 'scene-aftermath-hero-high',
     text: '',
     condition: { flags: { hero_isolated: true }, affection: { hero: { min: 70 } } },
+  },
+
+  // ── 측실 후일담: ⑤ 3구간(대표) + ①②④ 높은 구간
+  {
+    id: 'commander-concubine-high',
+    title: '창고로 간 검',
+    sceneId: 'scene-concubine-commander-high',
+    text: '',
+    condition: { flags: { commander_concubine: true }, affection: { commander: { min: 70 } } },
+  },
+  {
+    id: 'commander-concubine-mid',
+    title: '창고로 간 검',
+    sceneId: 'scene-concubine-commander-mid',
+    text: '',
+    condition: {
+      flags: { commander_concubine: true },
+      affection: { commander: { min: 40, max: 69 } },
+    },
+  },
+  {
+    id: 'commander-concubine-low',
+    title: '창고로 간 검',
+    sceneId: 'scene-concubine-commander-low',
+    text: '',
+    condition: { flags: { commander_concubine: true }, affection: { commander: { max: 39 } } },
+  },
+  {
+    id: 'heir-concubine-high',
+    title: '지워진 문장',
+    sceneId: 'scene-concubine-heir-high',
+    text: '',
+    condition: { flags: { heir_concubine: true }, affection: { heir: { min: 70 } } },
+  },
+  {
+    id: 'loyalist-concubine-high',
+    title: '갇힌 자리',
+    sceneId: 'scene-concubine-loyalist-high',
+    text: '',
+    condition: { flags: { loyalist_concubine: true }, affection: { loyalist: { min: 70 } } },
+  },
+  {
+    id: 'hero-concubine-high',
+    title: '걸린 검',
+    sceneId: 'scene-concubine-hero-high',
+    text: '',
+    condition: { flags: { hero_concubine: true }, affection: { hero: { min: 70 } } },
   },
 ]

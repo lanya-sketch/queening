@@ -188,6 +188,27 @@ const RUNS = [
     expect: { tyrant: true },
   },
   {
+    /**
+     * ★ ⑤ 측실 실제 렌더 전용 빌드 (지난 라운드 교훈: 정의 검증 ≠ 렌더 검증).
+     *
+     * ⑤ 청산은 영향도<60(약한 왕이 군부를 두려워할 때) 발동한다 — 정복(강함 60+)과
+     * 정반대라 한 빌드에서 둘 다는 못 밟는다. 정복 씬은 K-strong 시절에 렌더 확인됨.
+     * 여기서는 ⑤ 호감도를 80 으로 시드(탐색기까지 갔으나 미확정 = 측실 대상)하고
+     * 실권을 안 키워, 측실 선택 → 3구간 후일담 씬이 실제로 뜨는지 밟는다.
+     */
+    name: 'K. ⑤ 측실 루트 (후일담 실제 렌더)',
+    targets: { 통치학: 45 },
+    seedAffection: { commander: 80 },
+    choices: [
+      [/성년식/, /친정을 선포/],
+      // ★ 결정적 씬을 거절해야 측실 대상이 된다(확정하면 대상 아님).
+      //   이게 실제 플레이의 정합성이기도 하다 — 측실은 "확정 안 한" 캐릭터의 갈래.
+      [/문지방을 넘어/, /아직은 아니라고/],
+      [/아홉 대의 자리/, /가문의 검과 함께/],
+    ],
+    expect: { concubine: true },
+  },
+  {
     name: 'G. 회유 루트 + 사냥 남용 (사냥 밸런스 실측)',
     targets: { 궁정처세: 55, 통치학: 45 },
     huntOver: 25,
@@ -473,6 +494,14 @@ for (const run of only ? RUNS.filter((r) => r.name.startsWith(only)) : RUNS) {
     }
     if (run.expect.just !== undefined) {
       console.log('  정당 처분 판정:', ok((e.disposal === '정당') === run.expect.just))
+    }
+    if (run.expect.conquest !== undefined) {
+      console.log('  ③ 정복 flag:', ok(e.nationFlags.includes('prince_conquered') === run.expect.conquest))
+    }
+    if (run.expect.concubine !== undefined) {
+      const rendered = r.fired.some((ev) => ev.title === '창고로 간 검')
+      console.log('  ⑤ 측실 flag:', ok(!!r.flags.commander_concubine === run.expect.concubine))
+      console.log('  ⑤ 측실 후일담 씬 실제 렌더:', ok(rendered))
     }
   } else if (r.endedReached) {
     console.log('엔딩: *** 판정 실패 ***')

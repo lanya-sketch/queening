@@ -67,6 +67,8 @@ export const PRIORITY: Record<string, number> = {
   'half-heir-romance': 53,
   'half-heir-hostile': 52,
   'loyalist-chamber-hint': 51,
+  // ③ 정복은 능동 야망 — 미스터리 파생 대역 아래끝에 유일값으로.
+  'prince-conquest': 50,
 
   // ── 30–49 정치 현안 + 청산(위쪽)
   // 청산은 19세+ 의 정치 행위라 이 대역 맨 위에 둔다 — 일상 현안보다 앞서되
@@ -95,14 +97,21 @@ export const PRIORITY: Record<string, number> = {
   'loyalist-aftermath-high': 21,
   'youth-sealed-record': 20,
   'hero-aftermath-high': 19,
+  // 측실 후일담 — 청산 후일담과 같은 대역, 서로 배타(같은 캐릭터에 하나만).
+  'commander-concubine-high': 18,
+  'commander-concubine-mid': 17,
   'youth-mother-tea': 16,
+  'commander-concubine-low': 15,
+  'heir-concubine-high': 14,
+  'loyalist-concubine-high': 13,
   'first-audience': 12,
+  'hero-concubine-high': 10,
 
-  // ★ 돌발 현안은 배경 대역의 **바닥**이다.
-  //   양념이므로 무엇에도 앞서지 않는다. 바쁜 계절에 굶어도 되고,
-  //   쿨다운이 있으니 다음 기회가 온다.
-  'ai-incident-choice': 11,
-  'ai-incident-notice': 10,
+  // ★ 돌발 현안은 배경 대역의 **바닥**이다. 무엇에도 앞서지 않는다 —
+  //   청산 후일담(감정 비트)까지 포함해 모든 이벤트보다 낮아야 한다.
+  //   (측실 후일담이 늘면서 8/7 로 더 내렸다. 바닥 불변식 유지.)
+  'ai-incident-choice': 8,
+  'ai-incident-notice': 7,
 }
 
 /**
