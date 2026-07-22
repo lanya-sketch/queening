@@ -47,7 +47,7 @@ export const ONBOARDING: OnboardingLine[] = [
   {
     speaker: '노귀족',
     text:
-      '전하께서 하루에 하실 수 있는 일은 셋뿐이오. 그 셋을 어디에 쓰실지가…\n' +
+      '전하께서 한 달에 하실 수 있는 일은 셋뿐이오. 그 셋을 어디에 쓰실지가…\n' +
       '앞으로 구 년을 정하오.',
     tip: { target: 'ap', text: '행동력(AP) — 한 달에 세 가지 활동까지.' },
   },

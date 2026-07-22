@@ -12,6 +12,7 @@ import { useGame } from '../store/gameStore'
  */
 export function TitleScreen() {
   const startGame = useApp((s) => s.startGame)
+  const openSettings = useApp((s) => s.openSettings)
   const reset = useGame((s) => s.reset)
   const load = useGame((s) => s.load)
   // 세이브는 현재 단일 슬롯이다(queening.save). 다중 슬롯은 별도 라운드.
@@ -56,7 +57,7 @@ export function TitleScreen() {
           <TitleButton label={TITLE.menu.newGame} onClick={onNew} primary />
           <TitleButton label={TITLE.menu.continue} onClick={onContinue} disabled={!hasSave} />
           <div className="grid grid-cols-2 gap-2.5">
-            <TitleButton label={TITLE.menu.settings} onClick={() => {}} disabled small />
+            <TitleButton label={TITLE.menu.settings} onClick={openSettings} small />
             <TitleButton label={TITLE.menu.gallery} onClick={() => {}} disabled small />
           </div>
         </nav>

@@ -16,10 +16,18 @@ interface AppStore {
   screen: AppScreen
   /** 새 게임 진입 직후인지 — 온보딩을 띄울지 결정한다. */
   onboarding: boolean
+  /** 타이틀 설정 메뉴 오버레이. */
+  settingsOpen: boolean
+  /** 도움말 화면. 타이틀 설정·게임 중 '?' 양쪽에서 연다. */
+  help: boolean
 
   goTitle: () => void
   startGame: (withOnboarding: boolean) => void
   dismissOnboarding: () => void
+  openSettings: () => void
+  closeSettings: () => void
+  openHelp: () => void
+  closeHelp: () => void
 }
 
 /**
@@ -40,8 +48,15 @@ export const useApp = create<AppStore>()((set) => ({
   // 앱은 이제 타이틀에서 시작한다 — 예전엔 게임 중간으로 바로 떨어졌다.
   screen: initialScreen(),
   onboarding: false,
+  settingsOpen: false,
+  help: false,
 
-  goTitle: () => set({ screen: 'title', onboarding: false }),
+  goTitle: () => set({ screen: 'title', onboarding: false, settingsOpen: false, help: false }),
   startGame: (withOnboarding) => set({ screen: 'game', onboarding: withOnboarding }),
   dismissOnboarding: () => set({ onboarding: false }),
+  openSettings: () => set({ settingsOpen: true }),
+  closeSettings: () => set({ settingsOpen: false }),
+  // 도움말을 열면 설정 메뉴는 접는다(도움말이 위에 겹치지 않게).
+  openHelp: () => set({ help: true, settingsOpen: false }),
+  closeHelp: () => set({ help: false }),
 }))

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { GAME_CONFIG, courtInfluenceCap, monthLabel } from '../data/config'
 import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
 import { useAiEnabled } from '../store/aiStore'
+import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
 import { talkLocked, useTalk } from '../store/talkStore'
 import { resolveText } from '../systems/text'
@@ -16,6 +17,7 @@ export function StatusPanel() {
   const [aiOpen, setAiOpen] = useState(false)
   const aiEnabled = useAiEnabled()
   const openTalk = useTalk((s) => s.openTalk)
+  const openHelp = useApp((s) => s.openHelp)
   const [romanceOpen, setRomanceOpen] = useState(false)
   const setMonarchGender = useGame((s) => s.setMonarchGender)
   const game = useGame((s) => s.game)
@@ -48,6 +50,14 @@ export function StatusPanel() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={openHelp}
+                aria-label="도움말"
+                data-help-button
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-sm font-semibold text-slate-300 active:bg-slate-700"
+              >
+                ?
+              </button>
               <div data-onboard="ap" className="rounded-lg bg-slate-800 px-2.5 py-1 text-center">
                 <p className="text-[10px] leading-none text-slate-400">행동력</p>
                 <p className="text-sm font-semibold tabular-nums leading-tight text-slate-100">
