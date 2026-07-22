@@ -102,6 +102,10 @@ export async function enterGame(page) {
       /* 무시 */
     }
     window.__queeningAi?.enterGame()
+    // ★ 월 단위 전환 2단계: 소소 채널은 기본 OFF 로 격리한다 — 다른 시스템을 검증하는
+    //   스위트에 일상 소소가 끼어들지 않도록. 밀도/데드엔딩은 verify:stage2 가, 미스터리
+    //   무손상(소소 켠 채)은 simulate/ablation 이 명시적으로 켜서 본다.
+    window.__queeningAi?.setMinorEnabled?.(false)
   })
   await page.waitForTimeout(120)
 }

@@ -58,7 +58,11 @@
       "Bash(QUEENING_ABLATION_MODE=hardexclusive npm run verify:ablation)",
       "Bash(sed -n '/=== A\\\\./,/로그:/p')",
       "Bash(QUEENING_ABLATION_MODE=incidents npm run verify:ablation)",
-      "Bash(grep -vE \"^$\")"
+      "Bash(grep -vE \"^$\")",
+      "Bash(npx tsc *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(grep -vE \"^\\\\s*$\")",
+      "Bash(awk '/^A\\\\. /{f=1} f&&/^[B-Z]\\\\. /{f=0} f' normal.log)"
     ],
     "additionalDirectories": [
       "C:\\queening\\tools\\verify"

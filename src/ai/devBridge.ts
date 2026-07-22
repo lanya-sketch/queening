@@ -13,11 +13,15 @@ import { useApp } from '../store/appStore'
 import { useTalk } from '../store/talkStore'
 import { parseIncident } from './incident'
 import { chanceOf } from '../systems/chance'
+import {
+  setIncidentPressure, setIncidentsAblated, setMinorEnabled, resetMinorTuning,
+} from '../systems/minorEvents'
 import { durabilityBase, growthFactor, wellbeingCostFactor } from '../systems/durability'
 import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
 import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
-import { setDeterministic } from '../systems/rng'
+import { setDeterministic, rng } from '../systems/rng'
+import { endTurn } from '../systems/turn'
 import { availableTopics } from '../systems/topics'
 import type { TalkTopic } from '../types/game'
 import { resolveText } from '../systems/text'
@@ -127,6 +131,25 @@ export function installDevBridge(): void {
     resetIncidents() {
       useIncidents.getState().reset()
     },
+    /**
+     * 엔진 endTurn 을 직접 한 번 돌린다(검증용) — UI 클릭 없이 결정론적으로 턴을 진행.
+     * plannedActivityIds 를 주면 그 활동을 수행한 것으로 친다. 소소-비트·위험 누적·
+     * 데드엔딩 파이프라인을 그대로 탄다(실제 파이프라인과 같은 함수).
+     */
+    stepTurn(plannedActivityIds?: string[]) {
+      const g = useGame.getState().game
+      const staged = plannedActivityIds ? { ...g, plannedActivityIds } : g
+      const next = endTurn(staged, rng)
+      useGame.setState({ game: next })
+      return {
+        triggeredEventIds: next.pendingEventIds,
+        age: next.age,
+        date: next.date,
+        phase: next.phase,
+        counters: next.counters,
+        flags: next.flags,
+      }
+    },
     /** 이벤트를 화면에 강제로 띄운다 — 확률과 싸우지 않고 UI 만 검증하기 위해. */
     forceEvent(eventId: string) {
       const game = useGame.getState().game
@@ -143,13 +166,23 @@ export function installDevBridge(): void {
      * 확률을 0.5 위로 올려 **정상보다 훨씬 자주** 터뜨린 상태에서 대조하면,
      * 과다 투여에도 미스터리가 흔들리지 않는지를 본다. 더 센 조건이다.
      */
+    /**
+     * 돌발 발동 압력 — ablation 전용. 이제 돌발은 소소-비트 스케줄러가 굴리므로
+     * (메인 루프 밖) 스케줄러의 압력을 올린다. rate<=0 이면 소소 채널 자체를 끈다
+     * (verify:devices 처럼 돌발이 끼면 안 되는 검증용 — 손 풀 소소도 안 뜨게).
+     */
     setIncidentRate(rate: number) {
-      for (const event of INCIDENT_EVENTS) {
-        if (event.chance) event.chance.base = rate
+      if (rate <= 0) {
+        setMinorEnabled(false)
+        return
       }
-      for (const event of EVENTS) {
-        if (event.source === 'ai_generated' && event.chance) event.chance.base = rate
-      }
+      setMinorEnabled(true)
+      setIncidentPressure(rate)
+    },
+    /** 소소 채널 on/off + 튜닝 초기화 — 다른 시스템 격리 검증용. */
+    setMinorEnabled(on: boolean) {
+      if (on) resetMinorTuning()
+      else setMinorEnabled(false)
     },
     clearKey() {
       useAi.setState({ apiKey: '' })
@@ -198,7 +231,12 @@ export function installDevBridge(): void {
       }
       if (packs.includes('bloodoath')) drop(BLOOD_OATH_EVENTS)
       if (packs.includes('devices')) drop(DEVICE_EVENTS)
-      if (packs.includes('incidents')) drop(INCIDENT_EVENTS)
+      // 돌발은 이제 메인 루프 밖(소소 스케줄러)이라 splice 로 못 뺀다 —
+      // 스케줄러에서 AI 옵션을 들어내는 것으로 제거한다(손 풀은 남는다).
+      if (packs.includes('incidents')) {
+        setIncidentsAblated(true)
+        removed.push(...INCIDENT_EVENTS.map((e) => e.id))
+      }
       if (packs.includes('hardexclusive')) {
         drop([...DECISIVE_EVENTS, ...RECKONING_EVENTS, ...RECKONING_AFTERMATH, ...CONQUEST_EVENTS])
       }

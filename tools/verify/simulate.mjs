@@ -273,6 +273,10 @@ async function runSimulation(browser, run) {
   await page.evaluate(() => localStorage.clear())
   await page.reload({ waitUntil: 'networkidle' })
   await enterGame(page) // 타이틀 건너뛰기
+  // ★ 월 단위 전환 2단계: 시뮬은 소소 채널을 **켠 채** 돌린다 — 미스터리·엔딩 무손상을
+  //   소소가 낀 상태에서 증명하고(ablation), 성장 곡선도 소소 포함으로 실측한다.
+  //   (helpers.enterGame 이 기본 OFF 로 두므로 여기서 되켠다.)
+  await page.evaluate(() => window.__queeningAi.setMinorEnabled(true))
   await page.waitForTimeout(300)
 
   /**

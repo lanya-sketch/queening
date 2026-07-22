@@ -117,18 +117,33 @@ const setKey = (key) =>
   }, key)
 
 // ─────────────────────────────────────────────────────────────
+// ★ 월 단위 전환 2단계: 돌발은 이제 메인 후보 루프가 아니라 **소소-비트 스케줄러**가
+//   빈 달에 굴린다. 그래서 "후보에 있나"(triggerable)가 아니라 "빈 달을 돌리면 무엇으로
+//   채워지나"(stepTurn)로 본다 — 키 유무가 손 풀/AI 를 가른다.
 log('=== A. 키 없으면 돌발 비활성, 코어 완전 ===')
 await setKey('')
-await setGame({ age: 15, date: { year: 4, month: 6 }, counters: {}, flags: {} })
-const noKey = await triggerable()
-log('A1 ★ 키 없으면 돌발이 후보에 없음:',
-  ok(!noKey.some((id) => id.startsWith('ai-incident'))))
-log('A2 다른 이벤트는 정상 동작 (코어 완전):', `후보 ${noKey.length}건`, ok(noKey.length > 0))
+const beatsOverEmptyMonths = () =>
+  page.evaluate(() => {
+    window.__queeningAi.setMinorEnabled(true)
+    window.__queeningAi.setDeterministic(true)
+    window.__queeningAi.setIncidentRate(0.9) // 빈 달마다 소소 강제(있으면 AI 우선)
+    window.__queeningAi.setGame({ age: 15, date: { year: 4, month: 6 }, counters: {}, flags: {}, wellbeing: 80 })
+    const ids = []
+    for (let i = 0; i < 10; i++) ids.push(...(window.__queeningAi.stepTurn([]).triggeredEventIds ?? []))
+    return ids
+  })
+const noKeyBeats = await beatsOverEmptyMonths()
+log('A1 ★ 키 없으면 돌발이 안 뜸(손 풀 소소만):',
+  ok(!noKeyBeats.some((id) => id.startsWith('ai-incident')) && noKeyBeats.some((id) => id.startsWith('daily-'))))
+const coreCandidates = await triggerable()
+log('A2 다른 이벤트는 정상 동작 (코어 완전):', `후보 ${coreCandidates.length}건`, ok(coreCandidates.length > 0))
 
 await setKey('sk-ant-fake-000')
-const withKey = await triggerable()
-log('A3 ★ 키를 넣으면 돌발이 후보에 들어옴:',
-  ok(withKey.some((id) => id.startsWith('ai-incident'))))
+const withKeyBeats = await beatsOverEmptyMonths()
+log('A3 ★ 키를 넣으면 돌발이 소소로 뜸:',
+  ok(withKeyBeats.some((id) => id.startsWith('ai-incident'))))
+// 검증 뒷 절들이 확률과 안 싸우도록 소소 압력을 원복한다.
+await page.evaluate(() => window.__queeningAi.setMinorEnabled(false))
 
 // ─────────────────────────────────────────────────────────────
 log('')

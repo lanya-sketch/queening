@@ -27,6 +27,12 @@ export const PRIORITY: Record<string, number> = {
   'truth-shallow': 92,
 
   // ── 70–89 고정 서사 마일스톤
+  // ★ 조기 데드엔딩(월 단위 전환 2단계) — 위기·경고. 진실 회수(90+)보다는 아래(터미널이라도
+  //   되돌릴 수 없는 진실이 먼저), 나머지 마일스톤보다는 위(굶으면 안 되는 것들이라).
+  'strain-collapse': 89,
+  'exposure-strike': 87,
+  'strain-warning': 85,
+  'exposure-warning': 83,
   'regent-warning': 88,
   'adult-regent-rupture': 86,
   'adult-regent-accord': 84,
@@ -105,7 +111,10 @@ export const PRIORITY: Record<string, number> = {
   'heir-concubine-high': 14,
   'loyalist-concubine-high': 13,
   'first-audience': 12,
+  // 깜짝(데드 아님) 플레이버 — 배경 대역, 확률 게이팅.
+  'surprise-old-nurse': 11,
   'hero-concubine-high': 10,
+  'surprise-stranger-letter': 9,
 
   // ★ 돌발 현안은 배경 대역의 **바닥**이다. 무엇에도 앞서지 않는다 —
   //   청산 후일담(감정 비트)까지 포함해 모든 이벤트보다 낮아야 한다.

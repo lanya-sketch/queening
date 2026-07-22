@@ -19,6 +19,9 @@ const MAX_EVENTS_PER_TURN = 2
 import { applyEffects, type Rng } from './effects'
 import { rollChance, tickCounters } from './chance'
 import { findTriggeredEvents, seenFlagId } from './eventEngine'
+import { scheduleMinor } from './minorEvents'
+import { updateRisk } from './risk'
+import { deadEndReason } from './deadend'
 
 export function createInitialState(): GameState {
   return {
@@ -40,9 +43,14 @@ export function createInitialState(): GameState {
   }
 }
 
-/** 20세를 넘기면 이번 단계의 끝점. 이후 턴 진행을 잠근다(엔딩은 M3). */
+/**
+ * 이번 단계의 끝점 — 두 경로가 있다.
+ *   정식 엔딩: 20세를 넘겼다(judgeEnding).
+ *   조기 데드엔딩: 20세 전이라도 dead_end:<이유> flag 가 섰다(손으로 쓴 데드 씬).
+ * 어느 쪽이든 이후 턴 진행을 잠근다. 경계는 분명하다 — age>20 이 아니면 데드다.
+ */
 export function hasReachedEnd(state: GameState): boolean {
-  return state.age > GAME_CONFIG.endAge
+  return state.age > GAME_CONFIG.endAge || deadEndReason(state) !== null
 }
 
 /**
@@ -153,6 +161,30 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
     next.flags = { ...next.flags, ...event.setFlags, [seenFlagId(event.id)]: true }
 
     triggered.push(event)
+  }
+
+  // 3-b. 위험 누적 — 조기 데드엔딩 씨앗(심신 파탄 / 의심 무방비).
+  //   숨은 카운터라 UI 에 없고, surprises.ts 의 경고·데드 이벤트가 조건으로 읽는다.
+  next.counters = { ...next.counters, ...updateRisk(next) }
+
+  // 3-c. 소소-비트 — **빈 달만** 채운다. 큰 이벤트가 뜬 달엔 굴리지 않고,
+  //   굴려도 턴 상한과 별개라 서사를 굶기지 않는다. 데드엔딩이 섰으면 굴리지 않는다.
+  if (next.age <= GAME_CONFIG.endAge && deadEndReason(next) === null) {
+    if (triggered.length > 0) {
+      next.counters = { ...next.counters, '__pity:minor': 0 }
+    } else {
+      const minor = scheduleMinor(next, rng)
+      next.counters = { ...next.counters, ...minor.counters }
+      if (minor.beat) {
+        const ev = minor.beat.event
+        if (!minor.beat.isAi && ev.effects) {
+          const applied2 = applyEffects(next, ev.effects, rng)
+          next = applied2.state
+          mergeDeltas(eventDeltas, applied2.deltas)
+        }
+        triggered.push(ev)
+      }
+    }
   }
 
   // 4. 다음 턴 준비 + 리포트

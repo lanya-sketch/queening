@@ -31,7 +31,8 @@ export const AFFAIR_EVENTS: GameEvent[] = [
       '궁정은 구호와 방어 중 무엇이 먼저인지를 놓고 아침 내내 다투었다. 곡물을 풀면 ' +
       '곳간이 비고, 병력을 올리면 국경에 비는 자리가 생긴다.\n' +
       '섭정공은 이미 답을 정해두었다. 다만 오늘은 말하지 않고, {왕}의 입을 본다.',
-    condition: { minAge: 13, minYear: 2 },
+    // 해빙기 국경 분쟁 — 봄(3월)에 자연스럽게 자리 잡아 1월 클러스터를 피한다.
+    condition: { minAge: 13, minYear: 2, month: 3 },
     priority: 25,
     choices: [
       {

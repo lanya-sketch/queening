@@ -3,6 +3,8 @@ import { GAME_CONFIG, courtInfluenceCap } from '../data/config'
 import { STAT_KEYS, STAT_META } from '../data/stats'
 import { buildEndingScene } from '../systems/endingScene'
 import { judgeEnding, describeEnding } from '../systems/ending'
+import { deadEndReason } from '../systems/deadend'
+import { buildDeadEndScene } from '../data/endings/deadends'
 import { SCENE_BY_ID } from '../data/scenes'
 import { useGame } from '../store/gameStore'
 import { resolveText } from '../systems/text'
@@ -25,12 +27,19 @@ export function EndedScreen() {
   const [sceneDone, setSceneDone] = useState(false)
 
   // 판정과 씬 조립은 상태에 의존하지만 게임 진행 중에 바뀌지 않는다.
-  const { sceneId, summary } = useMemo(() => {
+  // ★ 조기 데드엔딩이면 판정(judgeEnding)을 우회하고 손으로 쓴 데드 씬을 재생한다.
+  const { sceneId, summary, dead } = useMemo(() => {
+    const reason = deadEndReason(game)
+    if (reason) {
+      const { scene, title } = buildDeadEndScene(reason)
+      SCENE_BY_ID[scene.id] = scene
+      return { sceneId: scene.id, summary: null, dead: { title } }
+    }
     const result = judgeEnding(game)
     const scene = buildEndingScene(result)
     // ScenePlayer 는 SCENE_BY_ID 에서 씬을 찾는다 — 조립된 씬을 그 자리에 얹는다.
     SCENE_BY_ID[scene.id] = scene
-    return { sceneId: scene.id, summary: result }
+    return { sceneId: scene.id, summary: result, dead: null }
     // eslint 없는 프로젝트. 마운트 시 한 번만 조립한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -43,11 +52,33 @@ export function EndedScreen() {
     return (
       <div className="pb-28 lg:pb-6">
         <article className="rounded-xl border border-amber-900/60 bg-slate-900/60 p-5">
-          <p className="text-xs text-amber-500">즉위 {game.date.year}년 · 아홉 해의 끝</p>
+          <p className="text-xs text-amber-500">
+            {dead ? `즉위 ${game.date.year}년 · ${game.age}세 · 채우지 못한 치세` : `즉위 ${game.date.year}년 · 아홉 해의 끝`}
+          </p>
           <div className="mt-4">
             <ScenePlayer sceneId={sceneId} onFinished={() => setSceneDone(true)} />
           </div>
         </article>
+      </div>
+    )
+  }
+
+  // ★ 조기 데드엔딩 — 판정 결산 없이 짧은 마감만. 정식 엔딩과 화면이 갈린다.
+  if (dead) {
+    return (
+      <div className="pb-28 lg:pb-6">
+        <header className="mb-4">
+          <h1 className="text-xl font-semibold text-rose-200">{dead.title}</h1>
+          <p className="mt-2 text-xs text-rose-200/60">
+            {resolveText('{왕}', game)}의 치세는 {game.age}세에, 스무 살에 이르지 못하고 끝났다.
+          </p>
+        </header>
+        <div className="grid grid-cols-2 gap-2">
+          <Button onClick={save}>이 기록 저장</Button>
+          <Button variant="danger" onClick={reset}>
+            처음부터
+          </Button>
+        </div>
       </div>
     )
   }
@@ -58,7 +89,7 @@ export function EndedScreen() {
         <h1 className="text-xl font-semibold text-amber-100">
           {resolveText('{왕}', game)}은 {GAME_CONFIG.endAge}세가 되었다
         </h1>
-        <p className="mt-2 text-xs text-amber-200/70">{describeEnding(summary)}</p>
+        <p className="mt-2 text-xs text-amber-200/70">{summary && describeEnding(summary)}</p>
       </header>
 
       <section className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
@@ -72,7 +103,7 @@ export function EndedScreen() {
             </span>
           </span>
         </div>
-        <p className="mt-2 text-xs text-slate-500">모은 단서 {clueCount}개 · 국력 {summary.power}</p>
+        <p className="mt-2 text-xs text-slate-500">모은 단서 {clueCount}개 · 국력 {summary?.power}</p>
       </section>
 
       <section className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">

@@ -34,7 +34,8 @@ export const ROMANCE_EVENTS: GameEvent[] = [
       '삼 년 동안 아무도 그를 찾지 않았다.\n' +
       '포상을 논하는 자리에서 누군가 말했다. "궁에 두는 편이 낫겠습니다."\n' +
       '{왕}은 그 말이 포상이 아니라 족쇄라는 것을 알아들었다. 그리고 재가했다.',
-    condition: { minAge: 17, month: 12 },
+    // 17세 가을(10월) — 수확철 논공행상 자리. 18세 게이트보다 앞서 자연스럽다.
+    condition: { minAge: 17, month: 10 },
     priority: 33,
     setFlags: { hero_at_court: true },
   },

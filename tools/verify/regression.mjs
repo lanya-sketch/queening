@@ -2,7 +2,7 @@
 // 착장·초상·모달, 턴 루프, 이벤트, 세이브 연쇄 마이그레이션, 반응형을 실제 브라우저로 검사한다.
 import {
   card, choiceButtons, clearEvent, dateText, enterGame, launch, log, ok, overflow, phaseOf,
-  portrait, readGauge, shotsDir, APP_URL, SAVE_VERSION,
+  portrait, readGauge, readPanel, shotsDir, APP_URL, SAVE_VERSION,
 } from './helpers.mjs'
 
 const OUT = shotsDir('regression')
@@ -120,11 +120,21 @@ await page.getByRole('button', { name: '닫기' }).click()
 log('B9 이벤트 발동까지 진행 (1년차 6월 + 통치학 20)')
 let fired = null
 // 월 단위: 첫 어전 회의는 1년차 6월(턴 ~17)이라 넉넉히 돈다.
+// ★ 2단계 데드엔딩: 통치학×2+휴식은 11세(내구도 0)에 순 심신 −5.6/월이라 계속하면
+//   심신 파탄으로 죽는다(= 무리형). 여기선 first-audience 도달을 보는 게 목적이므로
+//   통치학 20 을 채우는 초반만 밀고, 이후엔 쉬어 심신을 지키는 **관리형**으로 논다.
 for (let i = 0; i < 22 && !fired; i++) {
   if ((await phaseOf(page)) !== 'schedule') break
-  await card(page, '통치학 수업').click()
-  await card(page, '통치학 수업').click()
-  await card(page, '휴식').click()
+  const sc = (await readPanel(page)).stats['통치학'] ?? 0
+  if (sc < 22) {
+    await card(page, '통치학 수업').click()
+    await card(page, '통치학 수업').click()
+    await card(page, '휴식').click()
+  } else {
+    await card(page, '휴식').click()
+    await card(page, '휴식').click()
+    await card(page, '휴식').click()
+  }
   await page.getByRole('button', { name: /턴 종료/ }).click()
   await page.waitForTimeout(150)
   const d = await dateText(page)
@@ -267,8 +277,10 @@ async function seedAffairSave(p, stats, when = { year: 2, month: 6, age: 13 }, s
 }
 
 // (1) 재정·무예 요구를 모두 채운 경우
-await seedAffairSave(apage, { statecraft: 20, finance: 35, rhetoric: 10, martial: 35, courtcraft: 10 })
-log('E1 현안 발동 (13세 + 즉위 2년):', ok((await phaseOf(apage)) === 'event'))
+// ★ 변경의 불빛은 이제 3월(해빙기)에만 — 2월을 심어 한 턴 넘기면 3월에 뜬다.
+const FRONTIER_WHEN = { year: 2, month: 2, age: 13 }
+await seedAffairSave(apage, { statecraft: 20, finance: 35, rhetoric: 10, martial: 35, courtcraft: 10 }, FRONTIER_WHEN)
+log('E1 현안 발동 (13세 + 즉위 2년 3월):', ok((await phaseOf(apage)) === 'event'))
 log('E2 제목:', await apage.locator('article h1').innerText(),
   ok((await apage.locator('article h1').innerText()) === '변경의 불빛'))
 log('E3 라벨이 "국정 현안":',
