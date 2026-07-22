@@ -306,11 +306,38 @@ export interface PortraitConfig {
   fallbackOutfit: string
 }
 
+/**
+ * 캐릭터(5인 + 모후·섭정공) 초상 해석 (콘텐츠·에셋 배선 2).
+ *
+ * ★ 두 지점에 쓴다 — 대화창 크롭(thumb)과 이벤트 씬 전신(full).
+ *   경로 틀 {gdir}(male/female)·{code}(m/f)·{age} 를 치환한다. aged:false 면 {age} 없음.
+ *   gender 가 있으면(모후·섭정공처럼 CHARACTERS 밖) 그 성별 고정, 없으면 호출자가 넘긴 성별.
+ */
+export interface CharPortraitEntry {
+  /** thumbBase/fullBase 아래 상대 경로 틀. */
+  path: string
+  /** 나이축이 있는가(있으면 {age} clamp). hero·모후·섭정공은 false. */
+  aged: boolean
+  /** CHARACTERS 밖 인물의 고정 성별(모후=female, 섭정공=male). */
+  gender?: Gender
+}
+
+export interface CharacterPortraitConfig {
+  thumbBase: string
+  fullBase: string
+  code: Record<Gender, string>
+  ageMin: number
+  ageMax: number
+  chars: Record<string, CharPortraitEntry>
+}
+
 export interface OutfitManifest {
   version: number
   outfits: Outfit[]
-  /** 있으면 나이×성별×착장으로 초상을 해석한다. 없으면 outfit 의 단일 이미지 사용. */
+  /** 있으면 나이×성별×착장으로 군주 초상을 해석한다. 없으면 outfit 의 단일 이미지 사용. */
   portraits?: PortraitConfig
+  /** 있으면 5인·모후·섭정공 초상을 charId×성별×나이로 해석한다. */
+  characterPortraits?: CharacterPortraitConfig
 }
 
 /** 결과 화면이 그대로 렌더할 수 있도록, 실제 적용된 변화량만 담는다. */

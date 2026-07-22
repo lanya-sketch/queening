@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { CHARACTERS, DEEP_BOND_THRESHOLD } from '../../data/characters'
 import { CHARACTER_TERMS } from '../../data/lexicon'
 import { affectionOf, isDeepBond, isPresent, isRomanceUnlocked } from '../../systems/romance'
+import { resolveCharacterPortrait } from '../../systems/outfits'
 import { resolveText } from '../../systems/text'
 import { useAiEnabled } from '../../store/aiStore'
 import { useGame } from '../../store/gameStore'
@@ -17,6 +18,7 @@ import { StatBar } from '../ui/StatBar'
  */
 export function RomancePanel({ onClose }: { onClose: () => void }) {
   const game = useGame((s) => s.game)
+  const manifest = useGame((s) => s.outfitManifest)
   const aiEnabled = useAiEnabled()
   const openTalk = useTalk((s) => s.openTalk)
   const locked = talkLocked(game.phase)
@@ -92,7 +94,13 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
               >
                 <div className="flex items-center gap-2">
                   <img
-                    src={`/assets/characters/${character.portraitId}.svg`}
+                    src={
+                      manifest.characterPortraits
+                        ? resolveCharacterPortrait(
+                            manifest.characterPortraits, character.id, character.gender, game.age,
+                          )?.thumbSrc ?? `/assets/characters/${character.portraitId}.svg`
+                        : `/assets/characters/${character.portraitId}.svg`
+                    }
                     alt=""
                     draggable={false}
                     className={`h-12 w-9 shrink-0 rounded object-cover object-top ${

@@ -153,6 +153,7 @@ export function EventScreen() {
             <ScenePlayer
               sceneId={event.sceneId}
               finished={sceneDone}
+              showSprites // 이벤트 씬은 VN 전신 레이아웃(화자 스프라이트).
               onFinished={() => setSceneDone(true)}
             />
           ) : (

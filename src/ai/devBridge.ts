@@ -21,7 +21,7 @@ import { durabilityBase, growthFactor, wellbeingCostFactor } from '../systems/du
 import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
 import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
-import { resolveMonarchPortrait, validateManifest } from '../systems/outfits'
+import { resolveCharacterPortrait, resolveMonarchPortrait, validateManifest } from '../systems/outfits'
 import { setDeterministic, rng } from '../systems/rng'
 import { endTurn } from '../systems/turn'
 import { availableTopics } from '../systems/topics'
@@ -194,6 +194,13 @@ export function installDevBridge(): void {
     portraitSrc(gender: 'male' | 'female', age: number, outfit: string) {
       const m = useGame.getState().outfitManifest
       return m.portraits ? resolveMonarchPortrait(m.portraits, gender, age, outfit) : null
+    },
+    /** 캐릭터 초상 경로 해석 — charId×성별×나이 + 폴백(배선2). */
+    charPortraitSrc(charId: string, gender: 'male' | 'female', age: number) {
+      const m = useGame.getState().outfitManifest
+      return m.characterPortraits
+        ? resolveCharacterPortrait(m.characterPortraits, charId, gender, age)
+        : null
     },
     /** 임의 매니페스트 객체를 검증한다 — 하위호환(축 없는 옛 매니페스트) 확인용. */
     validateManifest(raw: unknown) {

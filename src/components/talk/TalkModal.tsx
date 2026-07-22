@@ -3,7 +3,9 @@ import { monthLabel } from '../../data/config'
 import { RESOURCE_META } from '../../data/stats'
 import { CHARACTER_BY_ID } from '../../data/characters'
 import { TOPIC_BY_ID } from '../../data/topics'
-import { resolveOutfit } from '../../systems/outfits'
+import {
+  resolveCharacterPortrait, resolveMonarchPortrait, resolveOutfit,
+} from '../../systems/outfits'
 import { resolveText } from '../../systems/text'
 import { availableTopics } from '../../systems/topics'
 import { ScenePlayer } from '../scene/ScenePlayer'
@@ -63,10 +65,21 @@ export function TalkModal() {
   const info = targetInfo(target)
   const isMonarch = target.kind === 'monarch'
   const topics = isMonarch ? [] : availableTopics(target.charId, game)
-  // 군주는 현재 착장 초상을, 연애 대상은 캐릭터 초상을 쓴다.
-  const portraitSrc = isMonarch
-    ? resolveOutfit(manifest, game.currentOutfitId).thumbSrc
-    : info.portrait
+  // 군주는 현재 착장 초상을, 연애 대상은 캐릭터 초상을 쓴다(둘 다 성별×나이 크롭본).
+  const portraitSrc = (() => {
+    if (isMonarch) {
+      const outfit = resolveOutfit(manifest, game.currentOutfitId)
+      return manifest.portraits
+        ? resolveMonarchPortrait(manifest.portraits, game.monarchGender, game.age, outfit.id).thumbSrc
+        : outfit.thumbSrc
+    }
+    const ch = CHARACTER_BY_ID[target.charId]
+    if (ch && manifest.characterPortraits) {
+      const r = resolveCharacterPortrait(manifest.characterPortraits, target.charId, ch.gender, game.age)
+      if (r) return r.thumbSrc
+    }
+    return info.portrait
+  })()
   const affectionLabel =
     !isMonarch && CHARACTER_BY_ID[target.charId]
       ? `${resolveText(CHARACTER_BY_ID[target.charId].name, game)} 호감도`

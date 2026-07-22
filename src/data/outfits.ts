@@ -67,6 +67,22 @@ export const FALLBACK_MANIFEST: OutfitManifest = {
     restrict: { debut: [16] },
     fallbackOutfit: 'casual',
   },
+  characterPortraits: {
+    thumbBase: '/assets/characters/portraits',
+    fullBase: '/assets/characters',
+    code: { male: 'm', female: 'f' },
+    ageMin: 13,
+    ageMax: 20,
+    chars: {
+      heir: { path: 'heir/{gdir}/heir_{code}_{age}.png', aged: true },
+      loyalist: { path: 'loyalist/{gdir}/loyalist_{code}_{age}.png', aged: true },
+      prince: { path: 'prince/{gdir}/prince_{code}_{age}.png', aged: true },
+      commander: { path: 'commander/{gdir}/commander_{code}_{age}.png', aged: true },
+      hero: { path: 'hero/{gdir}/hero_{code}.png', aged: false },
+      queen_mother: { path: 'others/queen_mother_f.png', aged: false, gender: 'female' },
+      regent: { path: 'others/regent_m.png', aged: false, gender: 'male' },
+    },
+  },
 }
 
 /** 착장 커스텀 화면과 README 양쪽에 노출하는 문구. */

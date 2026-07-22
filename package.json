@@ -33,6 +33,7 @@
     "verify:gallery": "node tools/verify/gallery.mjs",
     "verify:options": "node tools/verify/options.mjs",
     "verify:portraits": "node tools/verify/portraits.mjs",
+    "verify:portraits2": "node tools/verify/portraits2.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
     "gen:characters": "node tools/verify/gen-characters.mjs"

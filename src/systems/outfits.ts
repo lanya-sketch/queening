@@ -1,5 +1,7 @@
 import { DEFAULT_OUTFIT_ID, FALLBACK_MANIFEST, OUTFIT_MANIFEST_URL } from '../data/outfits'
-import type { Gender, GameState, Outfit, OutfitManifest, PortraitConfig } from '../types/game'
+import type {
+  CharacterPortraitConfig, Gender, GameState, Outfit, OutfitManifest, PortraitConfig,
+} from '../types/game'
 import { matchesCondition } from './eventEngine'
 
 export interface ManifestLoadResult {
@@ -63,14 +65,62 @@ export function validateManifest(raw: unknown): { manifest: OutfitManifest | nul
   // ★ portraits 섹션(선택). 필수 키가 온전할 때만 싣고, 아니면 조용히 버린다
   //   → 그때는 각 outfit 의 단일 이미지로 폴백한다(하위호환).
   const portraits = validatePortraits(candidate.portraits, problems)
+  const characterPortraits = validateCharacterPortraits(candidate.characterPortraits, problems)
 
   return {
     manifest: {
       version: typeof candidate.version === 'number' ? candidate.version : 1,
       outfits,
       ...(portraits ? { portraits } : {}),
+      ...(characterPortraits ? { characterPortraits } : {}),
     },
     problems,
+  }
+}
+
+function validateCharacterPortraits(
+  raw: unknown,
+  problems: string[],
+): CharacterPortraitConfig | null {
+  if (raw === undefined) return null
+  const c = raw as Partial<CharacterPortraitConfig>
+  if (
+    !isNonEmptyString(c.thumbBase) || !isNonEmptyString(c.fullBase) || !c.code || !c.chars ||
+    typeof c.ageMin !== 'number' || typeof c.ageMax !== 'number' || typeof c.chars !== 'object'
+  ) {
+    problems.push('characterPortraits 섹션이 온전하지 않아 무시합니다.')
+    return null
+  }
+  return {
+    thumbBase: c.thumbBase!, fullBase: c.fullBase!,
+    code: c.code as Record<Gender, string>,
+    ageMin: c.ageMin, ageMax: c.ageMax,
+    chars: c.chars as CharacterPortraitConfig['chars'],
+  }
+}
+
+/**
+ * charId × 성별 × 나이 → 캐릭터 초상(대화창 크롭 thumb + 이벤트 씬 전신 full).
+ * 등록 안 된 charId 는 null(그럼 화면이 스프라이트를 안 그린다).
+ */
+export function resolveCharacterPortrait(
+  config: CharacterPortraitConfig,
+  charId: string,
+  gender: Gender,
+  age: number,
+): { thumbSrc: string; fullSrc: string } | null {
+  const entry = config.chars[charId]
+  if (!entry) return null
+  const g = entry.gender ?? gender
+  const code = config.code[g] ?? config.code.male
+  const clampedAge = Math.max(config.ageMin, Math.min(config.ageMax, Math.round(age)))
+  const path = entry.path
+    .replace('{gdir}', g)
+    .replace('{code}', code)
+    .replace('{age}', String(clampedAge))
+  return {
+    thumbSrc: `${config.thumbBase}/${path}`,
+    fullSrc: `${config.fullBase}/${path}`,
   }
 }
 
