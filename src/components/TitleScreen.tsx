@@ -12,6 +12,7 @@ import { useGame } from '../store/gameStore'
  */
 export function TitleScreen() {
   const startGame = useApp((s) => s.startGame)
+  const startNewGame = useApp((s) => s.startNewGame)
   const openSettings = useApp((s) => s.openSettings)
   const openGallery = useApp((s) => s.openGallery)
   const reset = useGame((s) => s.reset)
@@ -21,7 +22,7 @@ export function TitleScreen() {
 
   const onNew = () => {
     reset()
-    startGame(true) // 새 게임은 온보딩과 함께
+    startNewGame() // 새 게임은 인트로(선왕 배경 → 성별) → 온보딩 순.
   }
   const onContinue = () => {
     if (!hasSave) return

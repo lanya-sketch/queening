@@ -8,7 +8,7 @@
 //   OpenAI 호환      → { choices: [{message:{content: <JSON>}}] }
 // 그리고 clamp 를 통과한 최종 결과가 완전히 일치하는지 비교한다.
 // 실제 API 키도 네트워크도 필요 없다.
-import { APP_URL, launch, log, ok, shotsDir } from './helpers.mjs'
+import { APP_URL, launch, log, ok, openAiSettings, shotsDir } from './helpers.mjs'
 
 const OUT = shotsDir('ai-providers')
 
@@ -126,9 +126,7 @@ log('E5 최종 델타 2건만 통과:', deltas.length, ok(deltas.length === 2))
 
 log('')
 log('=== F. 설정 UI 에서 제공자·모델 선택 ===')
-await page.getByRole('button', { name: /AI 설정/ }).click()
-await page.waitForTimeout(250)
-const dialog = page.getByRole('dialog', { name: 'AI 설정' })
+const dialog = await openAiSettings(page)
 const options = await dialog.locator('select').first().locator('option').allInnerTexts()
 log('F1 제공자 선택지:', options.join(' / '), ok(options.length === 2))
 await dialog.locator('select').first().selectOption('openai-compatible')

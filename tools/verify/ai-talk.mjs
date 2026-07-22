@@ -5,7 +5,7 @@
 //   ("내가 키운 대로 군주가 반응한다" 가 진짜 되는지의 증명)
 //
 // 네트워크는 전부 가로챈다 — 실제 키도 과금도 없다.
-import { APP_URL, launch, log, ok, overflow, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import { APP_URL, launch, log, ok, openAiSettings, overflow, shotsDir, SAVE_VERSION } from './helpers.mjs'
 
 const OUT = shotsDir('ai-talk')
 
@@ -273,9 +273,8 @@ log('E3 동일한 클램핑 (신뢰 +3):', ok(oaText.includes('신뢰 +3')))
 log('')
 log('=== F. 고급 설정 · 샘플링 안내 ===')
 await page.keyboard.press('Escape')
-await page.getByRole('button', { name: /AI 설정/ }).click()
-await page.waitForTimeout(300)
-const settings = page.getByRole('dialog', { name: 'AI 설정' })
+await page.waitForTimeout(150)
+const settings = await openAiSettings(page)
 await settings.getByText('고급 설정').click()
 await page.waitForTimeout(200)
 log('F1 비용 영향 항목 노출:',

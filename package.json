@@ -31,6 +31,7 @@
     "verify:durability": "node tools/verify/durability.mjs",
     "verify:stage2": "node tools/verify/stage2.mjs",
     "verify:gallery": "node tools/verify/gallery.mjs",
+    "verify:options": "node tools/verify/options.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
     "gen:characters": "node tools/verify/gen-characters.mjs"

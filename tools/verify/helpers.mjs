@@ -106,12 +106,64 @@ export async function enterGame(page) {
     //   스위트에 일상 소소가 끼어들지 않도록. 밀도/데드엔딩은 verify:stage2 가, 미스터리
     //   무손상(소소 켠 채)은 simulate/ablation 이 명시적으로 켜서 본다.
     window.__queeningAi?.setMinorEnabled?.(false)
+    // ★ D-3: 씬 내용 검증 스위트는 타이핑 없이(즉시) 진행한다 — 클릭 한 번이 다음 줄로.
+    //   타이핑 자체는 verify:options 가 속도를 명시해 따로 본다.
+    window.__queeningAi?.setTextSpeed?.('즉시')
   })
   await page.waitForTimeout(120)
 }
 
 export const ok = (b) => (b ? 'PASS' : '*** FAIL ***')
 export const log = (...a) => console.log(...a)
+
+/**
+ * AI 설정 접근 (D-3): 게임 화면의 AI 버튼이 설정 오버레이로 옮겨졌다.
+ * 게임 중 ⚙(설정) → 'AI 설정' 을 눌러 모달을 연다.
+ */
+export async function openSettingsOverlay(page) {
+  // 게임 중이면 ⚙, 타이틀이면 '설정' 버튼으로 설정 오버레이를 연다.
+  const gear = page.locator('[data-settings-button]').first()
+  if (await gear.isVisible().catch(() => false)) {
+    await gear.click()
+  } else {
+    await page.getByRole('button', { name: '설정' }).first().click()
+  }
+  await page.waitForTimeout(150)
+}
+
+export async function openAiSettings(page) {
+  await openSettingsOverlay(page)
+  await page.getByRole('button', { name: /AI 설정/ }).click()
+  await page.waitForTimeout(200)
+  return page.getByRole('dialog', { name: 'AI 설정' })
+}
+
+/** 설정 오버레이의 'AI 설정 · 켜짐/꺼짐' 버튼 라벨을 읽는다(모달은 안 연다). 읽고 설정을 닫는다. */
+export async function readAiSettingLabel(page) {
+  await page.locator('[data-settings-button]').first().click()
+  await page.waitForTimeout(150)
+  const label = await page.getByRole('button', { name: /AI 설정/ }).innerText()
+  await page.getByRole('button', { name: '닫기' }).first().click()
+  await page.waitForTimeout(150)
+  return label
+}
+
+/**
+ * 인트로 시퀀스(D-3)를 통과해 온보딩까지 간다. '새 게임' 클릭 뒤에 호출한다.
+ * 선왕 배경 narration 을 건너뛰고 성별을 고른 뒤 '시작한다'.
+ */
+export async function passIntro(page, gender = 'male') {
+  const skip = page.getByRole('button', { name: '건너뛰기' })
+  if (await skip.isVisible().catch(() => false)) await skip.click()
+  await page.waitForTimeout(200)
+  const label = gender === 'female' ? /여왕이 될 소녀/ : /왕이 될 소년/
+  const pick = page.getByRole('button', { name: label })
+  if (await pick.isVisible().catch(() => false)) await pick.click()
+  await page.waitForTimeout(150)
+  const start = page.getByRole('button', { name: '시작한다' })
+  if (await start.isVisible().catch(() => false)) await start.click()
+  await page.waitForTimeout(250)
+}
 
 // ---- 화면 조작 공통 ----
 
@@ -171,17 +223,21 @@ export const choiceButtons = (p) => p.locator('div.mt-4.space-y-2 > button')
  * 씬이 없으면 아무 일도 하지 않는다.
  */
 export async function advanceScene(p) {
-  for (let i = 0; i < 30; i++) {
+  // ★ D-3 타이핑: 한 줄에 클릭 두 번(타이핑 중 클릭=줄 완성, 완성 후 클릭=다음 줄)이
+  //   필요할 수 있다. 그래서 '다음'을 안 보일 때까지 넉넉히 누른다(각 줄 완성+진행).
+  for (let i = 0; i < 50; i++) {
     const next = p.getByRole('button', { name: /^다음$/ })
     if (!(await next.isVisible().catch(() => false))) break
     await next.click()
-    await p.waitForTimeout(40)
+    await p.waitForTimeout(45)
   }
-  // 씬의 마지막 버튼은 "계속" (이벤트 진행 버튼 "계속 (N건 더)" 와는 다르다)
-  const end = p.getByRole('button', { name: /^계속$/ })
-  if (await end.isVisible().catch(() => false)) {
+  // 마지막 줄 버튼은 "계속" — 타이핑 완성 + 종료로 최대 두 번.
+  // (이벤트 진행 버튼 "계속 (N건 더)" 와는 정확 매칭으로 구분된다.)
+  for (let i = 0; i < 2; i++) {
+    const end = p.getByRole('button', { name: /^계속$/ })
+    if (!(await end.isVisible().catch(() => false))) break
     await end.click()
-    await p.waitForTimeout(40)
+    await p.waitForTimeout(45)
   }
 }
 

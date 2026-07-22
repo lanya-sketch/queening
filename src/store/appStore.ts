@@ -14,6 +14,8 @@ export type AppScreen = 'title' | 'game'
 
 interface AppStore {
   screen: AppScreen
+  /** 인트로 시퀀스(선왕 배경 → 성별 선택) 표시 중인지 — 온보딩보다 앞선다. */
+  intro: boolean
   /** 새 게임 진입 직후인지 — 온보딩을 띄울지 결정한다. */
   onboarding: boolean
   /** 타이틀 설정 메뉴 오버레이. */
@@ -22,8 +24,14 @@ interface AppStore {
   help: boolean
   /** 엔딩 갤러리 화면. 타이틀 '엔딩 기록'에서 연다. */
   gallery: boolean
+  /** AI 설정 모달(D-3: 게임 화면에서 설정 오버레이로 이동). */
+  aiSettings: boolean
 
   goTitle: () => void
+  /** 새 게임 — 인트로(선왕 배경 → 성별)부터 시작한다. */
+  startNewGame: () => void
+  /** 인트로 종료 → 온보딩으로. */
+  dismissIntro: () => void
   startGame: (withOnboarding: boolean) => void
   dismissOnboarding: () => void
   openSettings: () => void
@@ -32,6 +40,8 @@ interface AppStore {
   closeHelp: () => void
   openGallery: () => void
   closeGallery: () => void
+  openAiSettings: () => void
+  closeAiSettings: () => void
 }
 
 /**
@@ -51,14 +61,19 @@ function initialScreen(): AppScreen {
 export const useApp = create<AppStore>()((set) => ({
   // 앱은 이제 타이틀에서 시작한다 — 예전엔 게임 중간으로 바로 떨어졌다.
   screen: initialScreen(),
+  intro: false,
   onboarding: false,
   settingsOpen: false,
   help: false,
   gallery: false,
+  aiSettings: false,
 
   goTitle: () =>
-    set({ screen: 'title', onboarding: false, settingsOpen: false, help: false, gallery: false }),
-  startGame: (withOnboarding) => set({ screen: 'game', onboarding: withOnboarding }),
+    set({ screen: 'title', intro: false, onboarding: false, settingsOpen: false, help: false, gallery: false, aiSettings: false }),
+  // 새 게임: 게임 화면으로 들어가되 먼저 인트로 오버레이를 띄운다(온보딩은 그 다음).
+  startNewGame: () => set({ screen: 'game', intro: true, onboarding: false }),
+  dismissIntro: () => set({ intro: false, onboarding: true }),
+  startGame: (withOnboarding) => set({ screen: 'game', intro: false, onboarding: withOnboarding }),
   dismissOnboarding: () => set({ onboarding: false }),
   openSettings: () => set({ settingsOpen: true }),
   closeSettings: () => set({ settingsOpen: false }),
@@ -67,4 +82,7 @@ export const useApp = create<AppStore>()((set) => ({
   closeHelp: () => set({ help: false }),
   openGallery: () => set({ gallery: true }),
   closeGallery: () => set({ gallery: false }),
+  // AI 설정을 열면 설정 메뉴는 접는다(중첩 방지 — 앱 최상위 모달로 뜬다).
+  openAiSettings: () => set({ aiSettings: true, settingsOpen: false }),
+  closeAiSettings: () => set({ aiSettings: false }),
 }))

@@ -5,9 +5,11 @@ import { PortraitModal } from './components/portrait/PortraitModal'
 import { ScheduleScreen } from './components/ScheduleScreen'
 import { StatusPanel } from './components/StatusPanel'
 import { OnboardingOverlay } from './components/OnboardingOverlay'
+import { IntroSequence } from './components/IntroSequence'
 import { HelpScreen } from './components/HelpScreen'
 import { GalleryScreen } from './components/GalleryScreen'
 import { SettingsMenu } from './components/SettingsMenu'
+import { AiSettingsModal } from './components/ai/AiSettingsModal'
 import { TalkModal } from './components/talk/TalkModal'
 import { TitleScreen } from './components/TitleScreen'
 import { TurnResultScreen } from './components/TurnResultScreen'
@@ -36,12 +38,15 @@ function Notice() {
 
 export default function App() {
   const screen = useApp((s) => s.screen)
+  const intro = useApp((s) => s.intro)
   const onboarding = useApp((s) => s.onboarding)
   const settingsOpen = useApp((s) => s.settingsOpen)
   const help = useApp((s) => s.help)
   const closeHelp = useApp((s) => s.closeHelp)
   const gallery = useApp((s) => s.gallery)
   const closeGallery = useApp((s) => s.closeGallery)
+  const aiSettings = useApp((s) => s.aiSettings)
+  const closeAiSettings = useApp((s) => s.closeAiSettings)
   const phase = useGame((s) => s.game.phase)
   const initOutfits = useGame((s) => s.initOutfits)
 
@@ -68,7 +73,8 @@ export default function App() {
           </div>
           <PortraitModal />
           <TalkModal />
-          {/* 온보딩은 새 게임 첫 진입에만 뜬다. 게임 화면 위 오버레이. */}
+          {/* 새 게임 진입: 인트로(선왕 배경 → 성별) → 온보딩 순. 게임 화면 위 오버레이. */}
+          {intro && <IntroSequence />}
           {onboarding && <OnboardingOverlay />}
           <Notice />
         </div>
@@ -78,6 +84,7 @@ export default function App() {
       {settingsOpen && <SettingsMenu />}
       {help && <HelpScreen onClose={closeHelp} />}
       {gallery && <GalleryScreen onClose={closeGallery} />}
+      {aiSettings && <AiSettingsModal onClose={closeAiSettings} />}
     </>
   )
 }

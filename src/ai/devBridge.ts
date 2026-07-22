@@ -7,6 +7,7 @@ import { INCIDENT_EVENTS } from '../data/events/incidents'
 import { RECKONING_AFTERMATH, RECKONING_EVENTS } from '../data/events/reckoning'
 import { TOPICS, TOPIC_BY_ID } from '../data/topics'
 import { useAi } from '../store/aiStore'
+import { useOptions } from '../store/optionsStore'
 import { useGame } from '../store/gameStore'
 import { useIncidents } from '../store/incidentStore'
 import { useApp } from '../store/appStore'
@@ -183,6 +184,10 @@ export function installDevBridge(): void {
     setMinorEnabled(on: boolean) {
       if (on) resetMinorTuning()
       else setMinorEnabled(false)
+    },
+    /** 텍스트 속도 — 씬 내용 검증 스위트가 타이핑 없이(즉시) 진행하도록 격리용. */
+    setTextSpeed(speed: '느리게' | '보통' | '빠르게' | '즉시') {
+      useOptions.getState().setTextSpeed(speed)
     },
     clearKey() {
       useAi.setState({ apiKey: '' })

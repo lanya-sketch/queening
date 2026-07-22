@@ -6,7 +6,6 @@ import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
 import { talkLocked, useTalk } from '../store/talkStore'
 import { resolveText } from '../systems/text'
-import { AiSettingsModal } from './ai/AiSettingsModal'
 import { PortraitButton } from './portrait/PortraitButton'
 import { RomancePanel } from './romance/RomancePanel'
 import { Button } from './ui/Button'
@@ -14,12 +13,11 @@ import { StatBar } from './ui/StatBar'
 
 export function StatusPanel() {
   const [open, setOpen] = useState(false)
-  const [aiOpen, setAiOpen] = useState(false)
   const aiEnabled = useAiEnabled()
   const openTalk = useTalk((s) => s.openTalk)
   const openHelp = useApp((s) => s.openHelp)
+  const openSettings = useApp((s) => s.openSettings)
   const [romanceOpen, setRomanceOpen] = useState(false)
-  const setMonarchGender = useGame((s) => s.setMonarchGender)
   const game = useGame((s) => s.game)
   const savedAt = useGame((s) => s.savedAt)
   const save = useGame((s) => s.save)
@@ -50,6 +48,14 @@ export function StatusPanel() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={openSettings}
+                aria-label="설정"
+                data-settings-button
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-sm text-slate-300 active:bg-slate-700"
+              >
+                ⚙
+              </button>
               <button
                 onClick={openHelp}
                 aria-label="도움말"
@@ -182,34 +188,11 @@ export function StatusPanel() {
             <Button variant="danger" className="col-span-2" onClick={reset}>
               처음부터
             </Button>
-            <Button className="col-span-2" onClick={() => setAiOpen(true)}>
-              AI 설정 {aiEnabled ? '· 켜짐' : '· 꺼짐'}
-            </Button>
             <Button className="col-span-2" onClick={() => setRomanceOpen(true)}>
               인연
             </Button>
           </div>
-
-          {/* 군주 성별 — 진행 중 바꾸면 표기만 바뀐다(정치 구조엔 영향 없음) */}
-          <div className="mt-3">
-            <p className="mb-1 text-[11px] font-medium text-slate-500">군주</p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                aria-pressed={game.monarchGender === 'male'}
-                className={game.monarchGender === 'male' ? 'border-amber-400 text-amber-200' : ''}
-                onClick={() => setMonarchGender('male')}
-              >
-                왕
-              </Button>
-              <Button
-                aria-pressed={game.monarchGender === 'female'}
-                className={game.monarchGender === 'female' ? 'border-amber-400 text-amber-200' : ''}
-                onClick={() => setMonarchGender('female')}
-              >
-                여왕
-              </Button>
-            </div>
-          </div>
+          {/* ★ D-3: AI 설정 버튼은 설정 오버레이로, 성별 선택은 인트로로 옮겼다(게임 화면 정리). */}
 
           {/* 군주와의 대화 — 키가 있고 이벤트 씬이 아닐 때만 */}
           {aiEnabled && (
@@ -235,7 +218,6 @@ export function StatusPanel() {
         </div>
       </div>
 
-      {aiOpen && <AiSettingsModal onClose={() => setAiOpen(false)} />}
       {romanceOpen && <RomancePanel onClose={() => setRomanceOpen(false)} />}
     </aside>
   )

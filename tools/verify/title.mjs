@@ -2,7 +2,7 @@
 //
 // ★ UX 라운드라 "작동하는가"를 검증하되, "좋은가"는 스크린샷으로 사람이 본다.
 //   여기서는 진입 흐름·메뉴 상태·온보딩 순차·툴팁 하이라이트·스킵을 자동 확인한다.
-import { APP_URL, launch, log, ok, shotsDir } from './helpers.mjs'
+import { APP_URL, launch, log, ok, passIntro, shotsDir } from './helpers.mjs'
 
 const OUT = shotsDir('title')
 const browser = await launch()
@@ -48,8 +48,13 @@ log('')
 log('=== B. 온보딩 (새 게임 진입) ===')
 const q = await fresh(1280, 900)
 await q.getByRole('button', { name: '새 게임' }).click()
-await q.waitForTimeout(500)
-log('B1 새 게임 → 온보딩 진입:', ok(await q.getByText('노귀족').isVisible()))
+await q.waitForTimeout(300)
+// D-3: 새 게임 → 인트로(선왕 배경 → 성별) → 온보딩. 인트로를 통과한다.
+log('B0 새 게임 → 인트로(선왕 배경) 먼저:',
+  ok(await q.getByText('선왕이 스러졌다').isVisible().catch(() => false)))
+await passIntro(q)
+await q.waitForTimeout(300)
+log('B1 인트로 뒤 온보딩 진입:', ok(await q.getByText('노귀족').isVisible()))
 log('B2 게임 화면이 뒤에 비침(오버레이):',
   ok(await q.getByText('활동 선택').isVisible().catch(() => false)))
 
@@ -98,9 +103,10 @@ log('=== C. 스킵 ===')
 const s = await fresh(1280, 900)
 await s.getByRole('button', { name: '새 게임' }).click()
 await s.waitForTimeout(400)
+await passIntro(s) // 인트로 통과 후 온보딩에서 건너뛰기.
 await s.getByRole('button', { name: '건너뛰기' }).click()
 await s.waitForTimeout(300)
-log('C1 ★ 건너뛰기 → 바로 플레이:',
+log('C1 ★ (온보딩) 건너뛰기 → 바로 플레이:',
   ok(!(await s.getByText('노귀족').isVisible().catch(() => false)) &&
      (await s.getByText('활동 선택').isVisible())))
 
@@ -140,8 +146,12 @@ const of1 = await m.evaluate(() => ({ sw: document.documentElement.scrollWidth, 
 log('E1 타이틀 375px 오버플로 없음:', ok(of1.sw <= of1.iw))
 await m.getByRole('button', { name: '새 게임' }).click()
 await m.waitForTimeout(400)
+const ofIntro = await m.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }))
+log('E2 인트로 375px 오버플로 없음:', ok(ofIntro.sw <= ofIntro.iw))
+await passIntro(m)
+await m.waitForTimeout(300)
 const of2 = await m.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }))
-log('E2 온보딩 375px 오버플로 없음:', ok(of2.sw <= of2.iw))
+log('E3 온보딩 375px 오버플로 없음:', ok(of2.sw <= of2.iw))
 await m.screenshot({ path: `${OUT}/mobile-onboarding.png` })
 
 // ─────────────────────────────────────────────────────────────
@@ -152,6 +162,8 @@ log('=== F. 말풍선 배치 (요소 옆, 안 가림) ===')
 async function toApTip(page) {
   await page.getByRole('button', { name: '새 게임' }).click()
   await page.waitForTimeout(400)
+  await passIntro(page) // 인트로 통과 후 온보딩으로.
+  await page.waitForTimeout(200)
   for (let i = 0; i < 4; i++) {
     await page.getByRole('button', { name: /^다음$/ }).click()
     await page.waitForTimeout(220)
