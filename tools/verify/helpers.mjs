@@ -61,7 +61,7 @@ export async function launch() {
  * 함께 깨뜨린 적이 있어서, 버전만 한 곳에 모아 둔다.
  * (src/data/config.ts 의 GAME_CONFIG.saveVersion 과 맞춰야 한다)
  */
-export const SAVE_VERSION = 6
+export const SAVE_VERSION = 7
 
 /**
  * 실제 AI 엔드포인트로 나가는 요청을 전부 막는다.
@@ -159,7 +159,7 @@ export async function phaseOf(p) {
   return 'unknown'
 }
 
-/** 이벤트 화면의 선택지 버튼들. 하단 고정 "다음 계절로" 바와 구분된다. */
+/** 이벤트 화면의 선택지 버튼들. 하단 고정 "다음 달로" 바와 구분된다. */
 export const choiceButtons = (p) => p.locator('div.mt-4.space-y-2 > button')
 
 /**
@@ -193,6 +193,6 @@ export async function clearEvent(p) {
       break
     }
   }
-  await p.getByRole('button', { name: /다음 계절로|계속/ }).click()
+  await p.getByRole('button', { name: /다음 달로|계속/ }).click()
   await p.waitForTimeout(120)
 }

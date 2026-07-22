@@ -34,7 +34,7 @@ async function runTurn(choose) {
   await page.waitForTimeout(350)
   const titles = []
   for (let i = 0; i < 8; i++) {
-    const next = page.getByRole('button', { name: /다음 계절로|무슨 일이|계속/ })
+    const next = page.getByRole('button', { name: /다음 달로|무슨 일이|계속/ })
     if (!(await next.isVisible().catch(() => false))) break
     const label = await next.innerText()
     await next.click()
@@ -49,10 +49,10 @@ async function runTurn(choose) {
         await page.waitForTimeout(250)
       }
     }
-    if (/다음 계절로/.test(label)) break
+    if (/다음 달로/.test(label)) break
   }
   for (let i = 0; i < 5; i++) {
-    const b = page.getByRole('button', { name: /다음 계절로|계속/ })
+    const b = page.getByRole('button', { name: /다음 달로|계속/ })
     if (!(await b.isVisible().catch(() => false))) break
     await b.click()
     await page.waitForTimeout(250)
@@ -171,7 +171,7 @@ const SEEN_OTHERS = await page.evaluate(() => {
 })
 
 const BASE = {
-  age: 17, date: { year: 6, season: 'summer' },
+  age: 17, date: { year: 6, month: 6 },
   affection: { heir: 0, loyalist: 0, prince: 5, commander: 20, hero: 0 },
   courtInfluence: 20, regentRapport: 30, regentSuspicion: 30, wellbeing: 80,
   counters: { '__cooldown:prince-arrival': 99 },
@@ -297,7 +297,7 @@ for (let turn = 0; turn < 8; turn++) {
   await page.getByRole('button', { name: /턴 종료/ }).click()
   await page.waitForTimeout(300)
   for (let i = 0; i < 5; i++) {
-    const b = page.getByRole('button', { name: /다음 계절로|무슨 일이|계속/ })
+    const b = page.getByRole('button', { name: /다음 달로|무슨 일이|계속/ })
     if (!(await b.isVisible().catch(() => false))) break
     await b.click()
     await page.waitForTimeout(300)

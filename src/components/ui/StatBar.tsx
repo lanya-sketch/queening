@@ -21,7 +21,8 @@ export function StatBar({ label, value, bar, max = 100, warning, emphasis, suffi
         </span>
         <span className={`tabular-nums ${emphasis ? 'text-slate-100' : 'text-slate-400'}`}>
           {warning && <span className="mr-1.5 text-amber-400">{warning}</span>}
-          {value}
+          {/* 평소 UI 는 정수로 — 정확한 소수는 상세(내부값) 섹션에서 본다(월 단위 전환). */}
+          {Math.round(value)}
           {suffix && <span className="text-slate-600"> {suffix}</span>}
         </span>
       </div>

@@ -95,7 +95,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
       '요구액은 3년치 조공에 해당한다. 사절은 그것을 "왕국의 성의"라고 불렀다.\n' +
       '아무도 입 밖에 내지 않는 문장이 하나 있다. 언젠가 이 청구서를 반대 방향으로 ' +
       '내미는 날에 대한 것이다.',
-    condition: { minAge: 15, minYear: 4, season: 'autumn' },
+    condition: { minAge: 15, minYear: 4, month: 9 },
     priority: 25,
     choices: [
       {
@@ -175,7 +175,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
       '해산 동의안을 올렸다. 왕당파는 존속을 청한다.\n' +
       '섭정공은 이번만은 답을 정해두지 않은 얼굴이다. "폐하께서 정하실 일입니다."\n' +
       '그가 처음으로 {왕}에게 결정을 넘겼다. 그것 자체가 시험이다.',
-    condition: { minAge: 16, minYear: 5, season: 'summer' },
+    condition: { minAge: 16, minYear: 5, month: 6 },
     priority: 28,
     choices: [
       {

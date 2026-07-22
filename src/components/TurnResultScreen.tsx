@@ -1,9 +1,26 @@
 import { ACTIVITY_BY_ID } from '../data/activities'
-import { SEASON_LABEL } from '../data/config'
+import { monthLabel } from '../data/config'
 import { EVENT_BY_ID } from '../data/events'
+import { STAT_META } from '../data/stats'
 import { useGame } from '../store/gameStore'
 import type { Delta } from '../types/game'
 import { Button } from './ui/Button'
+
+/** 스탯 표시 라벨 집합 — 델타가 스탯인지 자원인지 가른다. */
+const STAT_LABELS = new Set(Object.values(STAT_META).map((m) => m.label))
+
+/**
+ * ★ 스탯 성장은 질적으로 표현한다 (월 단위 전환).
+ *   매달 "+0.4" 같은 소수는 정보로 약하고 초라하니, 델타 크기별 몇 단계로.
+ *   정확한 소수는 상세창(StatusPanel)에서 본다.
+ */
+function growthWord(amount: number): string {
+  const a = Math.abs(amount)
+  const word = amount >= 0
+    ? a < 1 ? '조금 자랐다' : a < 3 ? '자랐다' : '크게 자랐다'
+    : a < 1 ? '조금 줄었다' : a < 3 ? '줄었다' : '크게 줄었다'
+  return word
+}
 
 function DeltaList({ deltas }: { deltas: Delta[] }) {
   if (deltas.length === 0) {
@@ -11,19 +28,30 @@ function DeltaList({ deltas }: { deltas: Delta[] }) {
   }
   return (
     <ul className="space-y-1.5">
-      {deltas.map((delta) => (
-        <li key={delta.label} className="flex items-center justify-between text-sm">
-          <span className="text-slate-300">{delta.label}</span>
-          <span
-            className={`tabular-nums font-medium ${
-              delta.amount > 0 ? 'text-emerald-400' : 'text-rose-400'
-            }`}
-          >
-            {delta.amount > 0 ? '+' : ''}
-            {delta.amount}
-          </span>
-        </li>
-      ))}
+      {deltas.map((delta) => {
+        const isStat = STAT_LABELS.has(delta.label)
+        return (
+          <li key={delta.label} className="flex items-center justify-between text-sm">
+            <span className="text-slate-300">{delta.label}</span>
+            {isStat ? (
+              // 스탯: 질적 표현(소수 감춤). 정확한 값은 상세창에서.
+              <span className={delta.amount >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                {growthWord(delta.amount)}
+              </span>
+            ) : (
+              // 자원(심신·의심 등): 플레이어가 관리하는 값이라 숫자로. 반올림.
+              <span
+                className={`tabular-nums font-medium ${
+                  delta.amount > 0 ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                {delta.amount > 0 ? '+' : ''}
+                {Math.round(delta.amount)}
+              </span>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -37,16 +65,16 @@ export function TurnResultScreen() {
   return (
     <div className="pb-28 lg:pb-6">
       <header className="mb-4">
-        <p className="text-xs text-slate-500">지난 계절</p>
+        <p className="text-xs text-slate-500">지난 달</p>
         <h1 className="text-lg font-semibold text-slate-100">
-          즉위 {report.date.year}년 {SEASON_LABEL[report.date.season]}의 결과
+          즉위 {report.date.year}년 {monthLabel(report.date.month)}의 결과
         </h1>
       </header>
 
       <section className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
         <h2 className="mb-2 text-sm font-medium text-slate-300">수행한 활동</h2>
         {report.activityIds.length === 0 ? (
-          <p className="text-sm text-slate-500">아무것도 하지 않고 계절을 보냈습니다.</p>
+          <p className="text-sm text-slate-500">아무것도 하지 않고 한 달을 보냈습니다.</p>
         ) : (
           <ul className="mb-3 flex flex-wrap gap-1.5">
             {report.activityIds.map((id, i) => (
@@ -78,7 +106,7 @@ export function TurnResultScreen() {
 
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
         <Button variant="primary" className="w-full" onClick={continueFromResult}>
-          {report.triggeredEventIds.length > 0 ? '무슨 일이 있었는지 본다' : '다음 계절로'}
+          {report.triggeredEventIds.length > 0 ? '무슨 일이 있었는지 본다' : '다음 달로'}
         </Button>
       </div>
     </div>

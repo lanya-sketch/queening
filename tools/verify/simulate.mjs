@@ -328,7 +328,7 @@ async function runSimulation(browser, run) {
   let turns = 0
   let minInfluence = 100
 
-  while (turns < 60) {
+  while (turns < 300) { // 108개월 + 이벤트·결과 화면(월 단위 전환으로 60→300)
     const phase = await phaseOf(page)
     if (phase === 'ended') break
 
@@ -349,7 +349,7 @@ async function runSimulation(browser, run) {
     }
 
     if (phase === 'result') {
-      await page.getByRole('button', { name: /다음 계절로|무슨 일이/ }).click()
+      await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
       await page.waitForTimeout(60)
       continue
     }
@@ -384,7 +384,7 @@ async function runSimulation(browser, run) {
         의심: panel.stats['섭정 의심'], 신망: panel.stats['섭정 신망'],
         영향도: panel.stats['국정 영향도'],
       })
-      await page.getByRole('button', { name: /다음 계절로|계속/ }).click()
+      await page.getByRole('button', { name: /다음 달로|계속/ }).click()
       await page.waitForTimeout(60)
       continue
     }

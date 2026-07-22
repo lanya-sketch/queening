@@ -119,7 +119,7 @@ const setKey = (key) =>
 // ─────────────────────────────────────────────────────────────
 log('=== A. 키 없으면 돌발 비활성, 코어 완전 ===')
 await setKey('')
-await setGame({ age: 15, date: { year: 4, season: 'summer' }, counters: {}, flags: {} })
+await setGame({ age: 15, date: { year: 4, month: 6 }, counters: {}, flags: {} })
 const noKey = await triggerable()
 log('A1 ★ 키 없으면 돌발이 후보에 없음:',
   ok(!noKey.some((id) => id.startsWith('ai-incident'))))
@@ -190,7 +190,7 @@ log('')
 log('=== C. 정상 동작 — 통보형 / 선택지형 ===')
 await page.evaluate(() => window.__queeningAi.resetIncidents())
 await setGame({
-  age: 15, date: { year: 4, season: 'summer' }, wellbeing: 60, regentSuspicion: 40,
+  age: 15, date: { year: 4, month: 6 }, wellbeing: 60, regentSuspicion: 40,
   counters: { '__pity:ai-incident-notice': 0 }, flags: {},
 })
 

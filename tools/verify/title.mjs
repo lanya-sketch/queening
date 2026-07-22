@@ -65,9 +65,14 @@ const gaugeHi = await q.evaluate(() =>
   document.querySelector('[data-onboard="gauges"]')?.classList.contains('onboard-highlight'))
 log('B4 ★ 게이지 대사에서 게이지 요소 하이라이트:', ok(gaugeHi === true))
 
-await next(); await q.waitForTimeout(300)
-const endHi = await q.evaluate(() =>
-  document.querySelector('[data-onboard="endTurn"]')?.classList.contains('onboard-highlight'))
+// 게이지 다음 대사가 몇 개인지(툴팁 없는 서술 포함) 세지 않고, 하이라이트가
+// 뜰 때까지 진행한다 — 온보딩 대사가 늘어도 안 깨진다.
+let endHi = false
+for (let i = 0; i < 4 && !endHi; i++) {
+  await next(); await q.waitForTimeout(250)
+  endHi = await q.evaluate(() =>
+    document.querySelector('[data-onboard="endTurn"]')?.classList.contains('onboard-highlight'))
+}
 log('B5 ★ 턴 종료 대사에서 턴 종료 요소 하이라이트:', ok(endHi === true))
 
 // 끝까지 → 시작

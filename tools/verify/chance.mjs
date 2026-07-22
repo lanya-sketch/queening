@@ -152,7 +152,7 @@ async function runTurn() {
   await page.waitForTimeout(350)
   const titles = []
   for (let i = 0; i < 6; i++) {
-    const next = page.getByRole('button', { name: /다음 계절로|무슨 일이|계속/ })
+    const next = page.getByRole('button', { name: /다음 달로|무슨 일이|계속/ })
     if (!(await next.isVisible().catch(() => false))) break
     const label = await next.innerText()
     await next.click()
@@ -160,11 +160,11 @@ async function runTurn() {
     await advanceScene(page)
     const t = await page.locator('article h1').innerText().catch(() => null)
     if (t && !titles.includes(t)) titles.push(t)
-    if (/다음 계절로/.test(label)) break
+    if (/다음 달로/.test(label)) break
   }
   // 남은 진행 버튼을 정리한다
   for (let i = 0; i < 4; i++) {
-    const b = page.getByRole('button', { name: /다음 계절로|계속/ })
+    const b = page.getByRole('button', { name: /다음 달로|계속/ })
     if (!(await b.isVisible().catch(() => false))) break
     await b.click()
     await page.waitForTimeout(250)
@@ -176,7 +176,7 @@ async function runTurn() {
 // ★ 17세 봄에 겹치는 마일스톤(성년식 등)을 이미 본 것으로 둔다 —
 //   그것들이 우선순위 대역에서 위인 건 정상이고, 여기서 볼 것은 체류 사이클이다.
 await setGame({
-  age: 17, date: { year: 6, season: 'spring' },
+  age: 17, date: { year: 6, month: 3 },
   flags: {
     romance_unlocked: true,
     'event:adult-coming-of-age': true,

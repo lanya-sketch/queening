@@ -127,8 +127,8 @@ await page.evaluate(() => localStorage.clear())
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
 await setGame({
-  date: { year: 6, season: 'autumn' }, age: 17,
-  // 17세 겨울에 겹칠 수 있는 이벤트들을 이미 본 것으로 둔다(입궁만 검사하기 위해)
+  date: { year: 6, month: 11 }, age: 17, // 11월+1턴=12월(입궁 발동)
+  // 17세 12월에 겹칠 수 있는 이벤트들을 이미 본 것으로 둔다(입궁만 검사하기 위해)
   flags: {
     romance_unlocked: true,
     'event:debut-ball': true,
@@ -139,13 +139,13 @@ await setGame({
 })
 await page.getByRole('button', { name: /턴 종료/ }).click()
 await page.waitForTimeout(300)
-await page.getByRole('button', { name: /다음 계절로|무슨 일이/ }).click()
+await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
 await page.waitForTimeout(400)
 const title = await page.locator('article h1').innerText().catch(() => '—')
-log('D1 입궁 발동 (17세 겨울):', title, ok(title === '입궁'))
+log('D1 입궁 발동 (17세 12월):', title, ok(title === '입궁'))
 log('D2 스텁 텍스트도 성별 토큰 사용:',
   ok((await page.locator('article').innerText()).includes('왕은 그 말이 포상이 아니라')))
-await page.getByRole('button', { name: /다음 계절로|계속/ }).click()
+await page.getByRole('button', { name: /다음 달로|계속/ }).click()
 await page.waitForTimeout(300)
 
 // ④ 는 hero_at_court **와** 18세를 동시에 요구한다 — 이중 조건을 확인한다.

@@ -28,6 +28,7 @@
     "verify:hard-exclusive": "node tools/verify/hard-exclusive.mjs",
     "verify:concubine": "node tools/verify/concubine.mjs",
     "verify:title": "node tools/verify/title.mjs",
+    "verify:durability": "node tools/verify/durability.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
     "gen:characters": "node tools/verify/gen-characters.mjs"

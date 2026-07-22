@@ -42,7 +42,7 @@ for (let t = 0; t < 250; t++) {
   }
 
   if (p === 'result') {
-    await page.getByRole('button', { name: /다음 계절로|무슨 일이/ }).click()
+    await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
     await page.waitForTimeout(60)
     continue
   }
@@ -58,7 +58,7 @@ for (let t = 0; t < 250; t++) {
         break
       }
     }
-    await page.getByRole('button', { name: /다음 계절로|계속/ }).click()
+    await page.getByRole('button', { name: /다음 달로|계속/ }).click()
     await page.waitForTimeout(60)
     continue
   }

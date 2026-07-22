@@ -1,5 +1,5 @@
 import { CHARACTER_BY_ID } from '../data/characters'
-import { GAME_CONFIG, SEASON_LABEL } from '../data/config'
+import { GAME_CONFIG } from '../data/config'
 import { EVENTS } from '../data/events'
 import { RESOURCE_META, STAT_META } from '../data/stats'
 import type { Condition, GameEvent, GameState, GaugeKey, StatKey } from '../types/game'
@@ -20,7 +20,7 @@ function inRange(value: number, range?: { min?: number; max?: number }): boolean
 export function matchesCondition(state: GameState, c: Condition): boolean {
   if (c.minYear !== undefined && state.date.year < c.minYear) return false
   if (c.maxYear !== undefined && state.date.year > c.maxYear) return false
-  if (c.season !== undefined && state.date.season !== c.season) return false
+  if (c.month !== undefined && state.date.month !== c.month) return false
   if (c.minAge !== undefined && state.age < c.minAge) return false
   if (c.maxAge !== undefined && state.age > c.maxAge) return false
 
@@ -69,7 +69,7 @@ export function describeCondition(c: Condition | undefined): string[] {
 
   if (c.minYear !== undefined) parts.push(`즉위 ${c.minYear}년 이후`)
   if (c.maxYear !== undefined) parts.push(`즉위 ${c.maxYear}년 이내`)
-  if (c.season !== undefined) parts.push(`${SEASON_LABEL[c.season]}에만`)
+  if (c.month !== undefined) parts.push(`${c.month}월에만`)
   if (c.minAge !== undefined) parts.push(`${c.minAge}세 이상`)
   if (c.maxAge !== undefined) parts.push(`${c.maxAge}세 이하`)
 

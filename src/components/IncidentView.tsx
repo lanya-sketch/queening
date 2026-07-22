@@ -92,9 +92,9 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
   if (incident === null) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
-        <p className="text-sm text-slate-500">별다른 일 없이 계절이 지났습니다.</p>
+        <p className="text-sm text-slate-500">별다른 일 없이 한 달이 지났습니다.</p>
         <Button variant="primary" className="mt-4 w-full" onClick={onDone}>
-          다음 계절로
+          다음 달로
         </Button>
       </div>
     )
@@ -164,7 +164,7 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
       {!awaiting && (
         <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
           <Button variant="primary" className="w-full" onClick={onDone}>
-            다음 계절로
+            다음 달로
           </Button>
         </div>
       )}

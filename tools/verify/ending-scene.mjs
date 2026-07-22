@@ -235,11 +235,11 @@ const triggerable = (patch) =>
 await page.evaluate(() => window.__queeningAi.configure('anthropic', 'sk-ant-fake-000'))
 
 const midGame = await triggerable({
-  age: 17, date: { year: 6, season: 'summer' },
+  age: 17, date: { year: 6, month: 6 },
   flags: { romance_unlocked: true }, counters: {},
 })
 const atEnd = await triggerable({
-  age: 21, date: { year: 10, season: 'spring' },
+  age: 21, date: { year: 10, month: 3 },
   flags: { romance_unlocked: true }, counters: {},
 })
 const hasChance = (ids) => ids.some((id) => id.startsWith('ai-incident') || id === 'prince-arrival')
@@ -250,7 +250,7 @@ log('D0b ★ 20세를 넘긴 마지막 턴(21세)엔 확률 이벤트가 후보�
 
 // 진행 중이던 체류의 퇴장씬(확률 없음)은 마지막 턴에도 정상 발동해야 한다.
 const departureAtEnd = await triggerable({
-  age: 21, date: { year: 10, season: 'spring' },
+  age: 21, date: { year: 10, month: 3 },
   flags: { romance_unlocked: true, prince_present: true },
   counters: { prince_stay: 0 },
 })

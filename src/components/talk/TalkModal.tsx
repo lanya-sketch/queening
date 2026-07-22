@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { SEASON_LABEL } from '../../data/config'
+import { monthLabel } from '../../data/config'
 import { RESOURCE_META } from '../../data/stats'
 import { CHARACTER_BY_ID } from '../../data/characters'
 import { TOPIC_BY_ID } from '../../data/topics'
@@ -105,7 +105,7 @@ export function TalkModal() {
               {isMonarch ? `${info.name}과의 대화` : info.name}
             </p>
             <p className="text-xs text-slate-400">
-              즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]} · {resolveText('{왕}', game)}{' '}
+              즉위 {game.date.year}년 {monthLabel(game.date.month)} · {resolveText('{왕}', game)}{' '}
               {game.age}세
             </p>
           </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GAME_CONFIG, SEASON_LABEL, courtInfluenceCap } from '../data/config'
+import { GAME_CONFIG, courtInfluenceCap, monthLabel } from '../data/config'
 import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
 import { useAiEnabled } from '../store/aiStore'
 import { useGame } from '../store/gameStore'
@@ -38,7 +38,7 @@ export function StatusPanel() {
           <div className="flex min-w-0 flex-1 items-center gap-3 lg:w-full lg:flex-none">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-amber-200">
-                즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]}
+                즉위 {game.date.year}년 {monthLabel(game.date.month)}
               </p>
               {/* 20세를 넘겨 잠긴 상태에서는 본문과 어긋나지 않게 끝점 나이로 고정 */}
             <p className="text-xs text-slate-400">
@@ -142,6 +142,29 @@ export function StatusPanel() {
           <p className="mt-2 text-[10px] leading-relaxed text-slate-600">
             선택지에서 이 두 지표의 변화는 미리 표시되지 않습니다.
           </p>
+
+          {/*
+            상세(내부값) — 스탯의 정확한 소수 + 내구도.
+            평소 UI 는 정수만 보여주지만, 여기서 매달 조금씩 차오르는 것을 확인할 수 있다.
+            내구도는 숨은 상태라 막대 없이 여기서만 보인다(월 단위 전환).
+          */}
+          <details className="mt-4 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
+            <summary className="cursor-pointer text-[11px] font-medium text-slate-400">
+              상세 (내부값)
+            </summary>
+            <div className="mt-2 space-y-1">
+              {STAT_KEYS.map((key) => (
+                <div key={key} className="flex justify-between text-[11px]">
+                  <span className="text-slate-500">{STAT_META[key].label}</span>
+                  <span className="tabular-nums text-slate-300">{game.stats[key].toFixed(2)}</span>
+                </div>
+              ))}
+              <div className="mt-1.5 flex justify-between border-t border-slate-800 pt-1.5 text-[11px]">
+                <span className="text-slate-500">내구도</span>
+                <span className="tabular-nums text-slate-300">{game.durability.toFixed(1)}</span>
+              </div>
+            </div>
+          </details>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <Button onClick={save}>저장</Button>

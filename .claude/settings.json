@@ -47,7 +47,21 @@
       "PowerShell($ok=$false; for\\($i=0;$i -lt 25;$i++\\){ try { $c=\\(Invoke-WebRequest -Uri http://localhost:5173/ -TimeoutSec 2 -UseBasicParsing\\).StatusCode; if\\($c -eq 200\\){ $ok=$true; break } } catch {} }; if\\($ok\\){\"UP\"}else{\"DOWN\"})",
       "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:title','verify:concubine','verify:hard-exclusive','verify:ending','verify:ending-scene','verify:incidents','verify:devices','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })",
       "PowerShell(cd c:\\\\queening; npm run typecheck; foreach \\($t in @\\('verify:ai','verify:romance','verify:hard-exclusive'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"A1|A2 ★|FAIL|런타임\" })",
-      "PowerShell(cd c:\\\\queening; for\\($i=1;$i -le 3;$i++\\){ \"=== A2 라운드 $i ===\"; npm run verify:hard-exclusive 2>&1 | Select-String -Pattern \"A2 ★\" })"
+      "PowerShell(cd c:\\\\queening; for\\($i=1;$i -le 3;$i++\\){ \"=== A2 라운드 $i ===\"; npm run verify:hard-exclusive 2>&1 | Select-String -Pattern \"A2 ★\" })",
+      "Bash(grep -v \"//\\\\|/\\\\*\")",
+      "Bash(cd c:/queening && sed -i 's/다음 계절로/다음 달로/g' tools/verify/*.mjs && echo \"button regex done\" && grep -rln \"다음 계절\" tools/verify/)",
+      "PowerShell(cd c:\\\\queening; foreach \\($t in @\\('verify','verify:durability','verify:title','verify:concubine','verify:hard-exclusive','verify:ending','verify:ending-scene','verify:incidents','verify:devices','verify:bloodoath','verify:chance','verify:sheets','verify:talk','verify:romance','verify:chars','verify:providers','verify:ai','verify:flags','verify:fallback'\\)\\) { \"=== $t ===\"; npm run $t 2>&1 | Select-String -Pattern \"FAIL|런타임 에러|콘솔\" })",
+      "Bash(awk '/^H\\\\. /{f=1} f&&/^[A-Z]\\\\. /&&!/^H\\\\. /{f=0} f' normal.log)",
+      "Bash(awk '/^H\\\\. /{f=1} f&&/^[A-Z]\\\\. /&&!/^H\\\\. /{f=0} f' ablated.log)",
+      "Read(//tmp/**)",
+      "Bash(QUEENING_ABLATION_REPLAY=1 npm run verify:ablation)",
+      "Bash(QUEENING_ABLATION_MODE=hardexclusive npm run verify:ablation)",
+      "Bash(sed -n '/=== A\\\\./,/로그:/p')",
+      "Bash(QUEENING_ABLATION_MODE=incidents npm run verify:ablation)",
+      "Bash(grep -vE \"^$\")"
+    ],
+    "additionalDirectories": [
+      "C:\\queening\\tools\\verify"
     ]
   }
 }

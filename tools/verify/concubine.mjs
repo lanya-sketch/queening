@@ -37,7 +37,7 @@ const SEEN = await page.evaluate(() => {
 })
 const STATS = { statecraft: 40, finance: 20, rhetoric: 40, martial: 20, courtcraft: 40 }
 const base = (patch = {}) => ({
-  age: 19, date: { year: 8, season: 'summer' }, stats: STATS, monarchGender: 'male',
+  age: 19, date: { year: 8, month: 6 }, stats: STATS, monarchGender: 'male',
   affection: { heir: 0, loyalist: 0, prince: 5, commander: 20, hero: 0 },
   courtInfluence: 40, regentRapport: 30, regentSuspicion: 30, wellbeing: 80,
   counters: { '__cooldown:prince-arrival': 99 },

@@ -13,6 +13,7 @@ import { useApp } from '../store/appStore'
 import { useTalk } from '../store/talkStore'
 import { parseIncident } from './incident'
 import { chanceOf } from '../systems/chance'
+import { durabilityBase, growthFactor, wellbeingCostFactor } from '../systems/durability'
 import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
 import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
@@ -69,6 +70,15 @@ export function installDevBridge(): void {
     },
     endingThresholds() {
       return ENDING_THRESHOLDS
+    },
+    /** 내구도 계수 — 초반 혹독/후반 가속 곡선 검증용. */
+    durabilityInfo(durability: number) {
+      return {
+        cost: wellbeingCostFactor(durability),
+        growth: growthFactor(durability),
+        base11: durabilityBase(11),
+        base20: durabilityBase(20),
+      }
     },
     /** 엔딩 씬을 조립해 돌려준다. 조립 완전성 검증이 이 경로로 돈다. */
     buildEndingScene(state?: Record<string, unknown>) {

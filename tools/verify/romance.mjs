@@ -23,7 +23,7 @@ log('A1 스케줄 화면:', ok(await page.getByText('활동 선택').isVisible()
 await page.getByRole('button', { name: /턴 종료/ }).click()
 await page.waitForTimeout(250)
 log('A2 턴 진행:', ok(await page.getByText('수행한 활동').isVisible()))
-await page.getByRole('button', { name: /다음 계절로|무슨 일이/ }).click()
+await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
 await page.waitForTimeout(200)
 
 // ─────────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ log('')
 log('=== E. 대사 씬 ===')
 await page.evaluate(() =>
   window.__queeningAi.setGame({
-    date: { year: 5, season: 'summer' },
+    date: { year: 5, month: 8 }, // 8월+1턴=9월(데뷔탕트 발동)
     age: 16,
     flags: { 'event:issue-house-of-commons': true },
     phase: 'schedule',
@@ -144,11 +144,11 @@ await page.evaluate(() =>
 await page.waitForTimeout(200)
 await page.getByRole('button', { name: /턴 종료/ }).click()
 await page.waitForTimeout(300)
-await page.getByRole('button', { name: /다음 계절로|무슨 일이/ }).click()
+await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
 await page.waitForTimeout(400)
 
 const isEvent = await page.getByText('사건', { exact: true }).isVisible().catch(() => false)
-log('E1 데뷔탕트 발동 (16세 가을):',
+log('E1 데뷔탕트 발동 (16세 9월):',
   await page.locator('article h1').innerText().catch(() => '—'),
   ok(isEvent && (await page.locator('article h1').innerText()) === '데뷔탕트'))
 log('E2 씬이 한 줄만 먼저 보임:',
@@ -171,7 +171,7 @@ for (let i = 0; i < 4; i++) {
 }
 await page.waitForTimeout(300)
 log('E6 씬 종료 후 진행 버튼 등장:',
-  ok(await page.getByRole('button', { name: /다음 계절로|계속 \(/ }).isVisible()))
+  ok(await page.getByRole('button', { name: /다음 달로|계속 \(/ }).isVisible()))
 const unlocked = await page.evaluate(() => window.__queeningAi.prompt())
 log('E7 romance_unlocked flag 설정됨:',
   ok(typeof unlocked === 'string'))
@@ -179,7 +179,7 @@ log('E7 romance_unlocked flag 설정됨:',
 // ─────────────────────────────────────────────────────────────
 log('')
 log('=== F. 세이브 v5 · 마이그레이션 ===')
-await page.getByRole('button', { name: /다음 계절로|계속 \(/ }).click()
+await page.getByRole('button', { name: /다음 달로|계속 \(/ }).click()
 await page.waitForTimeout(300)
 await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(300)

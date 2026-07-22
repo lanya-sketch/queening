@@ -192,7 +192,7 @@ export function EventScreen() {
       {!awaitingChoice && !playingScene && (
         <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
           <Button variant="primary" className="w-full" onClick={dismissEvent}>
-            {remaining > 1 ? `계속 (${remaining - 1}건 더)` : '다음 계절로'}
+            {remaining > 1 ? `계속 (${remaining - 1}건 더)` : '다음 달로'}
           </Button>
         </div>
       )}

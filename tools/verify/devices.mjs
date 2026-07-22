@@ -56,7 +56,7 @@ const SEEN_OTHERS = await page.evaluate(() => {
 
 const STATS = { courtcraft: 40, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 }
 const BASE = {
-  age: 18, date: { year: 7, season: 'summer' },
+  age: 18, date: { year: 7, month: 6 },
   affection: { heir: 0, loyalist: 0, prince: 5, commander: 20, hero: 0 },
   courtInfluence: 30, regentRapport: 30, regentSuspicion: 30, wellbeing: 80,
   counters: { '__cooldown:prince-arrival': 99 },
@@ -73,7 +73,7 @@ async function runTurn() {
   await page.waitForTimeout(350)
   const titles = []
   for (let i = 0; i < 8; i++) {
-    const next = page.getByRole('button', { name: /다음 계절로|무슨 일이|계속/ })
+    const next = page.getByRole('button', { name: /다음 달로|무슨 일이|계속/ })
     if (!(await next.isVisible().catch(() => false))) break
     const label = await next.innerText()
     await next.click()
@@ -81,10 +81,10 @@ async function runTurn() {
     await advanceScene(page)
     const t = await page.locator('article h1').innerText().catch(() => null)
     if (t && !titles.includes(t)) titles.push(t)
-    if (/다음 계절로/.test(label)) break
+    if (/다음 달로/.test(label)) break
   }
   for (let i = 0; i < 5; i++) {
-    const b = page.getByRole('button', { name: /다음 계절로|계속/ })
+    const b = page.getByRole('button', { name: /다음 달로|계속/ })
     if (!(await b.isVisible().catch(() => false))) break
     await b.click()
     await page.waitForTimeout(250)

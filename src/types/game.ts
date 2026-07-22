@@ -1,12 +1,15 @@
 // 게임 전체가 공유하는 타입 계약.
 // data/ 의 콘텐츠와 systems/ 의 로직은 오직 이 파일을 통해 만난다.
 
-export type Season = 'spring' | 'summer' | 'autumn' | 'winter'
-
-/** year 는 즉위 후 경과 연차(0 = 즉위년). */
+/**
+ * ★ 월 단위 (월 단위 전환 1단계). 예전엔 계절(연 4턴)이었으나,
+ *   육성 시뮬로는 너무 성겨서 월(연 12턴)로 바꿨다.
+ *   year 는 즉위 후 경과 연차(0 = 즉위년), month 는 1..12.
+ *   나이 기반 로직은 그대로 — 한 나이 안의 턴 수만 4→12 로 늘었다.
+ */
 export interface GameDate {
   year: number
-  season: Season
+  month: number
 }
 
 export type StatKey = 'statecraft' | 'finance' | 'rhetoric' | 'martial' | 'courtcraft'
@@ -177,7 +180,8 @@ export interface ChanceRule {
 export interface Condition {
   minYear?: number
   maxYear?: number
-  season?: Season
+  /** 특정 월(1..12)에만. 예전 계절 조건의 대체 — 봄=3·여름=6·가을=9·겨울=12 임시 매핑. */
+  month?: number
   minAge?: number
   maxAge?: number
   stats?: Partial<Record<StatKey, { min?: number; max?: number }>>
@@ -341,6 +345,12 @@ export interface GameState {
   age: number
   stats: Stats
   wellbeing: number
+  /**
+   * ★ 내구도 — 숨은 상태 (월 단위 전환 1단계). UI 에 막대가 없고 상세창에서만 보인다.
+   *   두 역할: (1) 낮으면 심신 소모가 커지고(어릴 때 혹독), (2) 높으면 성장이 빨라진다
+   *   (잘 관리한 만큼 후반 가속). 나이 기본값 + 심신을 잘 유지한 달의 누적.
+   */
+  durability: number
   tutorTrust: number
   regentSuspicion: number
   /** 섭정이 군주를 통치자로 인정하는 정도. 회유 루트의 열쇠. */

@@ -17,7 +17,7 @@ export const YOUTH_EVENTS: GameEvent[] = [
       '그리고 마지막 장에는 아무에게도 보이지 않은 한 줄이 있다. ' +
       '"왕국이 언제까지 왕국이어야 하는가."\n' +
       '"아버님께서는… 이걸 정말로 하려 하셨습니까."',
-    condition: { season: 'winter' },
+    condition: { month: 12 },
     effects: [{ target: { kind: 'stat', key: 'statecraft' }, amount: 3 }],
     setFlags: { clue_radical_edict: true },
     priority: 20,

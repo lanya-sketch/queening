@@ -16,7 +16,7 @@ export const M1_EVENTS: GameEvent[] = [
       '먼저 묻고, 그 다음에 답한다. 짧은 회의였지만 아무도 웃지 않았다.',
     condition: {
       minYear: 1,
-      season: 'summer',
+      month: 6,
       stats: { statecraft: { min: 20 } },
     },
     effects: [

@@ -1,4 +1,4 @@
-import { SEASON_LABEL } from '../data/config'
+import { monthLabel } from '../data/config'
 import type { AiDelta, AiDeltaTarget } from './types'
 import { AI_ALLOWED_FLAGS, clampFlags, clampReply, extractJson } from './clamp'
 import { bandText } from './persona'
@@ -73,7 +73,7 @@ const TOPICS = `만들 수 있는 것:
  */
 function situation(game: GameState): string {
   const lines = [
-    `${game.age}세, ${SEASON_LABEL[game.date.season]}.`,
+    `${game.age}세, ${monthLabel(game.date.month)}.`,
   ]
 
   const air = bandText(

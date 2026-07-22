@@ -15,11 +15,14 @@ export function targetLabel(target: EffectTarget): string {
   return RESOURCE_META[target.key].label
 }
 
-/** amount 에 ±variance 정수 편차를 더한다. */
+/**
+ * amount 에 ±variance 편차를 더한다.
+ * ★ 소수 델타(월 단위)를 위해 연속 편차를 쓴다: amount + (rng*2-1)×variance.
+ *   결정론 모드(rng=0.5)에서는 (0)×variance = 0 이라 편차가 정확히 사라진다.
+ */
 function roll(effect: Effect, rng: Rng): number {
   if (!effect.variance) return effect.amount
-  const v = effect.variance
-  return effect.amount + Math.floor(rng() * (v * 2 + 1)) - v
+  return effect.amount + (rng() * 2 - 1) * effect.variance
 }
 
 function read(state: GameState, target: EffectTarget): number {
@@ -90,9 +93,17 @@ export function applyEffects(
   return { state: next, deltas }
 }
 
-/** 활동 카드 등에서 효과를 한 줄로 미리 보여줄 때 쓴다. */
-export function formatEffect(effect: Effect): string {
-  const sign = effect.amount > 0 ? '+' : ''
-  const variance = effect.variance ? `±${effect.variance}` : ''
-  return `${targetLabel(effect.target)} ${sign}${effect.amount}${variance}`
+/**
+ * 활동 카드·선택지에서 효과를 한 줄로 미리 보여줄 때 쓴다.
+ *
+ * ★ scale(MONTH_SCALE)은 **스탯에만** 적용한다 — 실제 적용과 같은 규칙이라
+ *   카드의 스탯은 축소된 추정치, 심신·의심 등 자원은 그대로 보여준다.
+ *   이벤트 선택지는 scale 1(기본). 내구도 계수는 숨은 상태라 반영하지 않는다.
+ */
+export function formatEffect(effect: Effect, scale = 1): string {
+  const s = effect.target.kind === 'stat' ? scale : 1
+  const amount = Math.round(effect.amount * s)
+  const sign = amount > 0 ? '+' : ''
+  const variance = effect.variance ? `±${Math.max(1, Math.round(effect.variance * s))}` : ''
+  return `${targetLabel(effect.target)} ${sign}${amount}${variance}`
 }

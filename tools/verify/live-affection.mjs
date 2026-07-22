@@ -67,7 +67,7 @@ await page.evaluate(
     window.__queeningAi.configure('anthropic', key, model || undefined)
     window.__queeningAi.setGame({
       age: 17,
-      date: { year: 6, season: 'summer' },
+      date: { year: 6, month: 6 },
       flags: { romance_unlocked: true, prince_present: true, hero_at_court: true },
       counters: {},
       phase: 'schedule',

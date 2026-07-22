@@ -29,7 +29,7 @@ log('A2 AI 설정 버튼 상태:', await aiButton.innerText(),
 await page.getByRole('button', { name: /턴 종료/ }).click()
 await page.waitForTimeout(250)
 log('A3 키 없이 턴 진행됨:', ok(await page.getByText('수행한 활동').isVisible()))
-await page.getByRole('button', { name: /다음 계절로|무슨 일이/ }).click()
+await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
 await page.waitForTimeout(200)
 
 log('')

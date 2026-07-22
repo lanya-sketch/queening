@@ -1,5 +1,5 @@
 import { ACTIVITIES, ACTIVITY_BY_ID } from '../data/activities'
-import { SEASON_LABEL } from '../data/config'
+import { MONTH_SCALE, monthLabel } from '../data/config'
 import { formatEffect } from '../systems/effects'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { resolveText } from '../systems/text'
@@ -17,7 +17,8 @@ function EffectChips({ activity }: { activity: Activity }) {
             effect.amount > 0 ? 'bg-slate-800 text-emerald-300' : 'bg-slate-800 text-rose-300'
           }`}
         >
-          {formatEffect(effect)}
+          {/* 활동 카드는 월 단위 추정치 — MONTH_SCALE 을 반영해 보여준다. */}
+          {formatEffect(effect, MONTH_SCALE)}
         </span>
       ))}
     </div>
@@ -35,17 +36,17 @@ export function ScheduleScreen() {
     <div className="pb-28 lg:pb-6">
       <header className="mb-4">
         <h1 className="text-lg font-semibold text-slate-100">
-          즉위 {game.date.year}년 {SEASON_LABEL[game.date.season]}의 일과
+          즉위 {game.date.year}년 {monthLabel(game.date.month)}의 일과
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          행동력 {game.actionPoints}만큼 활동을 고르고 계절을 넘기세요.
+          행동력 {game.actionPoints}만큼 활동을 고르고 이번 달을 넘기세요.
         </p>
       </header>
 
       {/* 선택한 활동 */}
       <section className="mb-5 rounded-xl border border-slate-800 bg-slate-900/60 p-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-slate-300">이번 계절의 계획</h2>
+          <h2 className="text-sm font-medium text-slate-300">이번 달의 계획</h2>
           {game.plannedActivityIds.length > 0 && (
             <button
               className="min-h-[44px] px-2 text-xs text-slate-400 active:text-slate-200"
@@ -128,7 +129,7 @@ export function ScheduleScreen() {
       {/* 턴 종료: 폰에선 하단 고정 */}
       <div data-onboard="endTurn" className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
         <Button variant="primary" className="w-full" onClick={endTurn}>
-          턴 종료 · 계절 넘기기
+          턴 종료 · 이번 달 넘기기
         </Button>
       </div>
     </div>
