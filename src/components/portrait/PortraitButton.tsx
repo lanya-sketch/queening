@@ -1,3 +1,4 @@
+import { THRONE_BACKDROP, throneTier } from '../../data/throne'
 import { resolveOutfit } from '../../systems/outfits'
 import { useGame } from '../../store/gameStore'
 
@@ -5,27 +6,38 @@ interface PortraitButtonProps {
   className?: string
 }
 
-/** 사이드바 상단에 상시 표시되는 작은 초상. 탭하면 확대 모달이 열린다. */
+/**
+ * 사이드바 상단에 상시 표시되는 작은 초상. 탭하면 확대 모달이 열린다.
+ *
+ * ★ 진행 가시성(D-2): 국정 영향도 구간에 따라 초상 뒤(옥좌)가 밝아지고 온기가 돈다.
+ *   에셋 없이 CSS 시각효과로 — throne.ts 가 구간→분위기를 든다(나중 에셋 교체 대비).
+ */
 export function PortraitButton({ className = '' }: PortraitButtonProps) {
   const manifest = useGame((s) => s.outfitManifest)
   const outfitId = useGame((s) => s.game.currentOutfitId)
+  const influence = useGame((s) => s.game.courtInfluence)
   const openPortrait = useGame((s) => s.openPortrait)
 
   const outfit = resolveOutfit(manifest, outfitId)
+  const tier = throneTier(influence)
+  const throne = THRONE_BACKDROP[tier]
 
   return (
     <button
       onClick={openPortrait}
       aria-label={`군주 초상 — 현재 착장 ${outfit.name}. 눌러서 크게 보기`}
-      className={`group relative shrink-0 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 active:border-amber-400 ${className}`}
+      data-throne={tier}
+      className={`group relative shrink-0 overflow-hidden rounded-xl border transition-all duration-700 active:border-amber-400 ${throne.ring} ${className}`}
     >
+      {/* 옥좌 분위기 — 나중에 assetSrc 가 채워지면 이 자리에 배경 <img> 가 온다. */}
+      <div className={`absolute inset-0 transition-all duration-700 ${throne.backdrop}`} />
       <img
         src={outfit.thumbSrc}
         alt=""
-        className="h-full w-full object-cover object-top"
+        className={`relative h-full w-full object-cover object-top transition-all duration-700 ${throne.imgFilter}`}
         draggable={false}
       />
-      <span className="absolute inset-x-0 bottom-0 hidden bg-slate-950/80 py-1 text-center text-[11px] text-slate-200 lg:block">
+      <span className="absolute inset-x-0 bottom-0 z-10 hidden bg-slate-950/80 py-1 text-center text-[11px] text-slate-200 lg:block">
         {outfit.name}
       </span>
     </button>

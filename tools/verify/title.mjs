@@ -25,9 +25,9 @@ log('A1 앱이 타이틀에서 시작:', ok(await p.getByText('Queening').isVisi
 log('A2 부제·태그라인:', ok(await p.getByText('옥좌의 주인').isVisible()))
 log('A3 ★ 세이브 없으면 이어하기 비활성:',
   ok(await p.getByRole('button', { name: '이어하기' }).isDisabled()))
-log('A4 설정 활성(도움말 접근) · 엔딩 기록 비활성:',
+log('A4 설정·엔딩 기록 활성(도움말·갤러리 접근):',
   ok(!(await p.getByRole('button', { name: '설정' }).isDisabled()) &&
-     (await p.getByRole('button', { name: '엔딩 기록' }).isDisabled())))
+     !(await p.getByRole('button', { name: '엔딩 기록' }).isDisabled())))
 const bgLoaded = await p.evaluate(() => {
   const img = document.querySelector('img')
   return img && img.complete && img.naturalWidth > 0

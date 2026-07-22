@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { GAME_CONFIG, courtInfluenceCap } from '../data/config'
 import { STAT_KEYS, STAT_META } from '../data/stats'
 import { buildEndingScene } from '../systems/endingScene'
 import { judgeEnding, describeEnding } from '../systems/ending'
 import { deadEndReason } from '../systems/deadend'
 import { buildDeadEndScene } from '../data/endings/deadends'
+import { endingSummaryRows, isBadEnding } from '../data/endings/summary'
+import { recordEnding } from '../systems/gallery'
 import { SCENE_BY_ID } from '../data/scenes'
 import { useGame } from '../store/gameStore'
 import { resolveText } from '../systems/text'
@@ -41,6 +43,13 @@ export function EndedScreen() {
     SCENE_BY_ID[scene.id] = scene
     return { sceneId: scene.id, summary: result, dead: null }
     // eslint 없는 프로젝트. 마운트 시 한 번만 조립한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ★ 갤러리 기록 — 이 엔딩(정식/데드)이 해금하는 항목을 별도 키에 누적한다.
+  //   마운트 시 한 번. 판정과 무관하게 안전(실패해도 게임에 영향 없음).
+  useEffect(() => {
+    recordEnding(summary, deadEndReason(game))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -105,6 +114,33 @@ export function EndedScreen() {
         </div>
         <p className="mt-2 text-xs text-slate-500">모은 단서 {clueCount}개 · 국력 {summary?.power}</p>
       </section>
+
+      {/* ★ 결산 차등 — 엔딩별로 다른 행. 배드 tier 는 어두운 톤으로. */}
+      {summary && (
+        <section
+          className={`mb-4 rounded-xl border p-4 ${
+            isBadEnding(summary)
+              ? 'border-rose-950/60 bg-rose-950/20'
+              : 'border-slate-800 bg-slate-900/60'
+          }`}
+        >
+          <h2 className="mb-3 text-sm font-medium text-slate-300">아홉 해가 남긴 것</h2>
+          <dl className="space-y-2">
+            {endingSummaryRows(summary).map((row) => (
+              <div key={row.label} className="flex items-baseline justify-between gap-3">
+                <dt className="shrink-0 text-xs text-slate-500">{row.label}</dt>
+                <dd
+                  className={`text-right text-sm ${
+                    isBadEnding(summary) ? 'text-rose-100/90' : 'text-slate-100'
+                  }`}
+                >
+                  {resolveText(row.value, game)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       <section className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
         <h2 className="mb-3 text-sm font-medium text-slate-300">

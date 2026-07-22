@@ -6,6 +6,7 @@ import { ScheduleScreen } from './components/ScheduleScreen'
 import { StatusPanel } from './components/StatusPanel'
 import { OnboardingOverlay } from './components/OnboardingOverlay'
 import { HelpScreen } from './components/HelpScreen'
+import { GalleryScreen } from './components/GalleryScreen'
 import { SettingsMenu } from './components/SettingsMenu'
 import { TalkModal } from './components/talk/TalkModal'
 import { TitleScreen } from './components/TitleScreen'
@@ -39,6 +40,8 @@ export default function App() {
   const settingsOpen = useApp((s) => s.settingsOpen)
   const help = useApp((s) => s.help)
   const closeHelp = useApp((s) => s.closeHelp)
+  const gallery = useApp((s) => s.gallery)
+  const closeGallery = useApp((s) => s.closeGallery)
   const phase = useGame((s) => s.game.phase)
   const initOutfits = useGame((s) => s.initOutfits)
 
@@ -71,9 +74,10 @@ export default function App() {
         </div>
       )}
 
-      {/* 설정·도움말은 타이틀·게임 어디서나 열린다(앱 최상위 오버레이). */}
+      {/* 설정·도움말·갤러리는 타이틀·게임 어디서나 열린다(앱 최상위 오버레이). */}
       {settingsOpen && <SettingsMenu />}
       {help && <HelpScreen onClose={closeHelp} />}
+      {gallery && <GalleryScreen onClose={closeGallery} />}
     </>
   )
 }

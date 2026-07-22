@@ -20,6 +20,8 @@ interface AppStore {
   settingsOpen: boolean
   /** 도움말 화면. 타이틀 설정·게임 중 '?' 양쪽에서 연다. */
   help: boolean
+  /** 엔딩 갤러리 화면. 타이틀 '엔딩 기록'에서 연다. */
+  gallery: boolean
 
   goTitle: () => void
   startGame: (withOnboarding: boolean) => void
@@ -28,6 +30,8 @@ interface AppStore {
   closeSettings: () => void
   openHelp: () => void
   closeHelp: () => void
+  openGallery: () => void
+  closeGallery: () => void
 }
 
 /**
@@ -50,8 +54,10 @@ export const useApp = create<AppStore>()((set) => ({
   onboarding: false,
   settingsOpen: false,
   help: false,
+  gallery: false,
 
-  goTitle: () => set({ screen: 'title', onboarding: false, settingsOpen: false, help: false }),
+  goTitle: () =>
+    set({ screen: 'title', onboarding: false, settingsOpen: false, help: false, gallery: false }),
   startGame: (withOnboarding) => set({ screen: 'game', onboarding: withOnboarding }),
   dismissOnboarding: () => set({ onboarding: false }),
   openSettings: () => set({ settingsOpen: true }),
@@ -59,4 +65,6 @@ export const useApp = create<AppStore>()((set) => ({
   // 도움말을 열면 설정 메뉴는 접는다(도움말이 위에 겹치지 않게).
   openHelp: () => set({ help: true, settingsOpen: false }),
   closeHelp: () => set({ help: false }),
+  openGallery: () => set({ gallery: true }),
+  closeGallery: () => set({ gallery: false }),
 }))
