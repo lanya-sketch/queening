@@ -46,17 +46,20 @@ await page.waitForTimeout(250)
 const dialog = page.getByRole('dialog')
 log('A3 모달 열림:', ok(await dialog.isVisible()))
 const fullSrc = await dialog.locator('img').first().getAttribute('src')
-log('A4 전신 이미지:', fullSrc, ok(fullSrc.includes('-full.')))
+// ★ 에셋 배선: 전신은 원본 PNG(크롭 아님).
+log('A4 전신 이미지(원본 PNG):', fullSrc,
+  ok(fullSrc.includes('/monarch/') && fullSrc.includes('.png') && !fullSrc.includes('/portraits/')))
 const names = await dialog.locator('ul button').allInnerTexts()
-log('A5 착장 4벌 표시:', ok(names.length === 4))
+log('A5 착장 5벌 표시:', ok(names.length === 5))
 log('A6 폴백 경고 없음(=manifest.json 사용):',
   ok(!(await dialog.getByText('내장 기본 착장을 쓰고').isVisible().catch(() => false))))
 
 const locked = []
-for (const id of ['사복', '정무복', '대례복', '기사 갑주']) {
+for (const id of ['사복', '정무복', '대례복', '갑주', '연회복']) {
   if (await dialog.locator('ul button').filter({ hasText: id }).isDisabled()) locked.push(id)
 }
-log('A7 잠긴 착장:', locked.join(', '), ok(locked.join(',') === '대례복,기사 갑주'))
+// 11세 시작: 대례복(궁정처세25)·갑주(무예30)·연회복(16세) 잠김.
+log('A7 잠긴 착장:', locked.join(', '), ok(locked.join(',') === '대례복,갑주,연회복'))
 const lockText = await dialog.locator('ul button').filter({ hasText: '대례복' }).innerText()
 log('A8 해금 조건 문구:', JSON.stringify(lockText.split('\n').pop()),
   ok(lockText.includes('궁정처세 25 이상')))
@@ -67,15 +70,15 @@ await shot(page, '02-modal-mobile')
 
 await dialog.locator('ul button').filter({ hasText: '정무복' }).click()
 await page.waitForTimeout(250)
-log('A11 착장 교체 후 전신 이미지:',
-  ok((await dialog.locator('img').first().getAttribute('src')).includes('office-full')))
+log('A11 착장 교체 후 전신 이미지(정무복):',
+  ok((await dialog.locator('img').first().getAttribute('src')).includes('_office_')))
 await shot(page, '03-modal-outfit-changed')
 
 await page.keyboard.press('Escape')
 await page.waitForTimeout(250)
 log('A12 Esc 로 닫힘:', ok(!(await dialog.isVisible().catch(() => false))))
 log('A13 상단 초상도 교체됨:',
-  ok((await portrait(page).locator('img').getAttribute('src')).includes('office-thumb')))
+  ok((await portrait(page).locator('img').getAttribute('src')).includes('_office_')))
 
 await portrait(page).click()
 await page.waitForTimeout(200)
@@ -181,7 +184,7 @@ log('C1 v1 세이브 로드됨:', await dateText(page), ok((await dateText(page)
 log('C2 나이 보존:', ok((await page.locator('aside p.text-xs').first().innerText()).includes('14세')))
 const migratedOutfit = await page.evaluate(() =>
   document.querySelector('aside button[aria-label*="군주 초상"] img').getAttribute('src'))
-log('C3 착장 기본값 주입:', ok(migratedOutfit.includes('casual-thumb')))
+log('C3 착장 기본값 주입:', ok(migratedOutfit.includes('_casual_')))
 log('C4 섭정 신망 주입:', await readGauge(page, '섭정 신망'),
   ok((await readGauge(page, '섭정 신망')) === 20))
 log('C5 국정 영향도 주입:', await readGauge(page, '국정 영향도'),
@@ -226,7 +229,7 @@ await page.waitForTimeout(300)
 log('C8 v2 세이브 로드됨:', await dateText(page), ok((await dateText(page)) === '즉위 2년 6월'))
 log('C9 신망 기본값 주입:', ok((await readGauge(page, '섭정 신망')) === 20))
 log('C10 기존 착장 보존:',
-  ok((await portrait(page).locator('img').getAttribute('src')).includes('office-thumb')))
+  ok((await portrait(page).locator('img').getAttribute('src')).includes('_office_')))
 await page.getByRole('button', { name: '저장', exact: true }).click()
 await page.waitForTimeout(200)
 const resaved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))

@@ -21,6 +21,7 @@ import { durabilityBase, growthFactor, wellbeingCostFactor } from '../systems/du
 import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
 import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
+import { resolveMonarchPortrait, validateManifest } from '../systems/outfits'
 import { setDeterministic, rng } from '../systems/rng'
 import { endTurn } from '../systems/turn'
 import { availableTopics } from '../systems/topics'
@@ -188,6 +189,15 @@ export function installDevBridge(): void {
     /** 텍스트 속도 — 씬 내용 검증 스위트가 타이핑 없이(즉시) 진행하도록 격리용. */
     setTextSpeed(speed: '느리게' | '보통' | '빠르게' | '즉시') {
       useOptions.getState().setTextSpeed(speed)
+    },
+    /** 초상 경로 해석 — 성별×나이×착장 + 폴백 체인 검증용. */
+    portraitSrc(gender: 'male' | 'female', age: number, outfit: string) {
+      const m = useGame.getState().outfitManifest
+      return m.portraits ? resolveMonarchPortrait(m.portraits, gender, age, outfit) : null
+    },
+    /** 임의 매니페스트 객체를 검증한다 — 하위호환(축 없는 옛 매니페스트) 확인용. */
+    validateManifest(raw: unknown) {
+      return validateManifest(raw)
     },
     clearKey() {
       useAi.setState({ apiKey: '' })

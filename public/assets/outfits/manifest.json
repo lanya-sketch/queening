@@ -1,40 +1,56 @@
 {
-  "version": 1,
-  "_readme": "착장 목록입니다. 이 파일과 같은 폴더에 이미지를 넣고 thumbSrc/fullSrc 경로를 바꾸면 교체됩니다. 재빌드는 필요 없습니다. 군주는 미성년 캐릭터입니다. 노출 등 부적절한 이미지로 교체하지 마세요.",
+  "version": 2,
+  "_readme": "착장 목록 + 초상 해석 규칙입니다. 이 파일을 고치면 재빌드 없이 반영됩니다. portraits 섹션은 성별×나이×착장으로 크롭본(썸네일)과 원본(전신)을 해석합니다. 군주는 미성년 캐릭터입니다. 노출 등 부적절한 이미지로 교체하지 마세요.",
   "outfits": [
     {
       "id": "casual",
       "name": "사복",
       "description": "사저에서 입던 소박한 옷. 아직은 이 옷이 제일 편하다.",
-      "thumbSrc": "/assets/outfits/casual-thumb.svg",
-      "fullSrc": "/assets/outfits/casual-full.svg"
+      "thumbSrc": "/assets/characters/monarch/portraits/male/monarch_m_casual_16.png",
+      "fullSrc": "/assets/characters/monarch/male/monarch_m_casual_16.png"
     },
     {
       "id": "office",
       "name": "정무복",
       "description": "집무실과 어전에서 입는 실무용 옷. 소매가 좁아 펜을 들기 좋다.",
-      "thumbSrc": "/assets/outfits/office-thumb.svg",
-      "fullSrc": "/assets/outfits/office-full.svg"
+      "thumbSrc": "/assets/characters/monarch/portraits/male/monarch_m_office_16.png",
+      "fullSrc": "/assets/characters/monarch/male/monarch_m_office_16.png"
     },
     {
-      "id": "ceremonial",
+      "id": "royal",
       "name": "대례복",
       "description": "대관식과 국가 의례에만 꺼내는 옷. 무겁고, 그만큼 눈에 띈다.",
-      "thumbSrc": "/assets/outfits/ceremonial-thumb.svg",
-      "fullSrc": "/assets/outfits/ceremonial-full.svg",
-      "unlockCondition": {
-        "stats": { "courtcraft": { "min": 25 } }
-      }
+      "thumbSrc": "/assets/characters/monarch/portraits/male/monarch_m_royal_16.png",
+      "fullSrc": "/assets/characters/monarch/male/monarch_m_royal_16.png",
+      "unlockCondition": { "stats": { "courtcraft": { "min": 25 } } }
     },
     {
-      "id": "military",
-      "name": "기사 갑주",
+      "id": "armor",
+      "name": "갑주",
       "description": "선왕이 물려준 것을 치수만 고쳐 지었다. 아직은 조금 크다.",
-      "thumbSrc": "/assets/outfits/military-thumb.svg",
-      "fullSrc": "/assets/outfits/military-full.svg",
-      "unlockCondition": {
-        "stats": { "martial": { "min": 30 } }
-      }
+      "thumbSrc": "/assets/characters/monarch/portraits/male/monarch_m_armor_16.png",
+      "fullSrc": "/assets/characters/monarch/male/monarch_m_armor_16.png",
+      "unlockCondition": { "stats": { "martial": { "min": 30 } } }
+    },
+    {
+      "id": "ball",
+      "name": "연회복",
+      "description": "연회와 사교의 자리를 위한 옷. 처음으로 어른들 틈에 선다.",
+      "thumbSrc": "/assets/characters/monarch/portraits/male/monarch_m_ball_16.png",
+      "fullSrc": "/assets/characters/monarch/male/monarch_m_ball_16.png",
+      "unlockCondition": { "minAge": 16 }
     }
-  ]
+  ],
+  "portraits": {
+    "thumbBase": "/assets/characters/monarch/portraits",
+    "fullBase": "/assets/characters/monarch",
+    "genderDir": { "male": "male", "female": "female" },
+    "code": { "male": "m", "female": "f" },
+    "file": "monarch_{code}_{outfit}_{age}.png",
+    "ageMin": 11,
+    "ageMax": 20,
+    "outfits": ["casual", "office", "royal", "armor", "ball", "debut"],
+    "restrict": { "debut": [16] },
+    "fallbackOutfit": "casual"
+  }
 }

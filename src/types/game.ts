@@ -278,9 +278,39 @@ export interface Outfit {
   unlockCondition?: Condition
 }
 
+/**
+ * 나이×성별×착장 초상 해석 규칙 (콘텐츠·에셋 배선 1).
+ *
+ * ★ M2a 원칙 유지 — 런타임 JSON, 하위호환. 이 섹션이 **없는** 옛 매니페스트도 그대로
+ *   로드되고, 그때는 각 Outfit 의 thumbSrc/fullSrc(단일 이미지)로 폴백한다.
+ *   있으면 monarch_{code}_{outfit}_{age} 크롭본/원본을 성별·나이·착장으로 해석한다.
+ */
+export interface PortraitConfig {
+  /** 크롭본(초상 썸네일) 베이스 경로. */
+  thumbBase: string
+  /** 원본(전신, 확대 모달) 베이스 경로. */
+  fullBase: string
+  /** 성별 → 하위 폴더명. */
+  genderDir: Record<Gender, string>
+  /** 성별 → 파일명 코드(m/f). */
+  code: Record<Gender, string>
+  /** 파일명 틀. {code}/{outfit}/{age} 치환. */
+  file: string
+  ageMin: number
+  ageMax: number
+  /** 경로를 만들 수 있는 착장 코드들. */
+  outfits: string[]
+  /** 특정 나이에만 있는 착장(예: debut=[16]). 벗어나면 fallbackOutfit 로. */
+  restrict?: Record<string, number[]>
+  /** 조합이 없을 때 대체 착장. */
+  fallbackOutfit: string
+}
+
 export interface OutfitManifest {
   version: number
   outfits: Outfit[]
+  /** 있으면 나이×성별×착장으로 초상을 해석한다. 없으면 outfit 의 단일 이미지 사용. */
+  portraits?: PortraitConfig
 }
 
 /** 결과 화면이 그대로 렌더할 수 있도록, 실제 적용된 변화량만 담는다. */

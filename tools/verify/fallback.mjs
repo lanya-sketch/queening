@@ -25,7 +25,7 @@ await portrait(p2).click()
 await p2.waitForTimeout(300)
 const d2 = p2.getByRole('dialog')
 log('2) 깨진 JSON → 게임 살아있음:', ok(await d2.isVisible()))
-log('   내장 착장 4벌로 대체:', ok((await d2.locator('ul button').count()) === 4))
+log('   내장 착장 5벌로 대체:', ok((await d2.locator('ul button').count()) === 5))
 log('   폴백 경고 표시:', ok(await d2.getByText('내장 기본 착장을 쓰고').isVisible()))
 
 // 3) 일부 착장만 망가진 경우 — 그 항목만 건너뛰는지
@@ -77,6 +77,8 @@ await p4.getByRole('button', { name: '상세' }).click()
 await p4.getByRole('button', { name: '불러오기' }).click()
 await p4.waitForTimeout(300)
 const src4 = await portrait(p4).locator('img').getAttribute('src')
-log('4) 존재하지 않는 착장 id → 기본값 복귀:', ok(src4.includes('casual-thumb')))
+// ★ 이제 초상은 성별×나이×착장 크롭본으로 해석된다 — 유령 착장은 casual 로 복귀.
+log('4) 존재하지 않는 착장 id → 기본값(casual) 복귀:', src4?.split('/').pop(),
+  ok(src4.includes('_casual_')))
 
 await browser.close()

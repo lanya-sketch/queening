@@ -1,5 +1,5 @@
 import { THRONE_BACKDROP, throneTier } from '../../data/throne'
-import { resolveOutfit } from '../../systems/outfits'
+import { resolveMonarchPortrait, resolveOutfit } from '../../systems/outfits'
 import { useGame } from '../../store/gameStore'
 
 interface PortraitButtonProps {
@@ -15,10 +15,17 @@ interface PortraitButtonProps {
 export function PortraitButton({ className = '' }: PortraitButtonProps) {
   const manifest = useGame((s) => s.outfitManifest)
   const outfitId = useGame((s) => s.game.currentOutfitId)
+  const gender = useGame((s) => s.game.monarchGender)
+  const age = useGame((s) => s.game.age)
   const influence = useGame((s) => s.game.courtInfluence)
   const openPortrait = useGame((s) => s.openPortrait)
 
   const outfit = resolveOutfit(manifest, outfitId)
+  // ★ 초상 썸네일: portraits 섹션이 있으면 성별×나이×착장으로 크롭본을 해석,
+  //   없으면(옛 매니페스트) 해당 outfit 의 단일 thumbSrc 로 폴백.
+  const thumbSrc = manifest.portraits
+    ? resolveMonarchPortrait(manifest.portraits, gender, age, outfit.id).thumbSrc
+    : outfit.thumbSrc
   const tier = throneTier(influence)
   const throne = THRONE_BACKDROP[tier]
 
@@ -32,7 +39,7 @@ export function PortraitButton({ className = '' }: PortraitButtonProps) {
       {/* 옥좌 분위기 — 나중에 assetSrc 가 채워지면 이 자리에 배경 <img> 가 온다. */}
       <div className={`absolute inset-0 transition-all duration-700 ${throne.backdrop}`} />
       <img
-        src={outfit.thumbSrc}
+        src={thumbSrc}
         alt=""
         className={`relative h-full w-full object-cover object-top transition-all duration-700 ${throne.imgFilter}`}
         draggable={false}

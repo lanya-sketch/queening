@@ -1,6 +1,6 @@
 import { OUTFIT_SAFETY_NOTICE } from '../../data/outfits'
 import { describeCondition } from '../../systems/eventEngine'
-import { isOutfitUnlocked } from '../../systems/outfits'
+import { isOutfitUnlocked, resolveMonarchPortrait } from '../../systems/outfits'
 import { useGame } from '../../store/gameStore'
 
 export function OutfitPicker() {
@@ -18,6 +18,11 @@ export function OutfitPicker() {
           const unlocked = isOutfitUnlocked(outfit, game)
           const selected = outfit.id === game.currentOutfitId
           const requirements = describeCondition(outfit.unlockCondition)
+          // 착장 목록 썸네일도 현재 성별·나이의 크롭본으로(portraits 있으면).
+          const thumb = manifest.portraits
+            ? resolveMonarchPortrait(manifest.portraits, game.monarchGender, game.age, outfit.id)
+                .thumbSrc
+            : outfit.thumbSrc
 
           return (
             <li key={outfit.id}>
@@ -34,7 +39,7 @@ export function OutfitPicker() {
                 }`}
               >
                 <img
-                  src={outfit.thumbSrc}
+                  src={thumb}
                   alt=""
                   draggable={false}
                   className={`h-14 w-11 shrink-0 rounded-lg object-cover object-top ${

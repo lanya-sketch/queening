@@ -62,7 +62,13 @@
       "Bash(npx tsc *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
       "Bash(grep -vE \"^\\\\s*$\")",
-      "Bash(awk '/^A\\\\. /{f=1} f&&/^[B-Z]\\\\. /{f=0} f' normal.log)"
+      "Bash(awk '/^A\\\\. /{f=1} f&&/^[B-Z]\\\\. /{f=0} f' normal.log)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const s=require\\('sharp'\\); console.log\\('sharp', require\\('sharp/package.json'\\).version\\)\")",
+      "Bash(node -e \"import\\('sharp'\\).then\\(async \\({default:sharp}\\)=>{const m=await sharp\\('public/assets/characters/monarch/male/monarch_m_casual_11.png'\\).metadata\\(\\); console.log\\('OK size', m.width+'x'+m.height, 'ch', m.channels, 'alpha', m.hasAlpha\\)}\\).catch\\(e=>console.log\\('ERR', e.message\\)\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(node tools/crop-portraits.mjs casual)",
+      "Bash(node tools/crop-portraits.mjs)"
     ],
     "additionalDirectories": [
       "C:\\queening\\tools\\verify"

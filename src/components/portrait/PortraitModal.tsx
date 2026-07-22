@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { resolveOutfit } from '../../systems/outfits'
+import { resolveMonarchPortrait, resolveOutfit } from '../../systems/outfits'
 import { useGame } from '../../store/gameStore'
 import { OutfitPicker } from './OutfitPicker'
 
@@ -8,6 +8,8 @@ export function PortraitModal() {
   const close = useGame((s) => s.closePortrait)
   const manifest = useGame((s) => s.outfitManifest)
   const outfitId = useGame((s) => s.game.currentOutfitId)
+  const gender = useGame((s) => s.game.monarchGender)
+  const age = useGame((s) => s.game.age)
 
   // Esc 로 닫기 + 열려 있는 동안 뒤 배경 스크롤 잠금
   useEffect(() => {
@@ -27,6 +29,10 @@ export function PortraitModal() {
   if (!open) return null
 
   const outfit = resolveOutfit(manifest, outfitId)
+  // ★ 확대 모달은 전신 원본. portraits 있으면 성별×나이×착장으로 해석, 없으면 폴백.
+  const fullSrc = manifest.portraits
+    ? resolveMonarchPortrait(manifest.portraits, gender, age, outfit.id).fullSrc
+    : outfit.fullSrc
 
   return (
     <div
@@ -43,7 +49,7 @@ export function PortraitModal() {
         {/* 전신 이미지 */}
         <div className="relative flex shrink-0 items-center justify-center bg-slate-900 p-3 lg:w-[46%]">
           <img
-            src={outfit.fullSrc}
+            src={fullSrc}
             alt={`${outfit.name}을 입은 군주`}
             draggable={false}
             className="max-h-[42dvh] w-auto rounded-lg object-contain lg:max-h-[80dvh]"
