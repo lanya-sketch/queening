@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { ACTIVITY_BY_ID } from '../data/activities'
 import { monthLabel } from '../data/config'
 import { EVENT_BY_ID } from '../data/events'
 import { STAT_META } from '../data/stats'
 import { useGame } from '../store/gameStore'
+import { useIncidents } from '../store/incidentStore'
 import type { Delta } from '../types/game'
 import { Button } from './ui/Button'
 
@@ -58,7 +60,18 @@ function DeltaList({ deltas }: { deltas: Delta[] }) {
 
 export function TurnResultScreen() {
   const report = useGame((s) => s.game.lastTurnReport)
+  const pendingEventIds = useGame((s) => s.game.pendingEventIds)
   const continueFromResult = useGame((s) => s.continueFromResult)
+  const generateIncident = useIncidents((s) => s.generate)
+
+  // ★ AI 돌발은 여기서 **미리** 생성한다 (#7). 플레이어가 결과를 읽는 동안 만들어 두고,
+  //   실패하면 generate 가 큐에서 빼므로 "사건이 있었다"는 알림도 함께 사라진다.
+  //   내용이 나올 때만 사건으로 남는다.
+  useEffect(() => {
+    for (const id of pendingEventIds) {
+      if (EVENT_BY_ID[id]?.source === 'ai_generated') void generateIncident(id)
+    }
+  }, [pendingEventIds, generateIncident])
 
   if (!report) return null
 

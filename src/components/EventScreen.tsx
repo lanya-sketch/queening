@@ -123,6 +123,10 @@ export function EventScreen() {
   useEffect(() => setSceneDone(false), [eventId])
 
   const event = eventId ? EVENT_BY_ID[eventId] : undefined
+  // ★ 큐에 있는데 정의를 못 찾으면(있어선 안 되지만) 빈 화면에 갇힌다 — 조용히 넘긴다(#7).
+  useEffect(() => {
+    if (eventId && !EVENT_BY_ID[eventId]) dismissEvent()
+  }, [eventId, dismissEvent])
   if (!event) return null
 
   // 돌발 현안은 내용이 데이터에 없다 — 화면이 생성해서 그린다.

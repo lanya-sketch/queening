@@ -102,9 +102,12 @@ export const useIncidents = create<IncidentStore>()((set, get) => ({
         applyIncidentOutcome(incident.deltas, incident.flags)
       }
       if (urgentAllowed) bumpUrgentGap()
+      // ★ 내용이 안 나왔으면 사건이 아니다 — 큐에서 없던 일로 뺀다(#7).
+      if (!incident) useGame.getState().dropPendingEvent(eventId)
     } catch (error) {
       console.error('[incident]', error)
       set((s) => ({ byEvent: { ...s.byEvent, [eventId]: null }, loading: null }))
+      useGame.getState().dropPendingEvent(eventId)
     }
   },
 

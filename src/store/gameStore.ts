@@ -46,6 +46,12 @@ interface GameStore {
   chooseOption: (eventId: string, choiceId: string) => void
   /** 이벤트 하나를 소화한다. */
   dismissEvent: () => void
+  /**
+   * ★ 큐에서 이벤트를 **없던 일로** 뺀다 (실플레이 피드백 #7).
+   *   AI 돌발은 내용이 생성돼야 비로소 사건이다 — 생성이 실패하면 결과 화면의
+   *   알림 목록에서도 지워, "이벤트가 있다더니 아무 일도 없더라"를 원천 차단한다.
+   */
+  dropPendingEvent: (eventId: string) => void
 
   save: () => void
   load: () => void
@@ -161,6 +167,30 @@ export const useGame = create<GameStore>()((set, get) => ({
         ...game,
         pendingEventIds,
         phase: pendingEventIds.length ? 'event' : idlePhase(game),
+      },
+      lastChoiceOutcome: null,
+    })
+  },
+
+  dropPendingEvent: (eventId) => {
+    const { game } = get()
+    if (!game.pendingEventIds.includes(eventId)) return
+    const pendingEventIds = game.pendingEventIds.filter((id) => id !== eventId)
+    // 결과 화면의 "무슨 일이 있었는지" 목록에서도 뺀다 — 알림과 실제가 어긋나지 않게.
+    const report = game.lastTurnReport
+      ? {
+          ...game.lastTurnReport,
+          triggeredEventIds: game.lastTurnReport.triggeredEventIds.filter((id) => id !== eventId),
+        }
+      : game.lastTurnReport
+    set({
+      game: {
+        ...game,
+        pendingEventIds,
+        lastTurnReport: report,
+        // 이벤트 화면에 머물러 있었다면 다음 이벤트 or 평상 화면으로 옮긴다(빈 화면 방지).
+        phase:
+          game.phase === 'event' && pendingEventIds.length === 0 ? idlePhase(game) : game.phase,
       },
       lastChoiceOutcome: null,
     })

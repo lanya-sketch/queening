@@ -142,7 +142,7 @@ export const ACTIVITIES: Activity[] = [
   {
     id: 'rest',
     name: '휴식',
-    description: '아무것도 시키지 않는다. 아직 열한 살이다.',
+    description: '아무것도 시키지 않는다. 쉬어야 자란다.',
     apCost: 1,
     effects: [
       { target: { kind: 'resource', key: 'wellbeing' }, amount: 20, variance: 3 },

@@ -68,7 +68,9 @@
       "Bash(node -e \"import\\('sharp'\\).then\\(async \\({default:sharp}\\)=>{const m=await sharp\\('public/assets/characters/monarch/male/monarch_m_casual_11.png'\\).metadata\\(\\); console.log\\('OK size', m.width+'x'+m.height, 'ch', m.channels, 'alpha', m.hasAlpha\\)}\\).catch\\(e=>console.log\\('ERR', e.message\\)\\)\")",
       "Bash(node -e ' *)",
       "Bash(node tools/crop-portraits.mjs casual)",
-      "Bash(node tools/crop-portraits.mjs)"
+      "Bash(node tools/crop-portraits.mjs)",
+      "Bash(grep -rnoE \"\\\\{왕\\\\}[은는이가을를의와과에도만][가-힣]{2,}\" src/data/)",
+      "Bash(node tools/verify/analyze-gates.mjs)"
     ],
     "additionalDirectories": [
       "C:\\queening\\tools\\verify"

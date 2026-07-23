@@ -27,12 +27,19 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
   const chosenIndex = useIncidents((s) => s.chosen[eventId])
   const timerEnabled = useIncidents((s) => s.timerEnabled)
 
+  const dropPendingEvent = useGame((s) => s.dropPendingEvent)
   const [left, setLeft] = useState<number | null>(null)
   const [timedOut, setTimedOut] = useState(false)
 
   useEffect(() => {
     void generate(eventId)
   }, [eventId, generate])
+
+  // ★ 생성 실패(null)면 사건이 아니다 — 큐에서 빼서 없던 일로 만든다(#7).
+  //   generate 쪽에서도 빼지만, 이미 실패한 결과가 캐시된 채 다시 들어오는 경우까지 덮는다.
+  useEffect(() => {
+    if (incident === null) dropPendingEvent(eventId)
+  }, [incident, eventId, dropPendingEvent])
 
   const awaiting =
     incident !== null && incident !== undefined &&
@@ -88,17 +95,9 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
     )
   }
 
-  // 생성 실패 — 조용히 넘어간다.
-  if (incident === null) {
-    return (
-      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
-        <p className="text-sm text-slate-500">별다른 일 없이 한 달이 지났습니다.</p>
-        <Button variant="primary" className="mt-4 w-full" onClick={onDone}>
-          다음 달로
-        </Button>
-      </div>
-    )
-  }
+  // ★ 생성 실패 — 위 effect 가 큐에서 빼므로 화면에는 아무것도 그리지 않는다.
+  //   예전엔 "별다른 일 없이 한 달이 지났습니다" 를 보여줬는데, 결과 화면은 이미
+  //   "사건이 있었다"고 알린 뒤라 **빈 이벤트**로 읽혔다(#7).
   if (!incident) return null
 
   const chosen = chosenIndex !== undefined ? incident.choices[chosenIndex] : undefined

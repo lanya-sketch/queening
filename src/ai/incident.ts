@@ -107,9 +107,20 @@ function situation(game: GameState): string {
   return lines.filter(Boolean).join('\n')
 }
 
+/**
+ * ★ 세계관 못박기 (실플레이 피드백 #11).
+ *   한국어로 쓰다 보면 모델이 동양 궁정 소재(상궁·수라간·옷고름)를 자연스럽게 끌어온다.
+ *   배경은 **서양 중세 왕국**이므로 프롬프트에서 못박는다(동양판은 최후 이식 라운드).
+ */
+const SETTING_NOTE = `배경은 **서양 중세 왕국**이다. 한국어로 쓰되 소재는 서양 궁정으로:
+- 시녀·기사·집사·대신·성직자, 성과 회랑, 예복과 망토, 연회와 무도회
+- 동양 궁정 소재(상궁·내관·수라간·옷고름·저고리 등)는 절대 쓰지 마라.`
+
 export function buildIncidentPrompt(game: GameState, withChoices: boolean): string {
   return [
     '너는 어린 군주의 궁정에서 일어나는 **사소한 사건** 하나를 만든다.',
+    '',
+    SETTING_NOTE,
     '',
     TOPICS,
     '',

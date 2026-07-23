@@ -345,6 +345,52 @@ log('E1 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('E2 돌발 결과는 flag/수치로만 남음 (생성물 자체는 저장 안 함):',
   ok(!JSON.stringify(saved.state).includes('늦서리')))
 
+// ─────────────────────────────────────────────────────────────
+// ★ 실플레이 피드백 #7 — "이벤트가 있다더니 아무 일도 없더라".
+//   생성이 실패하면 그건 사건이 아니다 → 큐에서 빠지고, 알림에도 남지 않아야 한다.
+log('')
+log('=== G. 빈 이벤트 방지 (생성 실패 = 사건 아님) ===')
+// ★ 앞 절들이 남긴 상태(캐시·라우트·키)와 섞이지 않도록 **새 페이지**에서 본다.
+const gpage = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
+// 파싱 불가능한 응답 → 생성 실패.
+await gpage.route('**/v1/messages', (route) =>
+  route.fulfill({
+    status: 200,
+    headers: { 'content-type': 'text/event-stream' },
+    body: sse('이건 JSON 이 아니고 사건도 아니다'),
+  }))
+await gpage.goto(APP_URL, { waitUntil: 'networkidle' })
+await gpage.evaluate(() => localStorage.clear())
+await gpage.reload({ waitUntil: 'networkidle' })
+await gpage.waitForTimeout(400)
+await gpage.evaluate(() => {
+  window.__queeningAi.configure('anthropic', 'sk-ant-fake-000')
+  window.__queeningAi.setGame({
+    phase: 'schedule', pendingEventIds: [], counters: {}, flags: {},
+    lastTurnReport: {
+      date: { year: 2, month: 5 }, activityIds: [], activityDeltas: [], eventDeltas: [],
+      triggeredEventIds: ['ai-incident-choice'],
+    },
+  })
+  window.__queeningAi.forceEvent('ai-incident-choice')
+})
+await gpage.waitForTimeout(2500) // 생성 시도 → 실패 → 드롭
+const dropped = await gpage.evaluate(() => {
+  const g = window.__queeningAi.state
+  return {
+    pending: g.pendingEventIds,
+    announced: g.lastTurnReport?.triggeredEventIds ?? [],
+    phase: g.phase,
+    hollow: document.body.innerText.includes('별다른 일 없이'),
+  }
+})
+log('G1 ★ 생성 실패한 돌발이 큐에서 빠짐:', JSON.stringify(dropped.pending),
+  ok(!dropped.pending.includes('ai-incident-choice')))
+log('G2 ★ 결과 화면 알림 목록에서도 빠짐:', JSON.stringify(dropped.announced),
+  ok(!dropped.announced.includes('ai-incident-choice')))
+log('G3 ★ "별다른 일 없이…" 빈 화면이 안 뜸:', ok(!dropped.hollow))
+log('G4 ★ 이벤트 화면에 갇히지 않음:', dropped.phase, ok(dropped.phase !== 'event'))
+
 log('')
 log('런타임 에러:', errors.length === 0 ? 'PASS (없음)' : errors.join('\n  '))
 await browser.close()

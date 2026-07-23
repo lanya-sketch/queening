@@ -31,7 +31,7 @@ export const DAILY_EVENTS: GameEvent[] = [
   {
     id: 'daily-old-document',
     title: '옛 문서',
-    text: '먼지 앉은 상소문 한 뭉치. 문장이 눈에 들어오기 시작했다.',
+    text: '먼지 앉은 청원서 한 뭉치. 문장이 눈에 들어오기 시작했다.',
     condition: {}, once: false, category: 'story',
     effects: [stat('statecraft', 0.4, 0.2), stat('rhetoric', 0.3, 0.2)],
   },
@@ -59,7 +59,7 @@ export const DAILY_EVENTS: GameEvent[] = [
   {
     id: 'daily-court-manner',
     title: '궁의 예법',
-    text: '늙은 상궁이 옷고름 매는 법을 다시 일러 주었다.',
+    text: '늙은 시녀장이 예복의 매듭 여미는 법을 다시 일러 주었다.',
     condition: {}, once: false, category: 'story',
     effects: [stat('courtcraft', 0.6, 0.3)],
   },
@@ -102,8 +102,8 @@ export const DAILY_EVENTS: GameEvent[] = [
   },
   {
     id: 'daily-sweet-treat',
-    title: '수라간의 정성',
-    text: '수라간에서 몰래 챙겨 준 다과. 달았다.',
+    title: '주방의 정성',
+    text: '주방에서 몰래 챙겨 준 과자. 달았다.',
     condition: {}, once: false, category: 'story',
     effects: [res('wellbeing', 1, 0.3), res('tutorTrust', 1, 0.5)],
   },
@@ -169,7 +169,7 @@ export const DAILY_EVENTS: GameEvent[] = [
   },
   {
     id: 'daily-festival-noise',
-    title: '저잣거리의 풍악',
+    title: '거리의 노랫소리',
     text: '담 너머로 백성들의 잔치 소리가 들려왔다. 궁은 조용했다.',
     condition: {}, once: false, category: 'story',
     effects: [res('wellbeing', 0.5, 0.5), stat('rhetoric', 0.2, 0.2)],
@@ -177,14 +177,14 @@ export const DAILY_EVENTS: GameEvent[] = [
   {
     id: 'daily-portrait-gaze',
     title: '선왕의 초상',
-    text: '전각에 걸린 아버지의 초상 앞에 오래 머물렀다.',
+    text: '회랑에 걸린 아버지의 초상 앞에 오래 머물렀다.',
     condition: { minAge: 13 }, once: false, category: 'story',
     effects: [res('wellbeing', -0.5, 0.5), stat('statecraft', 0.3, 0.2)],
   },
   {
     id: 'daily-map-study',
     title: '지도 앞에서',
-    text: '벽에 걸린 강역도를 손끝으로 짚어 갔다. 나라가 이렇게 넓었다.',
+    text: '벽에 걸린 지도를 손끝으로 짚어 갔다. 나라가 이렇게 넓었다.',
     condition: { minAge: 14 }, once: false, category: 'story',
     effects: [stat('statecraft', 0.4, 0.2), stat('martial', 0.3, 0.2)],
   },

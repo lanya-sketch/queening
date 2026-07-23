@@ -46,7 +46,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
         ],
         setFlags: { people_relieved_frontier: true },
         resultText:
-          '{왕}은곡물과 담요를 먼저 내려보냈다. 숫자를 아는 자만 할 수 있는 결정이었다 — ' +
+          '{왕}은 곡물과 담요를 먼저 내려보냈다. 숫자를 아는 자만 할 수 있는 결정이었다 — ' +
           '곳간이 이번 겨울을 버틸 수 있다는 것을 알고 내린 것이니까.\n' +
           '열흘 뒤 변경에서 올라온 문서에는 사망자 수가 적혀 있었다. 예상보다 적었다. ' +
           '그 차이가 몇 명인지 {왕}은 굳이 세어보았다.',
@@ -61,7 +61,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
           { target: { kind: 'resource', key: 'regentRapport' }, amount: -3 },
         ],
         resultText:
-          '{왕}은수비대를 북쪽으로 올렸다. 다시 넘어오지 못하게 하는 것이 결국 가장 값싼 ' +
+          '{왕}은 수비대를 북쪽으로 올렸다. 다시 넘어오지 못하게 하는 것이 결국 가장 값싼 ' +
           '구호라고 했다. 틀린 말은 아니다.\n' +
           '다만 그 겨울, 성벽 앞의 사람들은 스스로 버텨야 했다. 병력이 국경에 닿았다는 ' +
           '소식과 굶어 죽은 자의 수가 같은 날 궁에 도착했다.',
@@ -109,7 +109,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
           { target: { kind: 'resource', key: 'regentRapport' }, amount: -5 },
         ],
         resultText:
-          '{왕}은국경에 기를 세웠다. 배상은 없었고, 사절은 웃으며 돌아갔다. ' +
+          '{왕}은 국경에 기를 세웠다. 배상은 없었고, 사절은 웃으며 돌아갔다. ' +
           '웃음의 뜻을 아는 데에는 몇 해가 더 걸릴 것이다.\n' +
           '그해 겨울 국경은 조용했다. 조용한 것이 좋은 징조인지 아닌지는 아무도 말하지 않았다.',
       },
@@ -124,7 +124,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
           { target: { kind: 'resource', key: 'regentRapport' }, amount: -2 },
         ],
         resultText:
-          '{왕}은배상 대신 소금과 철의 통행세를 걸었다. 사절은 계산을 마치고 표정을 고쳤다 — ' +
+          '{왕}은 배상 대신 소금과 철의 통행세를 걸었다. 사절은 계산을 마치고 표정을 고쳤다 — ' +
           '이쪽이 손해가 아니라는 걸 알아차린 얼굴이었다.\n' +
           '제국은 이 왕국에 숫자를 아는 자가 있다는 것을 처음으로 기록했다.',
       },
@@ -210,7 +210,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
         ],
         setFlags: { house_commons_defended: true, people_relieved_commons: true },
         resultText:
-          '{왕}은어전에서 아무 말도 하지 않았다. 대신 동의안에 이름을 올린 백작 셋을 따로 ' +
+          '{왕}은 어전에서 아무 말도 하지 않았다. 대신 동의안에 이름을 올린 백작 셋을 따로 ' +
           '만났다. 하나에게는 아들의 자리를, 하나에게는 묵은 소송의 종결을, 하나에게는 ' +
           '그저 시간을 주었다.\n' +
           '동의안은 표결에 오르지 못하고 흐지부지되었다. 하원은 남았고, 아무도 {왕}이 그것을 ' +
@@ -227,7 +227,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
         ],
         setFlags: { house_commons_dissolved: true, people_burdened_commons: true },
         resultText:
-          '{왕}은해산에 서명했다. 손이 떨리지 않았다.\n' +
+          '{왕}은 해산에 서명했다. 손이 떨리지 않았다.\n' +
           '평민들이 방을 비우는 데 이틀이 걸렸다. 그들이 가져온 것은 많지 않았고, ' +
           '가져갈 것은 더 적었다.\n' +
           '그날 밤 {왕}이 물었다. "스승님. 아버님께서는 왜 그 방을 만드셨습니까."\n' +
