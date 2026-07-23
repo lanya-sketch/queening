@@ -60,7 +60,7 @@ export const YOUTH_EVENTS: GameEvent[] = [
       '섭정공이었고, 명분은 "전하의 심기를 어지럽히지 않기 위함"이었다.\n' +
       '늙은 의관이 물러나며 아주 잠깐 {왕}의 얼굴을 보았다. 그 눈빛이 ' +
       '연민인지 두려움인지 당신은 끝내 판단하지 못했다.',
-    condition: { minAge: 12, stats: { statecraft: { min: 25 } } },
+    condition: { minAge: 12, stats: { statecraft: { min: 11 } } },
     effects: [{ target: { kind: 'resource', key: 'regentSuspicion' }, amount: 5 }],
     setFlags: { clue_sealed_report: true },
     priority: 20,

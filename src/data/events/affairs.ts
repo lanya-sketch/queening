@@ -38,7 +38,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
       {
         id: 'relief',
         label: '국고를 열어 구호부터 한다',
-        requires: { stats: { finance: { min: 30 } } },
+        requires: { stats: { finance: { min: 15 } } },
         effects: [
           { target: { kind: 'resource', key: 'courtInfluence' }, amount: 6 },
           { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 5 },
@@ -54,7 +54,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
       {
         id: 'garrison',
         label: '변경에 병력을 보낸다',
-        requires: { stats: { martial: { min: 30 } } },
+        requires: { stats: { martial: { min: 15 } } },
         effects: [
           { target: { kind: 'resource', key: 'courtInfluence' }, amount: 8 },
           { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 10 },
@@ -100,33 +100,74 @@ export const AFFAIR_EVENTS: GameEvent[] = [
     priority: 25,
     choices: [
       {
+        // ★ 4-C: 제국의 사절 앞에서 "고를 수 없다"는 없다. 서툴게라도 답해야 한다.
         id: 'garrison',
         label: '국경에 병력을 세운다',
-        requires: { stats: { martial: { min: 40 } } },
-        effects: [
-          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 10 },
-          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },
-          { target: { kind: 'resource', key: 'regentRapport' }, amount: -5 },
+        tierStat: 'martial',
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 2 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -8 },
+            ],
+            hint: '허세였다',
+            resultText:
+              '{왕}은 국경에 기를 세우라 명했다. 세울 병력이 얼마나 되는지는 묻지 않았고, ' +
+              '아무도 먼저 알려주지 않았다.\n' +
+              '사절은 기의 수를 세고 돌아갔다. 그해 겨울 국경은 조용했으나, ' +
+              '조용함을 지킨 것이 이쪽의 기는 아니었다.',
+          },
+          {
+            min: 26,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 10 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -5 },
+            ],
+            resultText:
+              '{왕}은 국경에 기를 세웠다. 배상은 없었고, 사절은 웃으며 돌아갔다. ' +
+              '웃음의 뜻을 아는 데에는 몇 해가 더 걸릴 것이다.\n' +
+              '그해 겨울 국경은 조용했다. 조용한 것이 좋은 징조인지 아닌지는 아무도 말하지 않았다.',
+          },
         ],
-        resultText:
-          '{왕}은 국경에 기를 세웠다. 배상은 없었고, 사절은 웃으며 돌아갔다. ' +
-          '웃음의 뜻을 아는 데에는 몇 해가 더 걸릴 것이다.\n' +
-          '그해 겨울 국경은 조용했다. 조용한 것이 좋은 징조인지 아닌지는 아무도 말하지 않았다.',
       },
       {
         id: 'trade',
         label: '조공 대신 교역 조건을 내민다',
-        requires: { stats: { finance: { min: 40 } } },
-        effects: [
-          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 8 },
-          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
-          { target: { kind: 'stat', key: 'finance' }, amount: 4 },
-          { target: { kind: 'resource', key: 'regentRapport' }, amount: -2 },
+        tierStat: 'finance',
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 1 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
+              { target: { kind: 'stat', key: 'finance' }, amount: 4 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -4 },
+            ],
+            hint: '계산이 어긋났다',
+            resultText:
+              '{왕}은 배상 대신 통행세를 걸자고 했다. 사절은 잠시 셈을 하더니 흔쾌히 받아들였다 — ' +
+              '너무 흔쾌해서, 그 자리의 누구도 기뻐하지 못했다.\n' +
+              '조건은 이쪽이 내밀었고 이득은 저쪽이 가져갔다. {왕}은 그 장부를 오래 들여다보았다.',
+          },
+          {
+            min: 26,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 8 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
+              { target: { kind: 'stat', key: 'finance' }, amount: 4 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -2 },
+            ],
+            resultText:
+              '{왕}은 배상 대신 소금과 철의 통행세를 걸었다. 사절은 계산을 마치고 표정을 고쳤다 — ' +
+              '이쪽이 손해가 아니라는 걸 알아차린 얼굴이었다.\n' +
+              '제국은 이 왕국에 숫자를 아는 자가 있다는 것을 처음으로 기록했다.',
+          },
         ],
-        resultText:
-          '{왕}은 배상 대신 소금과 철의 통행세를 걸었다. 사절은 계산을 마치고 표정을 고쳤다 — ' +
-          '이쪽이 손해가 아니라는 걸 알아차린 얼굴이었다.\n' +
-          '제국은 이 왕국에 숫자를 아는 자가 있다는 것을 처음으로 기록했다.',
       },
       {
         id: 'tribute',
@@ -182,26 +223,51 @@ export const AFFAIR_EVENTS: GameEvent[] = [
       {
         id: 'defend-openly',
         label: '어전에서 존속을 선포한다',
-        requires: { stats: { rhetoric: { min: 45 } } },
-        effects: [
-          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 15 },
-          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 25 },
-          { target: { kind: 'resource', key: 'regentRapport' }, amount: -10 },
-          { target: { kind: 'resource', key: 'tutorTrust' }, amount: 12 },
+        // ★ 4-C: 선포는 하되, 그 말이 궁정에 서는지는 변론에 달렸다.
+        //   지키겠다는 뜻 자체는 어느 등급에서도 남는다(house_commons_defended).
+        tierStat: 'rhetoric',
+        setFlags: { house_commons_defended: true },
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 4 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 25 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -14 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 12 },
+              { target: { kind: 'resource', key: 'wellbeing' }, amount: -10 },
+            ],
+            hint: '말이 서지 않았다',
+            resultText:
+              '"이 방은… 선왕께서 세우신 것입니다. 그러니 과인은…"\n' +
+              '{왕}은 끝을 맺지 못했지만 물러서지도 않았다. 하원은 남았다 — ' +
+              '설득당해서가 아니라, 어린 왕이 끝내 고개를 젓는 것을 다들 보았기 때문이다.\n' +
+              '그날 궁 서편에서는 아무 소리도 나지 않았다. 다만 섭정공은 그 침묵을 오래 들었다.',
+          },
+          {
+            min: 30,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 15 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 25 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -10 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 12 },
+            ],
+            setFlags: { people_relieved_commons: true },
+            resultText:
+              '"이 방은 선왕께서 세우신 것이다. 과인이 지운다면, 과인이 무엇을 물려받았다 ' +
+              '하겠는가."\n' +
+              '그날 하원의 평민들은 {왕}의 이름을 소리 내어 불렀다. 궁 서편에서 그런 소리가 난 ' +
+              '것은 처음이었다.\n' +
+              '그리고 그날 이후 {왕}은 아버지가 섰던 자리에 서게 되었다. 그 자리가 어떤 자리였는지는, ' +
+              '아버지가 어떻게 되었는지를 보면 안다.',
+          },
         ],
-        setFlags: { house_commons_defended: true, people_relieved_commons: true },
-        resultText:
-          '"이 방은 선왕께서 세우신 것이다. 과인이 지운다면, 과인이 무엇을 물려받았다 ' +
-          '하겠는가."\n' +
-          '그날 하원의 평민들은 {왕}의 이름을 소리 내어 불렀다. 궁 서편에서 그런 소리가 난 ' +
-          '것은 처음이었다.\n' +
-          '그리고 그날 이후 {왕}은 아버지가 섰던 자리에 서게 되었다. 그 자리가 어떤 자리였는지는, ' +
-          '아버지가 어떻게 되었는지를 보면 안다.',
       },
       {
         id: 'defend-quietly',
         label: '귀족들을 따로 구슬려 지킨다',
-        requires: { stats: { courtcraft: { min: 45 } } },
+        requires: { stats: { courtcraft: { min: 26 } } },
         effects: [
           { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
           { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },

@@ -1,4 +1,4 @@
-import type { Activity, ActivityTier, Effect, GameState } from '../types/game'
+import type { Activity, ActivityTier, Choice, ChoiceTier, Effect, GameState } from '../types/game'
 
 /**
  * 수업 등급 해석 (밸런스 재설계 1단계).
@@ -23,4 +23,33 @@ export function activityEffects(activity: Activity, state: GameState): Effect[] 
 /** 카드에 붙일 등급 배지(없으면 null). */
 export function activityTierLabel(activity: Activity, state: GameState): string | null {
   return activeTier(activity, state)?.label ?? null
+}
+
+/**
+ * 선택 결과 등급 해석 (4-C). 수업 등급과 **같은 규칙**이다 —
+ * min 이 큰 것부터 보고 최초로 충족하는 등급, 못 미치면 가장 낮은 등급.
+ */
+export function activeChoiceTier(choice: Choice, state: GameState): ChoiceTier | null {
+  if (!choice.tiers?.length || !choice.tierStat) return null
+  const level = state.stats[choice.tierStat] ?? 0
+  const sorted = [...choice.tiers].sort((a, b) => b.min - a.min)
+  return sorted.find((t) => level >= t.min) ?? sorted[sorted.length - 1]
+}
+
+/** 지금 이 선택이 실제로 낼 결과(효과·후일담·flag). 등급이 없으면 선택지 자신의 값. */
+export function resolvedChoice(choice: Choice, state: GameState): {
+  effects?: Effect[]; setFlags?: Choice['setFlags']; resultText: string; hint?: string
+} {
+  const tier = activeChoiceTier(choice, state)
+  if (!tier) {
+    return { effects: choice.effects, setFlags: choice.setFlags, resultText: choice.resultText, hint: choice.hint }
+  }
+  return {
+    // 등급 효과·flag 는 선택지 공통분에 **더한다**(대체가 아니라 누적) —
+    // "무엇을 했는가"는 공통이고 "얼마나 잘했는가"만 등급이 정하기 때문이다.
+    effects: [...(choice.effects ?? []), ...(tier.effects ?? [])],
+    setFlags: { ...choice.setFlags, ...tier.setFlags },
+    resultText: tier.resultText,
+    hint: tier.hint ?? choice.hint,
+  }
 }

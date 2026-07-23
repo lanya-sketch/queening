@@ -83,10 +83,21 @@
       "Bash(node tools/verify/simulate.mjs D)",
       "Bash(cd c:/queening && grep -rn \"담판\" src/data/events/*.ts | head -5; echo \"---PUSH---\"; grep -E \"턴 120|최종\\\\\\(21세\\\\\\)|칸 사용|데드엔딩|20세  합\" /tmp/push.txt)",
       "Bash(cd c:/queening && sed -n '90,120p' src/data/events/adult.ts; echo \"=== PUSH ===\"; tail -25 /tmp/push.txt)",
-      "Bash(node tools/verify/balance.mjs PUSH)"
+      "Bash(node tools/verify/balance.mjs PUSH)",
+      "Bash(cd c:/queening && grep -E \"영향도 추이|최종 자원|최종 스탯|엔딩:\" /tmp/simF.txt)",
+      "Bash(cd c:/queening && grep -E \"턴 |종료 도달|데드|dead\" /tmp/simF.txt | head; echo \"---\"; tail -6 /tmp/simF.txt)",
+      "Bash(cd c:/queening && grep -nE \"즉위 9년|즉위 10년|아홉|데드|끝\" /tmp/simF.txt | tail -20)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(cd c:/queening && sed -n '46,200p' /tmp/gates.txt)",
+      "Bash(sed -n '/게이트 × 빌드 대조/,$p' /tmp/gates3.txt)",
+      "Bash(cd c:/queening && tail -14 /tmp/simF2.txt | head -10; echo \"=== 실권/무리 곡선 ===\"; sed -n '/=== 실권 빌드 곡선/,/^$/p;/=== 무리 빌드 곡선/,/^$/p' /tmp/gates3.txt)",
+      "Bash(node tools/verify/simulate.mjs F)",
+      "Bash(grep -n \"const { gates, tiered }\\\\|return { gates: out, tiered }\" tools/verify/analyze-gates.mjs)",
+      "Bash(echo \"EXIT=$?\")"
     ],
     "additionalDirectories": [
-      "C:\\queening\\tools\\verify"
+      "C:\\queening\\tools\\verify",
+      "\\tmp"
     ]
   }
 }

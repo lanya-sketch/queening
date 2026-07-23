@@ -108,7 +108,7 @@ export const SURPRISE_EVENTS: GameEvent[] = [
         id: 'fight',
         // ★ 회피 A: 무예로 자객을 물리친다.
         label: '몸을 날려 자객을 물리친다',
-        requires: { stats: { martial: { min: 40 } } },
+        requires: { stats: { martial: { min: 28 } } },
         effects: [res('regentSuspicion', -20), zeroCounter(RISK_EXPOSURE)],
         setFlags: { exposure_averted: true },
         resultText:
@@ -120,7 +120,7 @@ export const SURPRISE_EVENTS: GameEvent[] = [
         id: 'suppress',
         // ★ 회피 B: 실권으로 눌러낸다.
         label: '조정의 힘을 불러 섭정을 눌러낸다',
-        requires: { resources: { courtInfluence: { min: 45 } } },
+        requires: { resources: { courtInfluence: { min: 30 } } },
         effects: [res('regentSuspicion', -15), zeroCounter(RISK_EXPOSURE)],
         setFlags: { exposure_averted: true },
         resultText:

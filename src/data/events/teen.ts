@@ -15,60 +15,128 @@ export const TEEN_EVENTS: GameEvent[] = [
       '회의실이 조용해졌다. 섭정공이 천천히 고개를 돌린다. "그러면 전하께서는 ' +
       '어찌하시겠습니까."\n' +
       '9년 만에 처음으로, 이 방의 모두가 어린 군주의 대답을 기다리고 있다.',
-    condition: { minAge: 14, stats: { statecraft: { min: 40 } } },
+    condition: { minAge: 14, stats: { statecraft: { min: 20 } } },
     priority: 30,
     choices: [
       {
+        /**
+         * ★ 4-C 결과 차등. 첫 친정의 세 갈래는 **잠그지 않는다** — 왕은 서툴러도
+         *   무엇 하나는 정해야 하고, 셋 다 잠기면 "아직 준비되지 않았음" 하나만 남아
+         *   친정이라는 마일스톤이 선택 없는 통과의례가 된다.
+         *   대신 스탯이 받쳐 주면 개혁이 서고, 아니면 시늉만 하고 물러난다.
+         */
         id: 'treasury',
         label: '국고를 개혁한다',
-        requires: { stats: { finance: { min: 45 } } },
-        effects: [
-          { target: { kind: 'stat', key: 'finance' }, amount: 6 },
-          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
-          { target: { kind: 'resource', key: 'regentRapport' }, amount: 10 },
-          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
-          { target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 },
-        ],
+        tierStat: 'finance',
+        // 공통분: 어느 등급이든 "직접 나섰다"는 사실은 남는다.
+        effects: [{ target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 }],
         setFlags: { first_policy_treasury: true },
-        resultText:
-          '{왕}은 장부의 항목을 하나씩 짚어가며 어디가 새는지 말했다. 재무청의 관리들이 ' +
-          '얼굴을 붉혔다. 숫자 앞에서는 나이가 무기가 되지 않는다.\n' +
-          '섭정공은 반대하지 않았다. 회의가 끝난 뒤 그는 딱 한 마디를 남겼다. ' +
-          '"누가 가르쳤습니까." 당신을 보지 않고 한 말이었다.',
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'stat', key: 'finance' }, amount: 3 },
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 3 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -4 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 4 },
+            ],
+            hint: '어설펐다',
+            resultText:
+              '{왕}은 장부를 펼쳤지만 어디를 짚어야 할지 몰랐다. 재무청의 관리가 ' +
+              '공손한 얼굴로 항목을 하나하나 설명했고, 설명이 길어질수록 어전은 조용해졌다.\n' +
+              '개혁은 문서상으로만 남았다. 회의가 끝난 뒤 섭정공이 한 마디를 남겼다. ' +
+              '"애쓰셨습니다." 그 말이 가장 아팠다.',
+          },
+          {
+            min: 24,
+            effects: [
+              { target: { kind: 'stat', key: 'finance' }, amount: 6 },
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: 10 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
+            ],
+            resultText:
+              '{왕}은 장부의 항목을 하나씩 짚어가며 어디가 새는지 말했다. 재무청의 관리들이 ' +
+              '얼굴을 붉혔다. 숫자 앞에서는 나이가 무기가 되지 않는다.\n' +
+              '섭정공은 반대하지 않았다. 회의가 끝난 뒤 그는 딱 한 마디를 남겼다. ' +
+              '"누가 가르쳤습니까." 당신을 보지 않고 한 말이었다.',
+          },
+        ],
       },
       {
         id: 'military',
         label: '군제를 손본다',
-        requires: { stats: { martial: { min: 45 } } },
-        effects: [
-          { target: { kind: 'stat', key: 'martial' }, amount: 6 },
-          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
-          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 14 },
-          { target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 },
-        ],
+        tierStat: 'martial',
+        effects: [{ target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 }],
         setFlags: { first_policy_military: true },
-        resultText:
-          '{왕}은 구휼을 변경 수비대의 손으로 옮기게 했다. 굶는 자에게 빵을 주는 일이 ' +
-          '누구의 이름으로 이루어지는가 — 그것이 권력이라는 걸 아이는 이미 안다.\n' +
-          '섭정공은 그날 저녁 병무청의 명단을 다시 살폈다고 한다. 경계가 시작되었다.',
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'stat', key: 'martial' }, amount: 3 },
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 3 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 10 },
+            ],
+            hint: '어설펐다',
+            resultText:
+              '{왕}은 구휼을 수비대에 맡기라 명했다. 병무청은 명을 받들었으나, ' +
+              '누구를 어디에 세울지는 아무도 {왕}에게 묻지 않았다.\n' +
+              '명은 내려갔고 이름만 바뀌었다. 그래도 섭정공은 그날 저녁 병무청의 명단을 ' +
+              '다시 살폈다고 한다. 서툰 칼도 칼이다.',
+          },
+          {
+            min: 24,
+            effects: [
+              { target: { kind: 'stat', key: 'martial' }, amount: 6 },
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 14 },
+            ],
+            resultText:
+              '{왕}은 구휼을 변경 수비대의 손으로 옮기게 했다. 굶는 자에게 빵을 주는 일이 ' +
+              '누구의 이름으로 이루어지는가 — 그것이 권력이라는 걸 아이는 이미 안다.\n' +
+              '섭정공은 그날 저녁 병무청의 명단을 다시 살폈다고 한다. 경계가 시작되었다.',
+          },
+        ],
       },
       {
         id: 'personnel',
         label: '인사를 개편한다',
-        requires: { stats: { courtcraft: { min: 45 } } },
-        effects: [
-          { target: { kind: 'stat', key: 'courtcraft' }, amount: 6 },
-          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
-          { target: { kind: 'resource', key: 'regentRapport' }, amount: 6 },
-          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 8 },
-          { target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 },
-        ],
+        tierStat: 'courtcraft',
+        effects: [{ target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 }],
         setFlags: { first_policy_personnel: true },
-        resultText:
-          '{왕}은 곳간을 여는 대신 곳간을 지키는 사람을 바꿨다. 누가 누구의 사람인지 ' +
-          '읽어내지 못하면 할 수 없는 수다.\n' +
-          '밀려난 자들은 귀족파였고, 그 자리에 앉은 자들은 아직 아무의 사람도 아니었다. ' +
-          '아직은.',
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'stat', key: 'courtcraft' }, amount: 3 },
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 3 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -2 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
+            ],
+            hint: '어설펐다',
+            resultText:
+              '{왕}은 몇 사람의 자리를 바꿨다. 이름은 바뀌었으나 누가 누구의 사람인지까지는 ' +
+              '읽지 못했고, 밀려난 자리에 앉은 것은 결국 같은 편의 다른 얼굴이었다.\n' +
+              '궁정은 하루 술렁이고 이틀 만에 잠잠해졌다. 아무것도 바뀌지 않았다는 뜻이다.',
+          },
+          {
+            min: 24,
+            effects: [
+              { target: { kind: 'stat', key: 'courtcraft' }, amount: 6 },
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: 6 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 8 },
+            ],
+            resultText:
+              '{왕}은 곳간을 여는 대신 곳간을 지키는 사람을 바꿨다. 누가 누구의 사람인지 ' +
+              '읽어내지 못하면 할 수 없는 수다.\n' +
+              '밀려난 자들은 귀족파였고, 그 자리에 앉은 자들은 아직 아무의 사람도 아니었다. ' +
+              '아직은.',
+          },
+        ],
       },
       {
         id: 'unprepared',
@@ -103,19 +171,43 @@ export const TEEN_EVENTS: GameEvent[] = [
       {
         id: 'refute',
         label: '정면으로 반박하게 한다',
-        requires: { stats: { rhetoric: { min: 40 } } },
-        effects: [
-          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 6 },
-          { target: { kind: 'resource', key: 'regentRapport' }, amount: 10 },
-          { target: { kind: 'resource', key: 'tutorTrust' }, amount: 10 },
-          { target: { kind: 'stat', key: 'rhetoric' }, amount: 4 },
+        // ★ 4-C: 반박은 잠그지 않는다. 말문이 막히는 것도 어전에서 벌어지는 일이다.
+        tierStat: 'rhetoric',
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: -4 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -4 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 3 },
+              { target: { kind: 'stat', key: 'rhetoric' }, amount: 4 },
+              { target: { kind: 'resource', key: 'wellbeing' }, amount: -10 },
+            ],
+            hint: '말문이 막혔다',
+            resultText:
+              '"경들이 말하는 균형이란, 그러니까, 과인이…"\n' +
+              '{왕}은 문장을 끝맺지 못했다. 청원서를 올린 백작이 기다려 주었고, ' +
+              '그 기다림이 어전에서 가장 잔인한 것이었다.\n' +
+              '섭정공은 끝까지 개입하지 않았다. 그것이 이날의 유일한 자비였다. ' +
+              '{왕}은 그날 밤 문답 책을 오래 들여다보았다.',
+          },
+          {
+            min: 26,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 6 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: 10 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 10 },
+              { target: { kind: 'stat', key: 'rhetoric' }, amount: 4 },
+            ],
+            resultText:
+              '"경들이 말하는 균형이란, 과인이 아무것도 배우지 않는 것입니까."\n' +
+              '{왕}은 청원서의 문장을 그대로 인용해 되돌려주었다. 문답 훈련에서 수백 번 ' +
+              '해본 일이다. 청원서를 올린 백작이 말을 더듬었다.\n' +
+              '섭정공은 끝까지 개입하지 않았다. 그리고 그날 이후, 그가 {왕}을 부르는 ' +
+              '호칭이 조금 달라졌다.',
+          },
         ],
-        resultText:
-          '"경들이 말하는 균형이란, 과인이 아무것도 배우지 않는 것입니까."\n' +
-          '{왕}은 청원서의 문장을 그대로 인용해 되돌려주었다. 문답 훈련에서 수백 번 ' +
-          '해본 일이다. 청원서를 올린 백작이 말을 더듬었다.\n' +
-          '섭정공은 끝까지 개입하지 않았다. 그리고 그날 이후, 그가 {왕}을 부르는 ' +
-          '호칭이 조금 달라졌다.',
       },
       {
         id: 'yield',
@@ -140,7 +232,7 @@ export const TEEN_EVENTS: GameEvent[] = [
       '있었고, 그는 이듬해 봄 남쪽 변경 수비대로 자리를 옮겼다.\n' +
       '거기서 겨울을 넘기지 못했다. 병사(病死)로 기록되었다. 서른둘이었다.\n' +
       '변경으로 보내는 인사는 보통 죄를 지은 자에게 내린다. 그는 아무 죄도 짓지 않았다.',
-    condition: { minAge: 15, stats: { courtcraft: { min: 35 } } },
+    condition: { minAge: 15, stats: { courtcraft: { min: 24 } } },
     effects: [
       { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 4 },
       { target: { kind: 'stat', key: 'courtcraft' }, amount: 3 },
@@ -157,7 +249,7 @@ export const TEEN_EVENTS: GameEvent[] = [
       '한 항목이 걸린다. 선왕 승하 직후 여섯 달 동안, 명목 없는 지출이 ' +
       '평년의 네 배로 뛰었다. 받은 쪽은 전부 귀족파의 가문들이다.\n' +
       '누군가 그 시기에 사람을 샀다는 뜻이다.',
-    condition: { minAge: 15, stats: { finance: { min: 45 } } },
+    condition: { minAge: 15, stats: { finance: { min: 24 } } },
     effects: [{ target: { kind: 'stat', key: 'finance' }, amount: 4 }],
     setFlags: { clue_noble_ledger: true },
     priority: 20,

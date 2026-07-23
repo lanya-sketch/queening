@@ -231,12 +231,35 @@ export interface Activity {
  * 기본 effects 는 턴 종료 시 일괄 적용되지만, 선택지 effects 는
  * 플레이어가 고른 순간 적용되고 그 자리에서 결과를 보여준다.
  */
+/**
+ * ★ 선택 결과 등급 (밸런스 재설계 2단계, 4-C).
+ *
+ * 수업의 ActivityTier 와 같은 모양이다 — 개념을 하나만 쓰기 위해서. 다른 점은
+ * 결과 서술(resultText)까지 갈린다는 것뿐이다.
+ *
+ * 쓰임: "어떻게 대응할까"를 고르는 자리는 **잠그지 않는다.** 왕은 서툴러도 결정해야 하고,
+ * 잠그면 그 달의 선택지가 통째로 사라져 달이 비어 버린다. 대신 스탯에 따라
+ * "잘 해낸다 / 어설프게 해낸다"로 결과가 갈린다.
+ * (반대로 미스터리·혈서처럼 "자격이 있어야 닿는" 문은 requires 로 계속 잠근다)
+ */
+export interface ChoiceTier {
+  min: number
+  effects?: Effect[]
+  setFlags?: FlagSet
+  resultText: string
+  hint?: string
+}
+
 export interface Choice {
   id: string
   label: string
   /** 미충족이면 비활성 + describeCondition() 으로 사유를 표시한다. */
   requires?: Condition
   effects?: Effect[]
+  /** 결과 차등의 기준 스탯. tiers 와 함께 쓴다. */
+  tierStat?: StatKey
+  /** 있으면 effects/resultText/setFlags 를 현재 스탯에 맞는 등급이 대체한다. */
+  tiers?: ChoiceTier[]
   setFlags?: FlagSet
   /**
    * 히든 게이지(의심·신망)만 움직이는 선택지에 붙이는 질적 힌트.
@@ -415,6 +438,12 @@ export interface ChoiceOutcome {
   eventId: string
   choiceId: string
   deltas: Delta[]
+  /**
+   * ★ 고른 **그 순간에** 확정된 후일담(4-C 결과 차등).
+   *   화면에서 다시 계산하면 안 된다 — 선택 효과가 기준 스탯을 움직이면 등급이 뒤집혀
+   *   "잘 해냈다"고 판정해 놓고 "어설펐다"를 보여주는 일이 생긴다.
+   */
+  resultText?: string
 }
 
 export interface GameState {

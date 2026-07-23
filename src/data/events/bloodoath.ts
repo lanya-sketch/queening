@@ -52,12 +52,12 @@ export const CHAMBER = {
  *   실마리 있음 = 선행 조건 이상 아무것도 필요 없음(55),
  *   실마리 없음 = 13 을 더 쌓아야 함(68). 이래야 보조가 보조로 작동한다.
  */
-const COURTCRAFT_PLAIN = 68
-const COURTCRAFT_HINTED = 55
+const COURTCRAFT_PLAIN = 60
+const COURTCRAFT_HINTED = 30
 
 /** 발각당한 뒤 빠져나가는 체크. 진입은 궁정처세지만 탈출은 스탯을 고를 수 있다. */
-const ESCAPE_COURTCRAFT = 55
-const ESCAPE_RHETORIC = 50
+const ESCAPE_COURTCRAFT = 40
+const ESCAPE_RHETORIC = 35
 
 /** 수색에 진입할 수 있는 공통 조건. 두 벌로 나뉘는 건 궁정처세 요구뿐이다. */
 const searchBase = {
@@ -214,7 +214,7 @@ export const BLOOD_OATH_EVENTS: GameEvent[] = [
     title: '가문 수색',
     condition: {
       minAge: 17,
-      resources: { courtInfluence: { min: 45 }, regentRapport: { max: 55 } },
+      resources: { courtInfluence: { min: 35 }, regentRapport: { max: 55 } },
       flags: {
         regent_alliance: false,
         regent_won_over: false,

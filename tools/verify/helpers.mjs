@@ -212,6 +212,9 @@ export async function phaseOf(p) {
   // 엔딩(M3-2): 먼저 조립 씬("아홉 해의 끝"), 씬을 넘기면 요약("결산"·"세가 되었다").
   if (await p.getByText('아홉 해의 끝').isVisible().catch(() => false)) return 'ended'
   if (await p.getByText(/세가 되었다/).isVisible().catch(() => false)) return 'ended'
+  // ★ 조기 데드엔딩도 종료다. 이 줄이 없어서 simulate 가 죽은 빌드를 "종료 실패"로 보고했고,
+  //   실제로는 데드엔딩이 뜬 것을 하네스 결함으로 오해할 뻔했다(밸런스 재설계 2단계).
+  if (await p.getByText(/채우지 못한 치세/).isVisible().catch(() => false)) return 'dead'
   return 'unknown'
 }
 

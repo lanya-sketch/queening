@@ -21,10 +21,20 @@ export const CONQUEST_EVENTS: GameEvent[] = [
     title: '두 왕관, 한 손',
     sceneId: 'scene-prince-conquest',
     text: '제국의 왕족이 다스리는 땅은 넓고, 지금 {왕}의 나라는 그보다 강하다.',
+    /**
+     * ★ 게이트 재조정 2단계 — 유일하게 **아무도 못 넘던 문**이었다.
+     *
+     *   영향도 + 재정 + 무예를 한꺼번에 요구했는데, 새 곡선에서는 "실권을 밀면서
+     *   두 스탯까지 키우는" 빌드가 성립하지 않는다(실권 빌드의 재정·무예는 8·6).
+     *   임계를 45/30/30 으로 내려도 여전히 아무도 못 넘었다 — 축의 수가 문제였지
+     *   높이가 문제가 아니었다.
+     *
+     *   그래서 축을 하나로 줄인다. 정복은 **힘의 길**이고 힘은 영향도로 잰다.
+     *   장부와 병법은 정복의 조건이 아니라 정복 이후의 문제다.
+     */
     condition: {
       minAge: 17,
-      resources: { courtInfluence: { min: 60 } },
-      stats: { finance: { min: 45 }, martial: { min: 45 } },
+      resources: { courtInfluence: { min: 45 } },
       flags: { romance_unlocked: true, prince_conquered: false },
     },
     choices: [

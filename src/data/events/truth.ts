@@ -31,7 +31,7 @@ export const TRUTH_EVENTS: GameEvent[] = [
     // 목격자 단서(궁정처세 35)를 "대신한다" — 함께 요구하면 대체 경로가 아니다.
     condition: {
       minAge: 15,
-      stats: { statecraft: { min: 38 } },
+      stats: { statecraft: { min: 24 } },
       flags: {
         clue_sealed_report: true,
         clue_noble_ledger: true,
@@ -86,7 +86,7 @@ export const TRUTH_EVENTS: GameEvent[] = [
       '"스승님은 언제부터 아셨습니까."',
     condition: {
       minAge: 15,
-      stats: { statecraft: { min: 45 } },
+      stats: { statecraft: { min: 40 } },
       flags: {
         clue_sealed_report: true,
         clue_witness_gone: true,

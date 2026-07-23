@@ -181,22 +181,22 @@ const withFlags = (f, extra = {}) => ({
   flags: { ...SEEN_OTHERS, romance_unlocked: true, clue_apothecary: true, ...f },
 })
 
-const c54 = await triggerable({ ...withFlags({}), stats: { courtcraft: 54, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
-const c60 = await triggerable({ ...withFlags({}), stats: { courtcraft: 60, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
-const c68 = await triggerable({ ...withFlags({}), stats: { courtcraft: 68, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
-const c60h = await triggerable({ ...withFlags({ hint_queen_chamber: true }), stats: { courtcraft: 60, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
-const c54h = await triggerable({ ...withFlags({ hint_queen_chamber: true }), stats: { courtcraft: 54, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
+const c54 = await triggerable({ ...withFlags({}), stats: { courtcraft: 28, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
+const c60 = await triggerable({ ...withFlags({}), stats: { courtcraft: 45, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
+const c68 = await triggerable({ ...withFlags({}), stats: { courtcraft: 60, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
+const c60h = await triggerable({ ...withFlags({ hint_queen_chamber: true }), stats: { courtcraft: 45, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
+const c54h = await triggerable({ ...withFlags({ hint_queen_chamber: true }), stats: { courtcraft: 28, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })
 
 const canSearch = (ids) => ids.some((i) => i.startsWith('chamber-search'))
-log(`   궁정처세 54 실마리없음: ${canSearch(c54) ? '가능' : '불가'}`)
-log(`   궁정처세 60 실마리없음: ${canSearch(c60) ? '가능' : '불가'}`)
-log(`   궁정처세 68 실마리없음: ${canSearch(c68) ? '가능' : '불가'}`)
-log(`   궁정처세 60 실마리있음: ${canSearch(c60h) ? '가능' : '불가'}`)
-log(`   궁정처세 54 실마리있음: ${canSearch(c54h) ? '가능' : '불가'}`)
+log(`   궁정처세 28 실마리없음: ${canSearch(c54) ? '가능' : '불가'}`)
+log(`   궁정처세 45 실마리없음: ${canSearch(c60) ? '가능' : '불가'}`)
+log(`   궁정처세 60 실마리없음: ${canSearch(c68) ? '가능' : '불가'}`)
+log(`   궁정처세 45 실마리있음: ${canSearch(c60h) ? '가능' : '불가'}`)
+log(`   궁정처세 28 실마리있음: ${canSearch(c54h) ? '가능' : '불가'}`)
 log('B1 ★ 실마리 없이도 궁정처세만으로 도달 (한 경로 종속 아님):', ok(canSearch(c68)))
-log('B2 ★ 실마리가 실제로 문턱을 낮춤 (60 은 실마리 있을 때만):',
+log('B2 ★ 실마리가 실제로 문턱을 낮춤 (45 는 실마리 있을 때만):',
   ok(!canSearch(c60) && canSearch(c60h)))
-log('B3 실마리가 있어도 선행 조건(55) 아래로는 못 내려감:', ok(!canSearch(c54h)))
+log('B3 실마리가 있어도 선행 조건(30) 아래로는 못 내려감:', ok(!canSearch(c54h)))
 
 const hintable = await triggerable({
   ...BASE, age: 17,
@@ -228,7 +228,7 @@ log('=== C. ★ 발각 판정 — 성공 / 실패 ===')
  */
 await setGame({
   ...withFlags({}),
-  stats: { courtcraft: 68, rhetoric: 30, statecraft: 40, finance: 20, martial: 20 },
+  stats: { courtcraft: 60, rhetoric: 30, statecraft: 40, finance: 20, martial: 20 },
 })
 const searchTurn = await runTurn('숨는다')
 const afterSearch = await flagsOf()
@@ -237,10 +237,10 @@ log('C0 ★ 수색과 발각 판정이 같은 턴에 겹치지 않음:', searchT
 log('   ★ 선택할 기회가 실제로 주어짐 (attempt flag 가 섰다):',
   ok(afterSearch.chamber_attempted === true && afterSearch.chamber_resolved !== true))
 
-// 숨기 성공 (궁정처세 68 → 탈출 체크 55 통과)
+// 숨기 성공 (궁정처세 60 → 탈출 체크 40 통과)
 await setGame({
   ...withFlags({ chamber_attempted: true, chamber_attempt_hide: true }),
-  stats: { courtcraft: 68, rhetoric: 30, statecraft: 40, finance: 20, martial: 20 },
+  stats: { courtcraft: 60, rhetoric: 30, statecraft: 40, finance: 20, martial: 20 },
 })
 const hideOk = await runTurn()
 let f = await flagsOf()
@@ -262,7 +262,9 @@ await setGame({
   ...withFlags({
     queen_chamber_searched: true, chamber_attempted: true, chamber_attempt_hide: true,
   }),
-  stats: { courtcraft: 40, rhetoric: 30, statecraft: 40, finance: 20, martial: 20 },
+  // ★ 게이트 재조정 2단계로 탈출 문턱이 내려갔다(궁정처세 55→40, 변론 50→35).
+  //   "어느 체크도 못 넘긴다"는 뜻을 지키려면 탐침도 그만큼 내려야 한다.
+  stats: { courtcraft: 30, rhetoric: 20, statecraft: 40, finance: 20, martial: 20 },
 })
 const beforeCaught = await stateOf()
 const caught = await runTurn()

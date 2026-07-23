@@ -19,7 +19,7 @@ export const ADULT_EVENTS: GameEvent[] = [
     condition: {
       minAge: 16,
       flags: { clue_mother_calm: true },
-      stats: { courtcraft: { min: 50 } },
+      stats: { courtcraft: { min: 48 } },
     },
     effects: [{ target: { kind: 'stat', key: 'courtcraft' }, amount: 3 }],
     setFlags: { clue_mother_letter: true },
@@ -84,7 +84,7 @@ export const ADULT_EVENTS: GameEvent[] = [
     condition: {
       minAge: 17,
       flags: { truth_regent_involved: true },
-      stats: { courtcraft: { min: 55 } },
+      stats: { courtcraft: { min: 50 } },
     },
     effects: [{ target: { kind: 'resource', key: 'wellbeing' }, amount: -10 }],
     setFlags: { clue_apothecary: true },
@@ -104,7 +104,7 @@ export const ADULT_EVENTS: GameEvent[] = [
     // 이미 갈라섰다면 담판의 자리가 없다.
     condition: {
       minAge: 18,
-      resources: { regentRapport: { min: 60 }, regentSuspicion: { max: 45 } },
+      resources: { regentRapport: { min: 50 }, regentSuspicion: { max: 45 } },
       flags: { regent_hostile: false },
     },
     effects: [{ target: { kind: 'resource', key: 'regentRapport' }, amount: 10 }],

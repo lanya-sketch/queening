@@ -4,6 +4,7 @@ import { EVENT_BY_ID } from '../data/events'
 import { FALLBACK_MANIFEST } from '../data/outfits'
 import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '../types/game'
 import { applyEffects } from '../systems/effects'
+import { resolvedChoice } from '../systems/activityTier'
 import { matchesCondition } from '../systems/eventEngine'
 import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/outfits'
 import { rng } from '../systems/rng'
@@ -152,10 +153,13 @@ export const useGame = create<GameStore>()((set, get) => ({
     if (!choice) return
     if (choice.requires && !matchesCondition(game, choice.requires)) return
 
-    const { state, deltas } = applyEffects(game, choice.effects, rng)
+    // ★ 4-C 결과 차등 — 잠그는 대신 스탯에 따라 결과가 갈리는 선택지가 있다.
+    //   등급은 **효과를 적용하기 전 상태**로 확정한다(효과가 기준 스탯을 움직이므로).
+    const resolved = resolvedChoice(choice, game)
+    const { state, deltas } = applyEffects(game, resolved.effects, rng)
     set({
-      game: { ...state, flags: { ...state.flags, ...choice.setFlags } },
-      lastChoiceOutcome: { eventId, choiceId, deltas },
+      game: { ...state, flags: { ...state.flags, ...resolved.setFlags } },
+      lastChoiceOutcome: { eventId, choiceId, deltas, resultText: resolved.resultText },
     })
   },
 

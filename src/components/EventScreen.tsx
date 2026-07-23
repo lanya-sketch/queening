@@ -3,6 +3,7 @@ import { EVENT_BY_ID } from '../data/events'
 import { HIDDEN_GAUGES } from '../data/stats'
 import { formatEffect, targetLabel } from '../systems/effects'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
+import { resolvedChoice } from '../systems/activityTier'
 import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
 import { IncidentView } from './IncidentView'
@@ -80,6 +81,7 @@ function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) 
 
   const available = !choice.requires || matchesCondition(game, choice.requires)
   const requirements = describeCondition(choice.requires)
+  const preview = resolvedChoice(choice, game)
 
   return (
     <button
@@ -96,9 +98,11 @@ function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) 
       </span>
       {available ? (
         <>
-          <EffectChips effects={visibleEffects(choice.effects)} />
-          {choice.hint && (
-            <span className="mt-2 block text-[11px] italic text-slate-500">{choice.hint}</span>
+          {/* ★ 4-C: 결과 차등 선택지는 **지금 스탯의 등급**을 미리 보여준다.
+              공통분만 보여주면 "무엇이 달라지는지"가 화면에서 사라진다(수업 카드와 같은 규칙). */}
+          <EffectChips effects={visibleEffects(preview.effects)} />
+          {preview.hint && (
+            <span className="mt-2 block text-[11px] italic text-slate-500">{preview.hint}</span>
           )}
         </>
       ) : (
@@ -175,8 +179,9 @@ export function EventScreen() {
           <div className="mt-5 border-t border-slate-800 pt-4">
             <p className="text-xs text-amber-500">{resolveText(chosen.label, game)}</p>
             <div className="mt-2 space-y-3">
+              {/* ★ 4-C: 결과 차등 선택지는 고른 순간 확정된 후일담을 쓴다(재계산 금지). */}
               <Paragraphs
-                text={chosen.resultText}
+                text={outcome?.resultText ?? chosen.resultText}
                 className="text-sm leading-relaxed text-slate-300"
               />
               {/* chosen.label 도 토큰 치환을 거친다 */}

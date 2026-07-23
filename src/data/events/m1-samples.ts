@@ -17,7 +17,7 @@ export const M1_EVENTS: GameEvent[] = [
     condition: {
       minYear: 1,
       month: 6,
-      stats: { statecraft: { min: 20 } },
+      stats: { statecraft: { min: 15 } },
     },
     effects: [
       { target: { kind: 'resource', key: 'tutorTrust' }, amount: 5 },

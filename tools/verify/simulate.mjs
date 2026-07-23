@@ -13,6 +13,7 @@ const OUT = shotsDir('simulate')
 const CEDE = '정무를 섭정공께 맡긴다'
 const RECLAIM = '직접 재가한다'
 const HUNT = '사냥 대회'
+const COUNCIL = '정무 배석'
 
 const STAT_TO_ACTIVITY = {
   통치학: '통치학 수업',
@@ -90,6 +91,7 @@ const RUNS = [
     name: 'D. 회유 루트 (연회 유지 + 맡기기로 의심 관리)',
     targets: { 궁정처세: 55, 통치학: 45 },
     cedeOver: 25,
+    rapportUntil: 70,
     choices: [
       [/왕대비의 초대/, /예의만/],
       [/문서고의 밤/, /섭정공에게 보인다/],
@@ -228,6 +230,7 @@ function planTurn(panel, run) {
   const s = panel.stats
   const wellbeing = s['심신'] ?? 100
   const suspicion = s['섭정 의심'] ?? 0
+  const rapport = s['섭정 신망'] ?? 0
   const statecraft = s['통치학'] ?? 0
   const age = parseInt((panel.age.match(/(\d+)세/) ?? [])[1] ?? '11', 10)
 
@@ -237,8 +240,21 @@ function planTurn(panel, run) {
     if (ap >= cost) { plan.push(name); ap -= cost }
   }
 
-  if (wellbeing < 22) { push('휴식', 1); push('휴식', 1) }
-  else if (wellbeing < 38) push('휴식', 1)
+  /**
+   * ★ 밸런스 재설계 이후의 수지에 맞춘 관리 규칙.
+   *
+   *   옛 규칙(22/38 에서 휴식)은 수업 한 번이 심신 −6 이던 시절 것이다. 지금은 초급도
+   *   −9 이고 11세엔 내구도 계수로 ×2.0 이라 한 번에 −18 이다. 옛 규칙 그대로 두면
+   *   1휴식 + 2수업 = −20/월 로 내리막이고, 실제로 A·C 빌드가 16세에 심신 파탄으로 죽었다.
+   *   (그 사망을 "종료 실패"로 뭉개지 않고 데드엔딩으로 보고하게 만든 것이 이번 라운드의 수확)
+   *
+   *   그리고 **놀이**는 이번 라운드에 생긴 칸이라 플래너가 아예 몰랐다. 의심 관리를
+   *   놀이로 하는 것이 지금 설계의 전제이므로 플래너도 그렇게 둔다.
+   */
+  if (wellbeing < 20) { push('휴식', 1); push('휴식', 1) }
+  else if (wellbeing < 42) push('휴식', 1)
+  // 의심이 차오르면 놀이로 씻는다 — "바보인 척하기".
+  if (suspicion >= 55) push('놀이', 1)
 
   // 함정 빌드: 정해진 나이까지 남은 AP를 전부 넘기기에 쓴다
   if (run.trapUntilAge && age <= run.trapUntilAge) {
@@ -248,18 +264,32 @@ function planTurn(panel, run) {
 
   // 국정 배석/맡기기는 신망을 올리면서 의심을 낮추는 수단
   if (run.cedeOver !== undefined && suspicion > run.cedeOver) push(CEDE, 1)
+  /**
+   * ★ 회유를 노리는 빌드는 **신망을 버는 칸**을 실제로 쓴다(정무 배석, AP2, 신망 +4).
+   *   맡기기만으로는 신망이 안 오른다 — 연회 참석이 신망 −1 을 물리므로 궁정처세를
+   *   미는 회유 빌드는 오히려 신망이 깎인다. D 가 담판 문턱에 4점 모자랐던 이유가 이것이고,
+   *   게이트가 아니라 빌드 정책의 문제였다.
+   */
+  if (run.rapportUntil !== undefined && rapport < run.rapportUntil) push(COUNCIL, 2)
   // 사냥 대회로 의심을 관리하는 대안 경로 (G 빌드). 14세부터 해금이고 AP 2 를 먹는다.
   if (run.huntOver !== undefined && age >= 14 && suspicion > run.huntOver) push(HUNT, 2)
   if (run.reclaim && age >= 14 && statecraft >= 35) push(RECLAIM, 2)
 
+  let lessonsThisTurn = 0
   while (ap >= 1) {
     const behind = Object.entries(run.targets)
       .map(([stat, goal]) => ({ stat, gap: goal - (s[stat] ?? 0) }))
       .sort((a, b) => b.gap - a.gap)[0]
+    // ★ 한 달에 수업을 몇 번까지 감당하는지는 남은 심신이 정한다. 이미 한 번 배웠고
+    //   다음 한 번을 버틸 여유가 없으면 회복으로 돌린다 — 이게 초반 "한 달에 하나"의 실체다.
+    const affordable = lessonsThisTurn === 0 || wellbeing - 20 * lessonsThisTurn > 30
     // 목표를 다 채우면 휴식으로 떨어진다. 연회로 떨어지면 의심이 단방향으로 쌓인다.
-    const best = behind.gap > 0 ? STAT_TO_ACTIVITY[behind.stat] : '휴식'
+    const best = behind.gap > 0 && affordable ? STAT_TO_ACTIVITY[behind.stat] : '휴식'
     push(best, 1)
-    if (best !== '휴식') s[behind.stat] = (s[behind.stat] ?? 0) + 6 // 같은 턴 중복 선택 방지용 근사
+    if (best !== '휴식') {
+      lessonsThisTurn++
+      s[behind.stat] = (s[behind.stat] ?? 0) + 5 // 같은 턴 중복 선택 방지용 근사
+    }
   }
   return plan
 }
@@ -330,11 +360,14 @@ async function runSimulation(browser, run) {
   const fired = []
   const influenceTrack = []
   let turns = 0
+  let diedEarly = false
   let minInfluence = 100
 
   while (turns < 300) { // 108개월 + 이벤트·결과 화면(월 단위 전환으로 60→300)
     const phase = await phaseOf(page)
     if (phase === 'ended') break
+    // ★ 조기 데드엔딩 — 정식 엔딩과 구분해 그대로 보고한다(죽은 것을 "시뮬 실패"로 뭉개지 않게).
+    if (phase === 'dead') { diedEarly = true; break }
 
     if (phase === 'schedule') {
       const panel = await readPanel(page)
@@ -420,7 +453,7 @@ async function runSimulation(browser, run) {
 
   await ctx.close()
   return {
-    endedReached, fired, flags, stats, resources, errors, turns,
+    endedReached, diedEarly, fired, flags, stats, resources, errors, turns,
     influenceTrack, minInfluence, ending,
   }
 }
@@ -436,7 +469,7 @@ for (const run of only ? RUNS.filter((r) => r.name.startsWith(only)) : RUNS) {
   console.log('='.repeat(66))
   const r = await runSimulation(browser, run)
 
-  console.log(`턴 ${r.turns} | 종료 도달: ${ok(r.endedReached)} | 이벤트 ${r.fired.length}건`)
+  console.log(`턴 ${r.turns} | 종료 도달: ${ok(r.endedReached)}${r.diedEarly ? ` | *** 조기 데드엔딩으로 사망 ***` : ''} | 이벤트 ${r.fired.length}건`)
   for (const e of r.fired) {
     const g = `[의심 ${e.의심} 신망 ${e.신망} 영향도 ${e.영향도}]`
     console.log(`  ${e.date} (${e.age})  ${e.title}${e.picked ? `  → ${e.picked}` : ''}  ${g}`)

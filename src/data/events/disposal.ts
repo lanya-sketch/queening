@@ -24,7 +24,7 @@ export const DISPOSAL_EVENTS: GameEvent[] = [
       '궁정은 둘을 구분하지 못하지만, 역사는 구분한다.',
     condition: {
       minAge: 19,
-      resources: { courtInfluence: { min: 60 } },
+      resources: { courtInfluence: { min: 45 } },
       flags: {
         regent_alliance: false,
         regent_disposed: false,
