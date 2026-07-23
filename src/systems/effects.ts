@@ -1,5 +1,7 @@
 import { CHARACTER_BY_ID } from '../data/characters'
-import { GAME_CONFIG, courtInfluenceCap } from '../data/config'
+import {
+  GAME_CONFIG, courtInfluenceCap, regentRapportCap, tutorTrustCap,
+} from '../data/config'
 import { RESOURCE_META, STAT_META } from '../data/stats'
 import type { Delta, Effect, EffectTarget, GameState } from '../types/game'
 
@@ -44,9 +46,13 @@ function clamp(target: EffectTarget, value: number, state: GameState): number {
   // 계절 타이머는 0 이상이면 그만. 100 상한을 적용할 대상이 아니다.
   if (target.kind === 'counter') return Math.max(0, value)
   if (target.key === 'actionPoints') return Math.max(0, value)
-  // 국정 영향도만 나이에 따라 상한이 움직인다.
+  // ★ 나이에 따라 상한이 움직이는 지표들 — 영향도(원래) + 신뢰·섭정 신망(밸런스 재설계).
+  //   과속을 막는 장치이자 세계관이다(어린애를 통치자로 인정할 리 없다).
   const max =
-    target.key === 'courtInfluence' ? courtInfluenceCap(state.age) : GAME_CONFIG.resourceMax
+    target.key === 'courtInfluence' ? courtInfluenceCap(state.age)
+    : target.key === 'tutorTrust' ? tutorTrustCap(state.age)
+    : target.key === 'regentRapport' ? regentRapportCap(state.age)
+    : GAME_CONFIG.resourceMax
   return Math.min(max, Math.max(GAME_CONFIG.resourceMin, value))
 }
 

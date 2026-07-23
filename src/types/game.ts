@@ -194,12 +194,32 @@ export interface Condition {
   flags?: FlagSet
 }
 
+/**
+ * 수업 등급 (밸런스 재설계 1단계).
+ *
+ * ★ 카드는 스탯당 한 장 그대로 두고, **현재 스탯에 따라 등급이 자동 전환**된다.
+ *   활동 목록이 불어나지 않으면서 "밀어준 스탯만 고급에 닿는다"가 성립한다 —
+ *   벌이 아니라 특화에 복리를 주는 방식이고, 균형 육성은 스스로 비효율이 된다.
+ */
+export interface ActivityTier {
+  /** 이 등급이 열리는 기준 스탯 하한. */
+  min: number
+  /** 카드에 붙는 배지(초급·중급·고급). */
+  label: string
+  effects: Effect[]
+}
+
 export interface Activity {
   id: string
   name: string
   description: string
   apCost: number
+  /** 등급이 없을 때 쓰는 기본 효과. tiers 가 있으면 등급 효과가 이걸 대체한다. */
   effects: Effect[]
+  /** 등급 판정 기준 스탯. tiers 와 함께 쓴다. */
+  tierStat?: StatKey
+  /** 있으면 tierStat 수준에 따라 하나가 선택된다(min 내림차순으로 최초 일치). */
+  tiers?: ActivityTier[]
   setFlags?: FlagSet
   /** 미해금 활동을 붙일 자리. M1 데이터에는 아직 없다. */
   requires?: Condition

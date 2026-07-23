@@ -19,6 +19,7 @@ const MAX_EVENTS_PER_TURN = 2
 import { applyEffects, type Rng } from './effects'
 import { rollChance, tickCounters } from './chance'
 import { findTriggeredEvents, seenFlagId } from './eventEngine'
+import { activityEffects } from './activityTier'
 import { scheduleMinor } from './minorEvents'
 import { updateRisk } from './risk'
 import { deadEndReason } from './deadend'
@@ -115,7 +116,11 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
 
   // 1. 활동 효과 — ★ 내구도 계수는 **활동에만** 적용한다(서사/이벤트 효과는 그대로).
   //   낮은 내구도 → 심신 소모 증가, 높은 내구도 → 성장 증가.
-  const scaled = scaleByDurability(activities.flatMap((a) => a.effects), state.durability)
+  // ★ 수업은 현재 스탯에 따라 등급이 자동 전환된다(초·중·고) — 효과를 여기서 해석한다.
+  const scaled = scaleByDurability(
+    activities.flatMap((a) => activityEffects(a, state)),
+    state.durability,
+  )
   const applied = applyEffects(state, scaled, rng)
   let next = applied.state
   for (const activity of activities) {

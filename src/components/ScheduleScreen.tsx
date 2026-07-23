@@ -1,16 +1,18 @@
 import { ACTIVITIES, ACTIVITY_BY_ID } from '../data/activities'
 import { MONTH_SCALE, monthLabel } from '../data/config'
 import { formatEffect } from '../systems/effects'
+import { activityEffects, activityTierLabel } from '../systems/activityTier'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
-import type { Activity } from '../types/game'
+import type { Activity, GameState } from '../types/game'
 import { Button } from './ui/Button'
 
-function EffectChips({ activity }: { activity: Activity }) {
+function EffectChips({ activity, game }: { activity: Activity; game: GameState }) {
+  // ★ 등급이 있는 수업은 지금 스탯에 해당하는 등급의 효과를 보여준다.
   return (
     <div className="mt-2 flex flex-wrap gap-1">
-      {activity.effects.map((effect, i) => (
+      {activityEffects(activity, game).map((effect, i) => (
         <span
           key={i}
           className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
@@ -98,8 +100,14 @@ export function ScheduleScreen() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-medium text-slate-100">
-                    {resolveText(activity.name, game)}
-                  </span>
+                      {resolveText(activity.name, game)}
+                      {/* ★ 수업 등급 배지 — 스탯이 오르면 같은 카드가 초급→중급→고급으로 */}
+                      {activityTierLabel(activity, game) && (
+                        <span className="ml-1.5 rounded bg-amber-950/60 px-1.5 py-0.5 text-[10px] font-normal text-amber-300">
+                          {activityTierLabel(activity, game)}
+                        </span>
+                      )}
+                    </span>
                     <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[11px] text-slate-300">
                       {activity.apCost} AP
                     </span>
@@ -109,7 +117,7 @@ export function ScheduleScreen() {
                   </p>
                   {unlocked ? (
                     <>
-                      <EffectChips activity={activity} />
+                      <EffectChips activity={activity} game={game} />
                       {activity.tags?.includes('independence') && (
                         <p className="mt-2 text-[11px] text-red-400">섭정공의 눈에 띄는 일입니다</p>
                       )}

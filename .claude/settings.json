@@ -70,7 +70,20 @@
       "Bash(node tools/crop-portraits.mjs casual)",
       "Bash(node tools/crop-portraits.mjs)",
       "Bash(grep -rnoE \"\\\\{왕\\\\}[은는이가을를의와과에도만][가-힣]{2,}\" src/data/)",
-      "Bash(node tools/verify/analyze-gates.mjs)"
+      "Bash(node tools/verify/analyze-gates.mjs)",
+      "Bash(sed -i \"s#import { activityEffects } from '../systems/activityTier'#import { activityEffects, activityTierLabel } from '../systems/activityTier'#\" src/components/ScheduleScreen.tsx)",
+      "Bash(sed -i 's#<EffectChips activity={activity} />#<EffectChips activity={activity} game={game} />#' src/components/ScheduleScreen.tsx)",
+      "Bash(node tools/verify/balance.mjs)",
+      "Bash(node tools/verify/tune-curve.mjs)",
+      "Bash(python -)",
+      "Bash(grep -n \"연도별 합계\\\\|tally.lesson++\\\\|return { s, tally\" tools/verify/tune-curve.mjs)",
+      "Bash(node tools/verify/balance.mjs BAL)",
+      "Bash(node tools/verify/simulate.mjs A)",
+      "Bash(node tools/verify/balance.mjs SPILL)",
+      "Bash(node tools/verify/simulate.mjs D)",
+      "Bash(cd c:/queening && grep -rn \"담판\" src/data/events/*.ts | head -5; echo \"---PUSH---\"; grep -E \"턴 120|최종\\\\\\(21세\\\\\\)|칸 사용|데드엔딩|20세  합\" /tmp/push.txt)",
+      "Bash(cd c:/queening && sed -n '90,120p' src/data/events/adult.ts; echo \"=== PUSH ===\"; tail -25 /tmp/push.txt)",
+      "Bash(node tools/verify/balance.mjs PUSH)"
     ],
     "additionalDirectories": [
       "C:\\queening\\tools\\verify"

@@ -40,7 +40,18 @@ export function monthLabel(month: number): string {
  * 데이터(활동)는 계절 값을 그대로 두고 이 상수 하나로 스케일한다 — 튜닝이 상수 하나로
  * 끝나게(활동 11개를 매번 다시 고치지 않게). 내구도 계수는 이 위에 곱해진다.
  */
-export const MONTH_SCALE = 1 / 3
+/**
+ * ★ 밸런스 재설계: 1/3 → 1/5.
+ *   1/3 에서는 균형 빌드조차 20세에 5스탯 합계 500(상한)을 채우고 남았다(실측 581).
+ *   "무엇을 포기할까"가 구조적으로 없어 만능 군주가 나왔다. 목표는 20세 합계 250~300 —
+ *   다섯 중 둘셋만 제대로 키우고 나머지는 포기해야 하는 상태.
+ *
+ *   ★ 1/4 로 낮춘 1차 실측이 여전히 균형 빌드 491(20세)이었다. 원인은 델타가 아니라
+ *     **총 수업 칸이 너무 많다는 것**이었다(108개월에 212회). 칸을 그만큼 줄이는 건
+ *     플레이를 비게 만들므로, 칸당 이득을 1/5 로 낮추고 등급 문턱을 올려
+ *     "얇게 펴 바르면 평생 초급"이 되도록 했다. 실측은 tools/verify/balance.mjs.
+ */
+export const MONTH_SCALE = 1 / 5
 
 /**
  * ★ 내구도 계수 (월 단위 전환 1단계).
@@ -60,8 +71,19 @@ export const DURABILITY = {
   MANAGE_GAIN: 0.4,
   /** 상/벌의 중심축. durability 가 이 값보다 낮으면 벌, 높으면 상. */
   PIVOT: 30,
-  COST_SLOPE: 0.02, // durability 0 이면 심신 소모 ×(1+30×0.02)=×1.6
-  GROWTH_SLOPE: 0.01, // durability 70 이면 성장 ×(1+40×0.01)=×1.4
+  /**
+   * ★ 밸런스 재설계: 0.02 → 0.033. durability 0 이면 심신 소모 ×(1+30×0.033)=×2.0.
+   *   11세에 초급 수업 하나가 심신 −18 이 되어, 수업 둘(−36)은 휴식(+16)으로 못 메운다.
+   *   "어린 몸으로는 한 달에 하나가 고작"이 규칙이 아니라 수지로 성립하게 만드는 손잡이.
+   */
+  COST_SLOPE: 0.033,
+  /**
+   * ★ 밸런스 재설계: 0.01 → 0.005.
+   *   가속은 이제 **수업 등급**이 맡는다. 내구도까지 같은 일(성장 가속)을 크게 하면
+   *   후반이 이중으로 폭주한다. 내구도는 "초반 혹독(COST_SLOPE)"과
+   *   "잘 돌본 만큼의 보상"이라는 결만 남긴다.
+   */
+  GROWTH_SLOPE: 0.005,
   /** 초기값 — 나이 기본값(11세=0)에서 출발. */
   initial: 0,
 } as const
@@ -144,4 +166,23 @@ export const INITIAL_RESOURCES = {
  */
 export function courtInfluenceCap(age: number): number {
   return Math.min(GAME_CONFIG.resourceMax, 25 + (age - GAME_CONFIG.startAge) * 8)
+}
+
+/**
+ * ★ 나이별 상한 (밸런스 재설계) — 새 지표를 만들지 않고 기존 상한 방식만 재사용한다.
+ *
+ * 신뢰: 스승에 대한 믿음은 9년에 걸쳐 쌓이는 것이다. 13세에 90을 넘던 과속을 막는다.
+ *   11세 20 → 13세 38 → 20세 101(=상한 100)
+ */
+export function tutorTrustCap(age: number): number {
+  return Math.min(GAME_CONFIG.resourceMax, 20 + (age - GAME_CONFIG.startAge) * 9)
+}
+
+/**
+ * 섭정 신망: 어린애를 통치자로 인정할 리 없다 — **15세 전에는 30에서 막힌다.**
+ *   ~14세 30 → 15세 30 → 20세 100. 규칙이자 세계관.
+ */
+export function regentRapportCap(age: number): number {
+  if (age < 15) return 30
+  return Math.min(GAME_CONFIG.resourceMax, 30 + (age - 15) * 14)
 }
