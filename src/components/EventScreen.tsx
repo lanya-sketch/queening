@@ -3,7 +3,7 @@ import { EVENT_BY_ID } from '../data/events'
 import { HIDDEN_GAUGES } from '../data/stats'
 import { targetLabel } from '../systems/effects'
 import { deltaView, effectView } from '../systems/display'
-import { EffectPill, Lozenge, PrimaryAction } from './ui/Chrome'
+import { EffectPill, LockedNote, Lozenge, PrimaryAction } from './ui/Chrome'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { activeChoiceTier, resolvedChoice } from '../systems/activityTier'
 import { resolveText } from '../systems/text'
@@ -107,9 +107,7 @@ function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) 
           )}
         </>
       ) : (
-        <span className="mt-1.5 block text-[11.5px] text-faint">
-          🔒 {requirements.join(', ')} 필요
-        </span>
+        <LockedNote>{requirements.join(', ')} 필요</LockedNote>
       )}
     </button>
   )

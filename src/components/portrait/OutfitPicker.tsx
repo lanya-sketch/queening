@@ -1,4 +1,5 @@
 import { OUTFIT_SAFETY_NOTICE } from '../../data/outfits'
+import { LockIcon } from '../ui/Chrome'
 import { describeCondition } from '../../systems/eventEngine'
 import { isOutfitUnlocked, resolveMonarchPortrait } from '../../systems/outfits'
 import { useGame } from '../../store/gameStore'
@@ -53,7 +54,11 @@ export function OutfitPicker() {
                     >
                       {outfit.name}
                     </span>
-                    {!unlocked && <span aria-hidden className="text-xs text-muted">🔒</span>}
+                    {!unlocked && (
+                      <span className="text-muted">
+                        <LockIcon size={12} />
+                      </span>
+                    )}
                     {selected && (
                       <span className="rounded bg-gold-400 px-1.5 py-0.5 text-[10px] font-semibold text-ink-950">
                         착용 중

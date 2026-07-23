@@ -70,6 +70,47 @@ body {
   background: transparent;
 }
 
+/*
+ * 내부 스크롤 영역의 위아래 페이드.
+ * 열이 뷰포트를 나눠 가지면 경계에서 카드가 반쯤 잘리는데, 그대로 두면 고장처럼 보인다.
+ * 페이드가 "여기서 이어진다"를 말해 준다. 폰(페이지 스크롤)에는 쓰지 않는다.
+ */
+@media (min-width: 1024px) {
+  .kg-fade-y {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 14px,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 14px,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
+  }
+}
+
+/*
+ * 스크롤바를 감춘다(스크롤 자체는 남긴다).
+ *
+ * ★ 사이드바는 데스크톱에서 **한 화면에 다 들어가는 것이 정상**이라 스크롤바가 뜨면
+ *   오른쪽 열과 높이가 어긋나 보인다. 그렇다고 overflow 를 잘라 버리면 화면이 낮은
+ *   기기에서 아래 항목(저장·인연 등)에 영영 닿을 수 없다.
+ *   그래서 막대만 감추고 스크롤은 살려 둔다 — 평소엔 안 보이고, 낮은 화면에서만 굴러간다.
+ */
+.kg-noscrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.kg-noscrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 /* 섭정의 눈길 — 경고 표식의 맥박. */
 @keyframes kg-seal {
   0%,

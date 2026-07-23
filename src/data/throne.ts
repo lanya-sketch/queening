@@ -30,26 +30,34 @@ export interface ThroneBackdrop {
   assetSrc?: string
 }
 
+/**
+ * ★ 필터는 **배경에만**. 인물에는 걸지 않는다 (UI 리디자인 2단계).
+ *
+ *   예전엔 허수아비 구간에서 초상 이미지 자체에 brightness .78 · saturate .8 을 걸어
+ *   얼굴이 흐려졌다. 실권이 낮은 초반이 게임 시간의 대부분이라, 사실상 대부분의 플레이 동안
+ *   군주 얼굴이 죽어 화면이 칙칙했다. 크롭본은 알파를 보존하므로 배경 그라디언트가
+ *   인물 뒤로 그대로 비친다 — 구간 표현은 배경·테두리만으로 충분하다.
+ */
 export const THRONE_BACKDROP: Record<ThroneTier, ThroneBackdrop> = {
   // 허수아비 — 옥좌에서 멀리·어둡게. 실권이 없다.
   puppet: {
-    ring: 'border-slate-700',
-    backdrop: 'bg-gradient-to-b from-slate-900 to-slate-950',
-    imgFilter: 'brightness-[0.78] saturate-[0.8]',
+    ring: 'border-line',
+    backdrop: 'bg-gradient-to-b from-ink-900 to-ink-950',
+    imgFilter: '',
     label: '허수아비 — 실권 없음',
   },
   // 공존 — 옥좌 앞·중간. 반쯤 쥠.
   coexist: {
-    ring: 'border-amber-800/50',
-    backdrop: 'bg-gradient-to-b from-slate-800 to-amber-950/30',
-    imgFilter: 'brightness-[0.92]',
+    ring: 'border-line-gold/70',
+    backdrop: 'bg-gradient-to-b from-ink-800 via-ink-800 to-gold-600/25',
+    imgFilter: '',
     label: '공존 — 반쯤 쥔 실권',
   },
   // 친정 — 옥좌에 앉음·밝게. 실권을 장악했다.
   autonomy: {
-    ring: 'border-amber-500/70 shadow-[0_0_18px_-2px_rgba(245,158,11,0.5)]',
-    backdrop: 'bg-gradient-to-b from-amber-800/40 to-amber-600/10',
-    imgFilter: 'brightness-[1.06]',
+    ring: 'border-gold-400/80 shadow-[0_0_20px_-2px_rgba(212,176,106,0.55)]',
+    backdrop: 'bg-gradient-to-b from-gold-600/45 via-ink-800 to-gold-400/15',
+    imgFilter: '',
     label: '친정 — 실권 장악',
   },
 }

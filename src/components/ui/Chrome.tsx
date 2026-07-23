@@ -119,6 +119,64 @@ export function PrimaryAction({
   )
 }
 
+/**
+ * ★ 아이콘은 이모지가 아니라 인라인 SVG (UI 리디자인 2단계).
+ *
+ *   이모지(🔒·⚙)는 OS 폰트가 그리므로 색을 못 물려받고, 노란 사각으로 튀어 화면 톤을 깬다.
+ *   플랫폼마다 모양도 다르다. SVG 는 currentColor 를 따르고 크기도 자유롭다.
+ *   에셋 파일을 두지 않는 이유: 아이콘 두 개 때문에 네트워크 요청과 경로 관리가 생긴다.
+ */
+export function LockIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="inline-block shrink-0 align-[-0.12em]"
+    >
+      <rect x="4" y="10" width="16" height="11" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  )
+}
+
+export function GearIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1" />
+    </svg>
+  )
+}
+
+/** 잠긴 것 — 자물쇠 + 사유. 활동 카드·선택지가 같은 모양을 쓴다. */
+export function LockedNote({ children }: { children: ReactNode }) {
+  return (
+    <span className="mt-3 flex items-start gap-1.5 text-[11.5px] text-faint">
+      <span className="mt-[1px]">
+        <LockIcon />
+      </span>
+      <span>{children}</span>
+    </span>
+  )
+}
+
 /** 마름모 하나. 목록 머리표·장식에 쓴다. */
 export function Lozenge({ size = 6, dim = false }: { size?: number; dim?: boolean }) {
   return (

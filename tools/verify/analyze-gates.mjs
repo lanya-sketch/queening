@@ -61,6 +61,16 @@ const BUILDS = [
   { key: '균형', desc: '매달 가장 낮은 스탯', order: null },
   { key: '특화', desc: '통치학→궁정처세→변론 순, 상한 닿으면 다음', order: ['statecraft', 'courtcraft', 'rhetoric', 'finance', 'martial'] },
   { key: '회유', desc: '정무 배석으로 신망을 밀고 통치학·궁정처세', order: ['statecraft', 'courtcraft'], accord: true },
+  /**
+   * ★ 균형 육성을 하면서 **정무 배석을 이따금** 섞는 빌드.
+   *
+   *   묻는 것 하나: 회유(담판 신망 50)가 **전용 빌드에만** 열리는가, 섞어서도 가는 길인가.
+   *   회유는 주요 정치 경로라 "완전 특화해야만 열린다"면 그건 밸런스 문제다.
+   *   섞는 정도는 "심신이 받쳐 줄 때 3달에 한 번" — 최적화가 아니라 곁들이는 수준.
+   */
+  { key: '균형+배석', desc: '균형 육성 + 정무 배석을 3달에 한 번', order: null, dabble: 3 },
+  // 얼마나 섞어야 닿는지 구간을 좁히려고 한 단계 더 진한 버전도 잰다.
+  { key: '균형+배석2', desc: '균형 육성 + 정무 배석을 2달에 한 번', order: null, dabble: 2 },
   { key: '실권', desc: '통치학을 밀고 14세부터 직접 재가·밀서로 실권을 되찾는다', order: ['statecraft', 'courtcraft'], reclaim: true },
   { key: '무리', desc: '놀이 없이 매달 수업 2 + 휴식 1 (의심이 최대로 차는 축)', order: null, overwork: true },
 ]
@@ -75,7 +85,7 @@ async function measure(b) {
   await p.reload({ waitUntil: 'networkidle' })
   await enterGame(p)
   await p.waitForTimeout(200)
-  const byAge = await p.evaluate((b) => {
+  const res = await p.evaluate((b) => {
     const LESSON = {
       statecraft: 'lecture-statecraft', finance: 'lecture-finance', rhetoric: 'debate-practice',
       martial: 'sword-training', courtcraft: 'attend-banquet',
@@ -84,11 +94,20 @@ async function measure(b) {
     q.setDeterministic(true)
     q.setMinorEnabled(true)
     const byAge = {}
+    const uses = {}
+    const byYear = {}
     for (let i = 0; i < 130; i++) {
       const g = q.state
       const plan = []
       let ap = 3
-      const add = (id, cost = 1) => { if (ap >= cost) { plan.push(id); ap -= cost } }
+      const add = (id, cost = 1) => {
+        if (ap >= cost) {
+          plan.push(id); ap -= cost
+          uses[id] = (uses[id] ?? 0) + 1
+          const yr = (byYear[g.age] ??= {})
+          yr[id] = (yr[id] ?? 0) + 1
+        }
+      }
 
       const keys = Object.keys(LESSON)
       const pickStat = () => (b.order
@@ -108,7 +127,10 @@ async function measure(b) {
         }
         // 실권 빌드는 14세·통치학 35 부터 직접 재가로 정무를 되찾는다.
         if (b.reclaim && ap >= 2 && g.age >= 14 && g.stats.statecraft >= 35) add('direct-decree', 2)
-        if (ap >= 1 && g.regentSuspicion >= 55) add('play')
+        // 곁들이기: 3달에 한 번, 심신이 받쳐 줄 때만 정무 배석(AP2).
+        if (b.dabble && ap >= 2 && i % b.dabble === 0 && g.wellbeing >= 30) add('attend-council', 2)
+        const playAt = b.dabble || b.accord ? 42 : 55
+        if (ap >= 1 && g.regentSuspicion >= playAt) add('play')
         while (ap >= 1) {
           // 심신이 다음 수업을 못 버티면 회복으로 돌린다.
           if (plan.some((x) => Object.values(LESSON).includes(x)) && g.wellbeing < 30) add('rest')
@@ -126,13 +148,20 @@ async function measure(b) {
       }
       if (r.phase === 'ended') break
     }
-    return byAge
+    return { byAge, uses, byYear }
   }, b)
   await p.close()
-  return byAge
+  return res
 }
 
-for (const b of BUILDS) curves[b.key] = await measure(b)
+const usage = {}
+const yearly = {}
+for (const b of BUILDS) {
+  const r = await measure(b)
+  curves[b.key] = r.byAge
+  usage[b.key] = r.uses
+  yearly[b.key] = r.byYear
+}
 
 const STAT_KEY = { statecraft: '통치학', finance: '재정', rhetoric: '변론', martial: '무예', courtcraft: '궁정처세' }
 const RES_KEY = { courtInfluence: '영향도', regentRapport: '신망', regentSuspicion: '의심', tutorTrust: '신뢰', wellbeing: '심신' }
@@ -147,6 +176,27 @@ for (const b of BUILDS) {
     log(` ${n(age, 3)}  ${n(c.통치학)} ${n(c.재정)} ${n(c.변론)} ${n(c.무예)} ${n(c.궁정처세)} |` +
       ` ${n(c.심신)} ${n(c.영향도)} ${n(c.신망)} ${n(c.의심)} ${n(c.신뢰)}`)
   }
+  /*
+   * ★ 칸 사용 — "플래너가 그 버튼을 정말 눌렀는가".
+   *   조건이 빡빡해 한 번도 안 눌린 채 "그 경로는 안 열린다"고 결론 내릴 뻔한 적이 있다.
+   *   결론을 쓰기 전에 횟수를 눈으로 본다.
+   */
+  const u = usage[b.key] ?? {}
+  log('   칸 사용: ' + Object.entries(u).sort((x, y) => y[1] - x[1])
+    .map(([k, v]) => `${k} ${v}`).join(' · '))
+  /*
+   * ★ 신망을 움직이는 두 칸을 나이별로 따로 본다.
+   *   총 횟수가 비슷한데 결과가 크게 다르면 원인은 **시점**이나 **상쇄**다:
+   *     15세 전 배석은 상한 30 에 부딪혀 버려지고, 연회는 누를 때마다 신망 −1 이다.
+   */
+  const y = yearly[b.key] ?? {}
+  const ages = Object.keys(y).map(Number).sort((a, b2) => a - b2)
+  const council = ages.map((a) => `${a}:${y[a]['attend-council'] ?? 0}`).join(' ')
+  const banquet = ages.map((a) => `${a}:${y[a]['attend-banquet'] ?? 0}`).join(' ')
+  const before15 = ages.filter((a) => a < 15).reduce((n, a) => n + (y[a]['attend-council'] ?? 0), 0)
+  const after15 = ages.filter((a) => a >= 15).reduce((n, a) => n + (y[a]['attend-council'] ?? 0), 0)
+  log(`   배석/년: ${council}   → 15세 전 ${before15} · 15세 이후 ${after15}`)
+  log(`   연회/년: ${banquet}   → 총 ${ages.reduce((n, a) => n + (y[a]['attend-banquet'] ?? 0), 0)} (신망 −1씩)`)
 }
 
 // ── 3) 대조 ────────────────────────────────────────────────

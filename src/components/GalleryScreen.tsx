@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { LockIcon } from './ui/Chrome'
 import { GALLERY, GALLERY_TOTAL, type GalleryGroup, type GalleryItem } from '../data/gallery'
 import { getAchieved } from '../systems/gallery'
 import { resolveText } from '../systems/text'
@@ -110,13 +111,16 @@ function GalleryCard({
   return (
     <div className="flex items-center gap-3 rounded-panel border border-line bg-ink-900/30 p-3.5">
       {/* 실루엣 — 잠긴 결말. */}
-      {/* ★ 이모지 자물쇠는 색이 튀어 화면 톤을 깬다 — 빈 마름모로 대신한다. */}
+      {/*
+        ★ 잠김은 앱 전체가 자물쇠 하나로 말한다.
+          마름모는 이미 행동력(◆◆◆)과 구획 표식(◆)에 쓰이므로, 잠김까지 얹으면
+          한 기호가 세 뜻을 갖게 된다. 활동 카드·선택지·착장·인연이 모두 자물쇠다.
+      */}
       <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-panel"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-panel text-muted"
         style={{ border: '1px solid rgba(212,176,106,.16)', background: 'rgba(255,255,255,.02)' }}
-        aria-hidden
       >
-        <span className="h-3 w-3 rotate-45" style={{ border: '1px solid rgba(212,176,106,.4)' }} />
+        <LockIcon size={16} />
       </div>
       <div className="min-w-0">
         <h3 className="font-title truncate text-sm font-medium text-muted">

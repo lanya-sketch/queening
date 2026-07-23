@@ -2,6 +2,7 @@
 // 착장·초상·모달, 턴 루프, 이벤트, 세이브 연쇄 마이그레이션, 반응형을 실제 브라우저로 검사한다.
 import {
   card, choiceButtons, clearEvent, dateText, enterGame, launch, log, ok, overflow, phaseOf,
+  readBand,
   portrait, readGauge, readPanel, shotsDir, APP_URL, SAVE_VERSION,
 } from './helpers.mjs'
 
@@ -185,8 +186,14 @@ log('C2 나이 보존:', ok((await page.locator('aside p.text-xs').first().inner
 const migratedOutfit = await page.evaluate(() =>
   document.querySelector('aside button[aria-label*="군주 초상"] img').getAttribute('src'))
 log('C3 착장 기본값 주입:', ok(migratedOutfit.includes('_casual_')))
+/*
+ * ★ 옛 세이브에 없던 신망을 마이그레이션이 **초기값으로 주입**했는가.
+ *   초기값이 20→0 으로 바뀌었으므로 숫자를 박지 않는다(C13 과 같은 이유).
+ *   구간 라벨로 확인한다 — 0 은 '아이로만 봄'이고, 그게 새 게임의 출발점이다.
+ */
 log('C4 섭정 신망 주입:', await readGauge(page, '섭정 신망'),
-  ok((await readGauge(page, '섭정 신망')) === 20))
+  await readBand(page, '섭정 신망'),
+  ok((await readBand(page, '섭정 신망')) === '아이로만 봄'))
 log('C5 국정 영향도 주입:', await readGauge(page, '국정 영향도'),
   ok((await readGauge(page, '국정 영향도')) === 10))
 await page.getByRole('button', { name: '닫기' }).click()
@@ -235,9 +242,18 @@ await page.waitForTimeout(200)
 const resaved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
 log('C11 재저장 버전:', resaved.version, ok(resaved.version === SAVE_VERSION))
 log('C12 기존 flag 보존 (clue_radical_edict):', ok(resaved.state.flags.clue_radical_edict === true))
-log('C13 신망·영향도가 세이브에 기록됨:',
+/*
+ * ★ 옛 세이브에 없던 신망 필드가 마이그레이션으로 **채워졌는가**가 이 단언의 뜻이다.
+ *   기대값에 숫자를 박으면 초기값을 조정할 때마다 조용히 깨진다(실제로 20→0 으로 바꿨다).
+ *   그래서 "필드가 생겼고 유효 범위 안이다" + "영향도는 그대로" 로 확인한다.
+ */
+const rapportFilled =
+  typeof resaved.state.regentRapport === 'number' &&
+  resaved.state.regentRapport >= 0 &&
+  resaved.state.regentRapport <= 100
+log('C13 신망 필드가 마이그레이션으로 채워짐 · 영향도 보존:',
   resaved.state.regentRapport, '/', resaved.state.courtInfluence,
-  ok(resaved.state.regentRapport === 20 && resaved.state.courtInfluence === 10))
+  ok(rapportFilled && resaved.state.courtInfluence === 10))
 await page.getByRole('button', { name: '닫기' }).click()
 
 log('')

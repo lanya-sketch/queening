@@ -213,5 +213,34 @@ async function open(width, height, seed) {
   await ctx.close()
 }
 
+// ── 나이 상한 금선이 **실제로 그려지는가** ─────────────────
+{
+  /*
+   * ★ 라벨이 맞다는 것과 금선이 화면에 있다는 것은 다른 명제다.
+   *   회유 빌드는 11~14세에 신망이 30 천장에 붙는데, 금선이 없으면 이유가 안 보여
+   *   "이 길은 안 되나 보다" 하고 접는다. 그래서 좌표까지 잰다.
+   */
+  const { ctx, page } = await open(1440, 1000, {
+    age: 12, regentRapport: 30, tutorTrust: 29, courtInfluence: 10,
+  })
+  const ticks = await page.evaluate(() =>
+    ['regentRapport', 'tutorTrust', 'courtInfluence'].map((key) => {
+      const g = document.querySelector(`[data-gauge="${key}"]`)
+      const track = g?.querySelector('div.relative')
+      const tick = track?.querySelector('span[aria-hidden]')
+      if (!track || !tick) return { key, tick: null }
+      const t = track.getBoundingClientRect()
+      const k = tick.getBoundingClientRect()
+      return { key, pct: Math.round(((k.left - t.left) / t.width) * 100) }
+    }))
+  for (const t of ticks) log(`D1 ${t.key.padEnd(15)} 상한 금선 위치 ${t.tick === null ? '없음' : t.pct + '%'}`)
+  const rapport = ticks.find((t) => t.key === 'regentRapport')
+  // 12세 신망 상한은 30 이므로 금선이 30% 언저리에 있어야 한다.
+  log('D1 ★ 12세 신망 금선이 상한 30 자리에 있다:',
+    ok(rapport?.pct !== undefined && Math.abs(rapport.pct - 30) <= 3))
+  await page.screenshot({ path: `${OUT}/cap-line-12se.png` })
+  await ctx.close()
+}
+
 await browser.close()
 log('\n스크린샷:', OUT)

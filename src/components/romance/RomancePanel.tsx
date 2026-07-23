@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { LockIcon } from '../ui/Chrome'
 import { CHARACTERS, DEEP_BOND_THRESHOLD } from '../../data/characters'
 import { CHARACTER_TERMS } from '../../data/lexicon'
 import { affectionOf, isDeepBond, isPresent, isRomanceUnlocked } from '../../systems/romance'
@@ -119,7 +120,12 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
                     </span>
                   )}
                   {!unlocked && (
-                    <span className="ml-auto text-[11px] text-muted">🔒 잠김</span>
+                    <span
+                      data-romance-locked
+                      className="ml-auto flex items-center gap-1 text-[11px] text-muted"
+                    >
+                      <LockIcon size={11} /> 잠김
+                    </span>
                   )}
                   {/* 부재는 잠금이 아니다 — 조건은 이미 채웠고 지금 자리에 없을 뿐. */}
                   {away && (

@@ -6,7 +6,7 @@ import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
 import type { Activity, GameState } from '../types/game'
-import { EffectPill, Lozenge, Stars } from './ui/Chrome'
+import { EffectPill, LockedNote, Lozenge, Stars } from './ui/Chrome'
 
 /**
  * 일과 화면 (UI 리디자인 1단계).
@@ -152,9 +152,7 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
             )}
           </>
         ) : (
-          <p className="mt-3 text-[11.5px] text-faint">
-            🔒 {describeCondition(activity.requires).join(', ')} 필요
-          </p>
+          <LockedNote>{describeCondition(activity.requires).join(', ')} 필요</LockedNote>
         )}
       </button>
     </li>
@@ -172,8 +170,11 @@ export function ScheduleScreen() {
   )
 
   return (
-    <div data-screen="schedule" className="pb-28 lg:pb-6">
-      <header className="mb-5">
+    <div
+      data-screen="schedule"
+      className="pb-28 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:pb-0"
+    >
+      <header className="mb-5 lg:shrink-0">
         {/*
           ★ 날짜를 여기서 되풀이하지 않는다. 사이드바가 "언제·누가"를 항상 이고 있어서
             모바일에서는 「즉위 0년 1월」이 두 번 나왔다. 사이드바=상태, 본문=할 일.
@@ -202,7 +203,7 @@ export function ScheduleScreen() {
       {/* 이번 달의 계획 */}
       <section
         data-plan
-        className="mb-7 rounded-panel border p-4"
+        className="mb-6 rounded-panel border p-4 lg:shrink-0"
         style={{
           borderColor: 'rgba(212,176,106,.18)',
           background: 'linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015))',
@@ -277,7 +278,8 @@ export function ScheduleScreen() {
       </section>
 
       {/* 활동 — 카테고리 묶음. 폰은 가로 스크롤, PC는 그리드로 12장이 한눈에. */}
-      <div className="flex flex-col gap-7">
+      {/* ★ 데스크톱은 이 영역만 세로로 스크롤한다 — 가로 스크롤은 폰 전용. */}
+      <div className="kg-scroll kg-fade-y flex flex-col gap-7 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
         {GROUPS.map((group) => {
           const items = group.ids
             .map((id) => ACTIVITIES.find((a) => a.id === id))
@@ -301,7 +303,7 @@ export function ScheduleScreen() {
                   style={{ background: 'linear-gradient(90deg,rgba(214,179,96,.5),transparent)' }}
                 />
               </div>
-              <ul className="kg-scroll flex snap-x snap-proximity gap-3 overflow-x-auto pb-3 lg:grid lg:grid-cols-2 lg:overflow-visible lg:pb-0 xl:grid-cols-3">
+              <ul className="kg-scroll flex snap-x snap-proximity gap-3 overflow-x-auto pb-3 lg:grid lg:grid-cols-2 lg:overflow-visible lg:pb-0">
                 {items.map((activity) => (
                   <ActivityCard key={activity.id} activity={activity} game={game} />
                 ))}
@@ -314,7 +316,7 @@ export function ScheduleScreen() {
       {/* 턴 종료: 폰에선 하단 고정 */}
       <div
         data-onboard="endTurn"
-        className="fixed inset-x-0 bottom-0 z-10 border-t bg-ink-950/95 p-3 backdrop-blur lg:static lg:mt-8 lg:border-0 lg:bg-transparent lg:p-0"
+        className="fixed inset-x-0 bottom-0 z-10 border-t bg-ink-950/95 p-3 backdrop-blur lg:static lg:mt-5 lg:shrink-0 lg:border-0 lg:bg-transparent lg:p-0"
         style={{ borderColor: 'rgba(212,176,106,.15)' }}
       >
         <div className="flex justify-center">

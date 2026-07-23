@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GAME_CONFIG, courtInfluenceCap, monthLabel } from '../data/config'
+import { GAME_CONFIG, courtInfluenceCap, monthLabel, regentRapportCap, tutorTrustCap } from '../data/config'
 import { STAT_KEYS, STAT_META } from '../data/stats'
 
 import { perilNotice, resourceGauge, statGauge } from '../systems/display'
@@ -11,7 +11,7 @@ import { resolveText } from '../systems/text'
 import { PortraitButton } from './portrait/PortraitButton'
 import { RomancePanel } from './romance/RomancePanel'
 import { Button } from './ui/Button'
-import { Gauge, Lozenge, SectionHead } from './ui/Chrome'
+import { Gauge, GearIcon, Lozenge, SectionHead } from './ui/Chrome'
 
 /**
  * 사이드바 (UI 리디자인 1단계).
@@ -41,14 +41,15 @@ export function StatusPanel() {
   const ap = game.actionPoints
   const apMax = GAME_CONFIG.actionPointsPerTurn
 
+  // ★ 데스크톱: 열 하나가 뷰포트 높이를 통째로 갖고 안에서 스크롤한다(페이지 스크롤 아님).
   return (
-    <aside className="sticky top-0 z-20 lg:static lg:w-[21rem] lg:shrink-0">
+    <aside className="sticky top-0 z-20 lg:static lg:h-full lg:w-[21rem] lg:shrink-0">
       <div
-        className="border-b bg-ink-800/95 backdrop-blur lg:rounded-panel lg:border"
+        className="border-b bg-ink-800/95 backdrop-blur lg:flex lg:h-full lg:flex-col lg:rounded-panel lg:border"
         style={{ borderColor: 'rgba(212,176,106,.15)', boxShadow: '0 10px 30px rgba(0,0,0,.35)' }}
       >
         {/* 요약 줄. 폰=가로 한 줄, PC=초상이 위로 올라간 세로 배치 */}
-        <div className="flex items-center gap-3 px-4 py-3 lg:flex-col lg:gap-4 lg:pt-5">
+        <div className="flex items-center gap-3 px-4 py-3 lg:flex-col lg:gap-3 lg:pt-4">
           <div
             className="shrink-0 rounded-panel p-1.5 lg:p-2"
             style={{
@@ -57,7 +58,7 @@ export function StatusPanel() {
               boxShadow: 'inset 0 2px 12px rgba(0,0,0,.55)',
             }}
           >
-            <PortraitButton className="h-12 w-10 lg:h-48 lg:w-40" />
+            <PortraitButton className="h-12 w-10 lg:h-40 lg:w-32" />
           </div>
 
           <div className="flex min-w-0 flex-1 items-center gap-3 lg:w-full lg:flex-none lg:flex-col lg:gap-2">
@@ -83,7 +84,7 @@ export function StatusPanel() {
                 className="flex h-7 w-7 items-center justify-center rounded-full border text-sm text-muted"
                 style={{ borderColor: 'rgba(212,176,106,.2)' }}
               >
-                ⚙
+                <GearIcon />
               </button>
               <button
                 onClick={openHelp}
@@ -155,7 +156,7 @@ export function StatusPanel() {
 
         {/* 상세: 폰에선 접힘, PC(lg)에선 항상 펼침 */}
         <div
-          className={`${open ? 'block' : 'hidden'} max-h-[60vh] overflow-y-auto px-4 pb-5 lg:block lg:max-h-none lg:px-5`}
+          className={`${open ? 'block' : 'hidden'} kg-noscrollbar max-h-[60vh] overflow-y-auto px-4 pb-5 lg:block lg:max-h-none lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-5`}
         >
           <SectionHead className="mb-3.5">Primary Attributes</SectionHead>
           <div className="flex flex-col gap-3">
@@ -168,14 +169,21 @@ export function StatusPanel() {
           <div data-onboard="gauges" className="flex flex-col gap-3">
             <Gauge view={resourceGauge('courtInfluence', game, courtInfluenceCap(game.age))} />
             <Gauge view={resourceGauge('wellbeing', game)} />
-            <Gauge view={resourceGauge('tutorTrust', game)} />
+            <Gauge view={resourceGauge('tutorTrust', game, tutorTrustCap(game.age))} />
           </div>
 
           <SectionHead tone="peril" className="mb-3.5 mt-6">
             Regency
           </SectionHead>
           <div className="flex flex-col gap-3">
-            <Gauge view={resourceGauge('regentRapport', game)} />
+            {/*
+              ★ 신망에도 나이 상한을 금선으로 보인다.
+                회유를 노려 11세부터 정무 배석을 눌러도 신망은 30 에서 4년간 멈추는데,
+                화면에 이유가 없으면 "이 길은 안 되나 보다" 하고 접기 쉽다.
+                막대가 금선에 붙어 "지금은 천장"이 보이고, 15세에 금선이 올라가는 순간
+                "이제 인정받을 수 있다"가 드러난다 — 숫자를 바꾸지 않고 의도를 전한다.
+            */}
+            <Gauge view={resourceGauge('regentRapport', game, regentRapportCap(game.age))} />
             <Gauge view={resourceGauge('regentSuspicion', game)} />
           </div>
           {/*

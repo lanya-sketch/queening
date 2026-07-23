@@ -136,7 +136,9 @@ async function princeCard() {
   const dialog = page.getByRole('dialog', { name: '인연' })
   const li = dialog.locator('li').nth(2)
   const text = await li.innerText()
-  const state = text.includes('🔒 잠김') ? 'locked' : text.includes('✈ 부재') ? 'away' : 'present'
+  // ★ 자물쇠가 이모지→SVG 라 텍스트로 못 잡는다. 잠김은 훅으로, 부재는 문구로.
+  const locked = (await li.locator('[data-romance-locked]').count()) > 0
+  const state = locked ? 'locked' : text.includes('부재') ? 'away' : 'present'
   await page.keyboard.press('Escape')
   await page.waitForTimeout(150)
   return { state, text }
