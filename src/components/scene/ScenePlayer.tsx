@@ -86,7 +86,7 @@ export function ScenePlayer({
   return (
     <div>
       {spriteSrc && (
-        <div className="relative mb-3 flex h-[34dvh] items-end justify-center overflow-hidden rounded-lg bg-gradient-to-b from-slate-800/60 to-slate-950 lg:h-[46dvh]">
+        <div className="relative mb-3 flex h-[34dvh] items-end justify-center overflow-hidden rounded-lg bg-gradient-to-b from-ink-800/60 to-ink-950 lg:h-[46dvh]">
           {/* 배경 에셋은 후속 — 지금은 어두운 기본 위에 전신 스프라이트만. */}
           <img
             src={spriteSrc}
@@ -125,7 +125,7 @@ export function ScenePlayer({
               </Button>
             )}
           </div>
-          <p className="mt-1 text-center text-[11px] text-slate-600">
+          <p className="mt-1 text-center text-[11px] text-faint">
             {index + 1} / {scene.lines.length}
           </p>
         </div>
@@ -165,9 +165,9 @@ function activeSprite(
 function LineBlock({ label, text, dim }: { label: string | null; text: string; dim: boolean }) {
   return (
     <div className={dim ? 'opacity-60' : ''}>
-      {label && <p className="text-xs text-amber-400">{label}</p>}
+      {label && <p className="text-xs text-gold-400">{label}</p>}
       {text.split('\n').map((part, j) => (
-        <p key={j} className="text-sm leading-relaxed text-slate-200">
+        <p key={j} className="text-sm leading-relaxed text-parchment">
           {part}
         </p>
       ))}

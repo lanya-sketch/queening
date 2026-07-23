@@ -14,13 +14,13 @@ export function HelpScreen({ onClose }: { onClose: () => void }) {
   const game = useGame((s) => s.game)
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-950/97 backdrop-blur">
-      <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-        <h1 className="text-base font-semibold tracking-wide text-amber-100">도움말</h1>
+    <div data-screen="help" className="fixed inset-0 z-50 flex flex-col bg-ink-950/97 backdrop-blur">
+      <header className="flex items-center justify-between border-b border-line px-4 py-3">
+        <h1 className="font-title text-base font-semibold tracking-wide text-gold-300">도움말</h1>
         <button
           onClick={onClose}
           aria-label="도움말 닫기"
-          className="rounded-lg px-3 py-1 text-sm text-slate-400 active:text-slate-100"
+          className="rounded-lg px-3 py-1 text-sm text-muted active:text-parchment"
         >
           닫기
         </button>
@@ -30,11 +30,11 @@ export function HelpScreen({ onClose }: { onClose: () => void }) {
         <div className="mx-auto max-w-2xl space-y-7">
           {HELP.map((section) => (
             <section key={section.title}>
-              <h2 className="text-sm font-semibold tracking-wide text-amber-200/90">
+              <h2 className="font-title text-sm font-semibold tracking-wide text-gold-300/90">
                 {section.title}
               </h2>
               {section.intro && (
-                <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                <p className="mt-1 text-xs leading-relaxed text-muted">
                   {resolveText(section.intro, game)}
                 </p>
               )}
@@ -42,10 +42,10 @@ export function HelpScreen({ onClose }: { onClose: () => void }) {
                 {section.entries.map((entry) => (
                   <div
                     key={entry.term}
-                    className="rounded-xl border border-slate-800 bg-slate-900/50 px-3.5 py-3"
+                    className="rounded-xl border border-line bg-ink-900/50 px-3.5 py-3"
                   >
-                    <dt className="text-sm font-medium text-slate-100">{entry.term}</dt>
-                    <dd className="mt-1 text-[13px] leading-relaxed text-slate-300">
+                    <dt className="text-sm font-medium text-parchment">{entry.term}</dt>
+                    <dd className="mt-1 text-[13px] leading-relaxed text-parchment">
                       {resolveText(entry.body, game)}
                     </dd>
                   </div>
@@ -56,7 +56,7 @@ export function HelpScreen({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <footer className="border-t border-slate-800 p-3">
+      <footer className="border-t border-line p-3">
         <div className="mx-auto max-w-2xl">
           <Button variant="primary" className="w-full" onClick={onClose}>
             닫는다

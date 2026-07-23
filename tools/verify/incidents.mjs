@@ -279,7 +279,7 @@ nextReply = URGENT
 await page.evaluate(() => window.__queeningAi.setIncidentTimer(true))
 await showUrgent()
 
-const title = await page.locator('article h1').innerText().catch(() => '—')
+const title = await page.locator('[data-event-title]').innerText().catch(() => '—')
 log('F1 급보 사건 표시:', title, ok(title === '창고에 불'))
 const urgentBadge = await page.getByText('급보').isVisible().catch(() => false)
 log('F2 급보 표식:', ok(urgentBadge))

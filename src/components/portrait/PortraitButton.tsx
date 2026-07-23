@@ -34,7 +34,7 @@ export function PortraitButton({ className = '' }: PortraitButtonProps) {
       onClick={openPortrait}
       aria-label={`군주 초상 — 현재 착장 ${outfit.name}. 눌러서 크게 보기`}
       data-throne={tier}
-      className={`group relative shrink-0 overflow-hidden rounded-xl border transition-all duration-700 active:border-amber-400 ${throne.ring} ${className}`}
+      className={`group relative shrink-0 overflow-hidden rounded-xl border transition-all duration-700 active:border-gold-400 ${throne.ring} ${className}`}
     >
       {/* 옥좌 분위기 — 나중에 assetSrc 가 채워지면 이 자리에 배경 <img> 가 온다. */}
       <div className={`absolute inset-0 transition-all duration-700 ${throne.backdrop}`} />
@@ -44,7 +44,7 @@ export function PortraitButton({ className = '' }: PortraitButtonProps) {
         className={`relative h-full w-full object-cover object-top transition-all duration-700 ${throne.imgFilter}`}
         draggable={false}
       />
-      <span className="absolute inset-x-0 bottom-0 z-10 hidden bg-slate-950/80 py-1 text-center text-[11px] text-slate-200 lg:block">
+      <span className="absolute inset-x-0 bottom-0 z-10 hidden bg-ink-950/80 py-1 text-center text-[11px] text-parchment lg:block">
         {outfit.name}
       </span>
     </button>

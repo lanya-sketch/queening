@@ -1,5 +1,45 @@
 @import 'tailwindcss';
 
+/**
+ * ★ 디자인 토큰 (UI 리디자인 1단계) — 게임 전체가 여기만 참조한다.
+ *
+ * 여태 화면마다 Tailwind 팔레트(slate/amber/…)를 직접 골라 써서, 같은 "금빛"이
+ * 화면마다 조금씩 달랐다. 토큰을 한 곳에 두면 톤이 갈리지 않고, 나중에 동양판으로
+ * 갈아탈 때도 이 블록만 바꾸면 된다.
+ *
+ * 이름 규칙: ink=바탕(짙은 남) · gold=강조 · parchment/muted/faint=글자 · 의미색은 뜻으로.
+ */
+@theme {
+  --color-ink-950: #0b1018;
+  --color-ink-900: #141520;
+  --color-ink-800: #191a24;
+  --color-ink-700: #211a2c;
+  --color-ink-600: #2a2a38;
+
+  --color-gold-300: #f7d791; /* 강조·활성 */
+  --color-gold-400: #d4b06a; /* 기본 테두리·라벨 */
+  --color-gold-600: #b99a5c; /* 캡션 */
+
+  --color-parchment: #ece7dc;
+  --color-muted: #9a978e;
+  --color-faint: #6f6675;
+
+  /* 선 — 금빛을 아주 옅게 깐 경계. 화면마다 rgba 를 손으로 적던 것을 대체한다. */
+  --color-line: #2a2536;
+  --color-line-gold: #4a3d28;
+
+  --color-gain: #86c98f;
+  --color-loss: #cf8a8a;
+  --color-peril: #c05a5a; /* 섭정 경고 */
+  --color-peril-soft: #e47b7b;
+
+  --font-display: 'Cinzel', serif;
+  --font-title: 'Gowun Batang', serif;
+  --font-sans: 'Pretendard', 'IBM Plex Sans KR', 'Apple SD Gothic Neo', system-ui, sans-serif;
+
+  --radius-panel: 8px;
+}
+
 html,
 body,
 #root {
@@ -7,11 +47,41 @@ body,
 }
 
 body {
-  background-color: #070a14;
-  color: #e2e8f0;
-  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  background-color: var(--color-ink-950);
+  color: var(--color-parchment);
+  font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
+}
+
+::selection {
+  background: rgba(212, 176, 106, 0.3);
+}
+
+/* 가로 스크롤 목록(활동 카드)의 스크롤바를 금빛으로 얇게. */
+.kg-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.kg-scroll::-webkit-scrollbar-thumb {
+  background: rgba(212, 176, 106, 0.2);
+  border-radius: 8px;
+}
+.kg-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 섭정의 눈길 — 경고 표식의 맥박. */
+@keyframes kg-seal {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(192, 90, 90, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(192, 90, 90, 0);
+  }
+}
+.kg-seal {
+  animation: kg-seal 1.6s ease-out infinite;
 }
 
 /* 터치 대상 최소 44px 을 기본값으로 둔다. */

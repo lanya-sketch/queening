@@ -113,7 +113,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
               { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },
               { target: { kind: 'resource', key: 'regentRapport' }, amount: -8 },
             ],
-            hint: '허세였다',
+            hint: '세울 병력을 모른다',
             resultText:
               '{왕}은 국경에 기를 세우라 명했다. 세울 병력이 얼마나 되는지는 묻지 않았고, ' +
               '아무도 먼저 알려주지 않았다.\n' +
@@ -148,7 +148,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
               { target: { kind: 'stat', key: 'finance' }, amount: 4 },
               { target: { kind: 'resource', key: 'regentRapport' }, amount: -4 },
             ],
-            hint: '계산이 어긋났다',
+            hint: '셈이 아직 여물지 않았다',
             resultText:
               '{왕}은 배상 대신 통행세를 걸자고 했다. 사절은 잠시 셈을 하더니 흔쾌히 받아들였다 — ' +
               '너무 흔쾌해서, 그 자리의 누구도 기뻐하지 못했다.\n' +
@@ -238,7 +238,7 @@ export const AFFAIR_EVENTS: GameEvent[] = [
               { target: { kind: 'resource', key: 'tutorTrust' }, amount: 12 },
               { target: { kind: 'resource', key: 'wellbeing' }, amount: -10 },
             ],
-            hint: '말이 서지 않았다',
+            hint: '말이 아직 서지 않는다',
             resultText:
               '"이 방은… 선왕께서 세우신 것입니다. 그러니 과인은…"\n' +
               '{왕}은 끝을 맺지 못했지만 물러서지도 않았다. 하원은 남았다 — ' +

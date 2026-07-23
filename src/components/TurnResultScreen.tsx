@@ -2,55 +2,28 @@ import { useEffect } from 'react'
 import { ACTIVITY_BY_ID } from '../data/activities'
 import { monthLabel } from '../data/config'
 import { EVENT_BY_ID } from '../data/events'
-import { STAT_META } from '../data/stats'
+import { deltaView } from '../systems/display'
 import { useGame } from '../store/gameStore'
 import { useIncidents } from '../store/incidentStore'
 import type { Delta } from '../types/game'
-import { Button } from './ui/Button'
-
-/** 스탯 표시 라벨 집합 — 델타가 스탯인지 자원인지 가른다. */
-const STAT_LABELS = new Set(Object.values(STAT_META).map((m) => m.label))
+import { EffectPill, Lozenge, Panel, PrimaryAction, Rule, SectionLabel } from './ui/Chrome'
 
 /**
- * ★ 스탯 성장은 질적으로 표현한다 (월 단위 전환).
- *   매달 "+0.4" 같은 소수는 정보로 약하고 초라하니, 델타 크기별 몇 단계로.
- *   정확한 소수는 상세창(StatusPanel)에서 본다.
+ * ★ 결과 델타도 활동 카드와 **같은 어법**으로 (UI 리디자인).
+ *   예전에는 스탯은 "자랐다", 자원은 "+6" 이 섞여 나와, 같은 화면에서 두 어법이 싸웠다.
+ *   이제 전부 ▲▼ + 정도다. 정확한 값은 사이드바의 상세(내부값)에만 있다.
  */
-function growthWord(amount: number): string {
-  const a = Math.abs(amount)
-  const word = amount >= 0
-    ? a < 1 ? '조금 자랐다' : a < 3 ? '자랐다' : '크게 자랐다'
-    : a < 1 ? '조금 줄었다' : a < 3 ? '줄었다' : '크게 줄었다'
-  return word
-}
-
 function DeltaList({ deltas }: { deltas: Delta[] }) {
   if (deltas.length === 0) {
-    return <p className="text-sm text-slate-500">변화 없음</p>
+    return <p className="text-[13px] italic text-faint">변화 없음</p>
   }
   return (
-    <ul className="space-y-1.5">
+    <ul className="flex flex-col gap-1.5">
       {deltas.map((delta) => {
-        const isStat = STAT_LABELS.has(delta.label)
+        const v = deltaView(delta)
         return (
-          <li key={delta.label} className="flex items-center justify-between text-sm">
-            <span className="text-slate-300">{delta.label}</span>
-            {isStat ? (
-              // 스탯: 질적 표현(소수 감춤). 정확한 값은 상세창에서.
-              <span className={delta.amount >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                {growthWord(delta.amount)}
-              </span>
-            ) : (
-              // 자원(심신·의심 등): 플레이어가 관리하는 값이라 숫자로. 반올림.
-              <span
-                className={`tabular-nums font-medium ${
-                  delta.amount > 0 ? 'text-emerald-400' : 'text-rose-400'
-                }`}
-              >
-                {delta.amount > 0 ? '+' : ''}
-                {Math.round(delta.amount)}
-              </span>
-            )}
+          <li key={delta.label} data-delta={delta.label}>
+            <EffectPill {...v} />
           </li>
         )
       })}
@@ -76,24 +49,38 @@ export function TurnResultScreen() {
   if (!report) return null
 
   return (
-    <div className="pb-28 lg:pb-6">
-      <header className="mb-4">
-        <p className="text-xs text-slate-500">지난 달</p>
-        <h1 className="text-lg font-semibold text-slate-100">
+    <div data-screen="result" className="pb-28 lg:pb-6">
+      <header className="mb-5">
+        <h1 className="font-title text-[24px] font-bold leading-tight text-parchment lg:text-[30px]">
           즉위 {report.date.year}년 {monthLabel(report.date.month)}의 결과
         </h1>
+        <div className="mt-2 flex items-center gap-3">
+          <SectionLabel tone="muted">The Month Past</SectionLabel>
+          <Rule />
+        </div>
       </header>
 
-      <section className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-        <h2 className="mb-2 text-sm font-medium text-slate-300">수행한 활동</h2>
+      <Panel className="mb-4">
+        <div className="mb-3 flex items-center gap-2.5">
+          <Lozenge />
+          <h2 className="font-title text-[15px] font-bold" style={{ color: 'var(--color-gold-300)' }}>
+            수행한 활동
+          </h2>
+        </div>
         {report.activityIds.length === 0 ? (
-          <p className="text-sm text-slate-500">아무것도 하지 않고 한 달을 보냈습니다.</p>
+          <p className="mb-3 text-[13px] italic text-faint">
+            아무것도 하지 않고 한 달을 보냈습니다.
+          </p>
         ) : (
-          <ul className="mb-3 flex flex-wrap gap-1.5">
+          <ul className="mb-4 flex flex-wrap gap-1.5">
             {report.activityIds.map((id, i) => (
               <li
                 key={`${id}-${i}`}
-                className="rounded bg-slate-800 px-2 py-1 text-xs text-slate-200"
+                className="rounded border px-2.5 py-1 font-title text-[12.5px] text-parchment/85"
+                style={{
+                  borderColor: 'rgba(212,176,106,.22)',
+                  background: 'rgba(212,176,106,.06)',
+                }}
               >
                 {ACTIVITY_BY_ID[id]?.name ?? id}
               </li>
@@ -101,26 +88,39 @@ export function TurnResultScreen() {
           </ul>
         )}
         <DeltaList deltas={report.activityDeltas} />
-      </section>
+      </Panel>
 
       {report.triggeredEventIds.length > 0 && (
-        <section className="mb-4 rounded-xl border border-amber-900/60 bg-amber-950/20 p-4">
-          <h2 className="mb-2 text-sm font-medium text-amber-200">일어난 일</h2>
-          <ul className="mb-3 space-y-1">
+        <Panel className="mb-4" tone="gold">
+          <div className="mb-3 flex items-center gap-2.5">
+            <Lozenge />
+            <h2
+              className="font-title text-[15px] font-bold"
+              style={{ color: 'var(--color-gold-300)' }}
+            >
+              일어난 일
+            </h2>
+          </div>
+          <ul className="mb-4 space-y-1.5">
             {report.triggeredEventIds.map((id) => (
-              <li key={id} className="text-sm text-amber-100">
+              <li key={id} className="font-title text-[13.5px] text-parchment/90">
                 · {EVENT_BY_ID[id]?.title ?? id}
               </li>
             ))}
           </ul>
           <DeltaList deltas={report.eventDeltas} />
-        </section>
+        </Panel>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
-        <Button variant="primary" className="w-full" onClick={continueFromResult}>
-          {report.triggeredEventIds.length > 0 ? '무슨 일이 있었는지 본다' : '다음 달로'}
-        </Button>
+      <div
+        className="fixed inset-x-0 bottom-0 z-10 border-t bg-ink-950/95 p-3 backdrop-blur lg:static lg:mt-7 lg:border-0 lg:bg-transparent lg:p-0"
+        style={{ borderColor: 'rgba(212,176,106,.15)' }}
+      >
+        <div className="flex justify-center">
+          <PrimaryAction onClick={continueFromResult}>
+            {report.triggeredEventIds.length > 0 ? '무슨 일이 있었는지 본다' : '다음 달로'}
+          </PrimaryAction>
+        </div>
       </div>
     </div>
   )

@@ -167,59 +167,100 @@ export async function passIntro(page, gender = 'male') {
 
 // ---- 화면 조작 공통 ----
 
-/** 활동 카드 목록(ul.grid)으로 한정 — 상단 "계획" 칩(취소 버튼)과 구분하기 위함. */
+/**
+ * ★ 하네스 훅 (UI 리디자인 1단계).
+ *
+ * 여태 검증이 화면 구조(`ul.grid`, `aside div.flex.items-baseline`, `article h1`)와
+ * 화면 문구("활동 선택")를 셀렉터로 삼아, 디자인을 손댈 때마다 스위트가 통째로 막혔다
+ * (D-1 타이틀 추가 때가 그랬다). 이제는 `data-*` 속성만 본다 —
+ * 디자인이 바뀌어도 속성이 남아 있는 한 안 깨진다.
+ *
+ * 대응표
+ *   data-screen="schedule|result|event|ended|dead"  화면 판별
+ *   data-gauge=<key> data-value=<정확값> data-band=<라벨>  게이지
+ *   data-activity=<id> data-tier=<등급> data-selected  활동 카드
+ *   data-plan-chip=<id> / data-end-turn                계획 칩 · 턴 종료
+ *   data-panel-date / data-panel-age                   사이드바 날짜·나이
+ */
+
+/** 활동 카드 — 이름으로 찾되 카드 영역(data-activity)으로 한정한다. */
 export const card = (p, name) =>
-  p.locator('ul.grid').getByRole('button', { name: new RegExp(name) })
+  p.locator('[data-activity]').filter({ hasText: new RegExp(name) })
+
+/** 활동 카드 — id 로 정확히 집는다(이름이 바뀌어도 안 깨진다). 새 검증은 이쪽을 쓸 것. */
+export const cardById = (p, id) => p.locator(`[data-activity="${id}"]`)
+
+/** 그 카드의 현재 수업 등급(초급/중급/고급). 등급이 없으면 ''. */
+export const cardTier = (p, id) =>
+  p.locator(`[data-activity="${id}"]`).getAttribute('data-tier')
 
 export const portrait = (p) => p.getByRole('button', { name: /군주 초상/ })
 
-export const dateText = (p) => p.locator('aside p.text-sm.font-semibold').first().innerText()
+export const dateText = (p) => p.locator('[data-panel-date]').first().innerText()
 
 export const overflow = (p) =>
   p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }))
 
-/** 좌측 패널에서 지표 하나를 읽는다. 값 뒤에 "/ 상한" 이 붙을 수 있어 첫 숫자를 취한다. */
+/**
+ * 좌측 패널에서 지표 하나를 읽는다(한글 라벨로).
+ *
+ * ★ 화면에는 이제 수치가 없다 — 질적 라벨("저울이 맞음")만 보인다. 정확한 값은
+ *   data-value 에 있으므로 거기서 읽는다. **단언의 뜻은 그대로 두고 탐침만 옮긴 것**이다
+ *   (durability A3·bloodoath 탐침 때와 같은 원칙).
+ */
+const GAUGE_KEY_BY_LABEL = {
+  통치학: 'statecraft', 재정: 'finance', 변론: 'rhetoric', 무예: 'martial', 궁정처세: 'courtcraft',
+  '국정 영향도': 'courtInfluence', 심신: 'wellbeing', 신뢰: 'tutorTrust',
+  '섭정 신망': 'regentRapport', '섭정 의심': 'regentSuspicion', 행동력: 'actionPoints',
+}
+
 export const readGauge = (p, label) =>
-  p.evaluate((want) => {
-    for (const el of document.querySelectorAll('aside div.flex.items-baseline')) {
-      if (el.children[0].textContent.trim() === want) {
-        const m = el.children[1].textContent.match(/(\d+)/)
-        return m ? parseInt(m[1], 10) : null
-      }
-    }
-    return null
-  }, label)
+  p.evaluate(([want, map]) => {
+    const key = map[want] ?? want
+    const el = document.querySelector(`[data-gauge="${key}"]`)
+    if (!el) return null
+    return Math.round(parseFloat(el.getAttribute('data-value')))
+  }, [label, GAUGE_KEY_BY_LABEL])
 
-/** 패널 전체(스탯 + 지표)와 날짜·나이를 한 번에 읽는다. */
+/** 그 지표의 **질적 라벨**(구간 이름). 표시 방식 자체를 검증할 때 쓴다. */
+export const readBand = (p, label) =>
+  p.evaluate(([want, map]) => {
+    const key = map[want] ?? want
+    return document.querySelector(`[data-gauge="${key}"]`)?.getAttribute('data-band') ?? null
+  }, [label, GAUGE_KEY_BY_LABEL])
+
+/** 패널 전체(스탯 + 지표)와 날짜·나이를 한 번에 읽는다. 키는 예전처럼 한글 라벨. */
 export const readPanel = (p) =>
-  p.evaluate(() => {
+  p.evaluate((map) => {
+    const inv = Object.fromEntries(Object.entries(map).map(([ko, key]) => [key, ko]))
     const out = {}
-    document.querySelectorAll('aside div.flex.items-baseline').forEach((el) => {
-      const label = el.children[0].textContent.trim()
-      const m = el.children[1].textContent.match(/(\d+)/)
-      if (m) out[label] = parseInt(m[1], 10)
+    const bands = {}
+    document.querySelectorAll('[data-gauge]').forEach((el) => {
+      const key = el.getAttribute('data-gauge')
+      const label = inv[key] ?? key
+      const v = parseFloat(el.getAttribute('data-value'))
+      if (!Number.isNaN(v)) out[label] = Math.round(v)
+      bands[label] = el.getAttribute('data-band')
     })
-    const age = document.querySelector('aside p.text-xs')?.textContent ?? ''
-    const date = document.querySelector('aside p.text-sm.font-semibold')?.textContent ?? ''
-    return { stats: out, age: age.trim(), date: date.trim() }
-  })
+    const age = document.querySelector('[data-panel-age]')?.textContent ?? ''
+    const date = document.querySelector('[data-panel-date]')?.textContent ?? ''
+    return { stats: out, bands, age: age.trim(), date: date.trim() }
+  }, GAUGE_KEY_BY_LABEL)
 
+/**
+ * 현재 화면. 이제 문구가 아니라 data-screen 을 본다 —
+ * 화면 글자를 고쳤다고 검증이 "unknown"에 빠지는 일이 없다.
+ */
 export async function phaseOf(p) {
-  if (await p.getByText('활동 선택').isVisible().catch(() => false)) return 'schedule'
-  if (await p.getByText('수행한 활동').isVisible().catch(() => false)) return 'result'
-  // 이벤트 화면 라벨은 category 에 따라 '사건' 또는 '국정 현안'
-  if (await p.getByText(/^(사건|국정 현안)$/).first().isVisible().catch(() => false)) return 'event'
-  // 엔딩(M3-2): 먼저 조립 씬("아홉 해의 끝"), 씬을 넘기면 요약("결산"·"세가 되었다").
-  if (await p.getByText('아홉 해의 끝').isVisible().catch(() => false)) return 'ended'
-  if (await p.getByText(/세가 되었다/).isVisible().catch(() => false)) return 'ended'
-  // ★ 조기 데드엔딩도 종료다. 이 줄이 없어서 simulate 가 죽은 빌드를 "종료 실패"로 보고했고,
-  //   실제로는 데드엔딩이 뜬 것을 하네스 결함으로 오해할 뻔했다(밸런스 재설계 2단계).
-  if (await p.getByText(/채우지 못한 치세/).isVisible().catch(() => false)) return 'dead'
+  const el = p.locator('[data-screen]').first()
+  if (await el.isVisible().catch(() => false)) {
+    return (await el.getAttribute('data-screen')) ?? 'unknown'
+  }
   return 'unknown'
 }
 
 /** 이벤트 화면의 선택지 버튼들. 하단 고정 "다음 달로" 바와 구분된다. */
-export const choiceButtons = (p) => p.locator('div.mt-4.space-y-2 > button')
+export const choiceButtons = (p) => p.locator('[data-choice]')
 
 /**
  * 대사 씬이 있는 이벤트는 대사를 다 넘겨야 선택지/진행 버튼이 나온다.

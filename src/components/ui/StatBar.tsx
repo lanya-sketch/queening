@@ -16,18 +16,18 @@ export function StatBar({ label, value, bar, max = 100, warning, emphasis, suffi
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2 text-xs">
-        <span className={emphasis ? 'font-semibold text-slate-100' : 'text-slate-300'}>
+        <span className={emphasis ? 'font-semibold text-parchment' : 'text-parchment'}>
           {label}
         </span>
-        <span className={`tabular-nums ${emphasis ? 'text-slate-100' : 'text-slate-400'}`}>
-          {warning && <span className="mr-1.5 text-amber-400">{warning}</span>}
+        <span className={`tabular-nums ${emphasis ? 'text-parchment' : 'text-muted'}`}>
+          {warning && <span className="mr-1.5 text-gold-400">{warning}</span>}
           {/* 평소 UI 는 정수로 — 정확한 소수는 상세(내부값) 섹션에서 본다(월 단위 전환). */}
           {Math.round(value)}
-          {suffix && <span className="text-slate-600"> {suffix}</span>}
+          {suffix && <span className="text-faint"> {suffix}</span>}
         </span>
       </div>
       <div
-        className={`mt-1 w-full overflow-hidden rounded-full bg-slate-800 ${
+        className={`mt-1 w-full overflow-hidden rounded-full bg-ink-800 ${
           emphasis ? 'h-2' : 'h-1.5'
         }`}
       >

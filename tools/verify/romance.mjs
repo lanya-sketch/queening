@@ -19,7 +19,7 @@ await enterGame(page)
 await page.waitForTimeout(400)
 
 log('=== A. 키 없이도 코어 게임 완전 ===')
-log('A1 스케줄 화면:', ok(await page.getByText('활동 선택').isVisible()))
+log('A1 스케줄 화면:', ok(await page.locator('[data-screen="schedule"]').isVisible()))
 await page.getByRole('button', { name: /턴 종료/ }).click()
 await page.waitForTimeout(250)
 log('A2 턴 진행:', ok(await page.getByText('수행한 활동').isVisible()))
@@ -147,10 +147,10 @@ await page.waitForTimeout(300)
 await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
 await page.waitForTimeout(400)
 
-const isEvent = await page.getByText('사건', { exact: true }).isVisible().catch(() => false)
+const isEvent = await page.locator('[data-screen="event"]').isVisible().catch(() => false)
 log('E1 데뷔탕트 발동 (16세 9월):',
-  await page.locator('article h1').innerText().catch(() => '—'),
-  ok(isEvent && (await page.locator('article h1').innerText()) === '데뷔탕트'))
+  await page.locator('[data-event-title]').innerText().catch(() => '—'),
+  ok(isEvent && (await page.locator('[data-event-title]').innerText()) === '데뷔탕트'))
 log('E2 씬이 한 줄만 먼저 보임:',
   ok((await page.locator('article').innerText()).includes('대연회장의 문이 열린다')))
 log('E3 진행 표시 (1 / 4):', ok((await page.locator('article').innerText()).includes('1 / 4')))

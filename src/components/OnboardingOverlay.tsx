@@ -110,10 +110,10 @@ export function OnboardingOverlay() {
   const body = (
     <>
       <div className="flex items-start justify-between gap-3">
-        {line.speaker && <p className="text-xs font-medium text-amber-300">{line.speaker}</p>}
+        {line.speaker && <p className="text-xs font-medium text-gold-400">{line.speaker}</p>}
         <button
           onClick={dismiss}
-          className="ml-auto text-[11px] text-slate-500 active:text-slate-300"
+          className="ml-auto text-[11px] text-muted active:text-parchment"
         >
           건너뛰기
         </button>
@@ -122,18 +122,18 @@ export function OnboardingOverlay() {
         {resolveText(line.text, game)
           .split('\n')
           .map((part, i) => (
-            <p key={i} className="text-sm leading-relaxed text-slate-100">
+            <p key={i} className="text-sm leading-relaxed text-parchment">
               {part}
             </p>
           ))}
       </div>
       {line.tip && (
-        <p className="mt-2.5 rounded-lg border border-amber-800/50 bg-amber-950/40 px-3 py-2 text-[11px] leading-relaxed text-amber-200/90">
+        <p className="mt-2.5 rounded-lg border border-line-gold/50 bg-ink-700/40 px-3 py-2 text-[11px] leading-relaxed text-gold-300/90">
           {line.tip.text}
         </p>
       )}
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-[11px] tabular-nums text-slate-600">
+        <span className="text-[11px] tabular-nums text-faint">
           {index + 1} / {ONBOARDING.length}
         </span>
         <Button variant="primary" className="px-6" onClick={advance}>
@@ -147,8 +147,8 @@ export function OnboardingOverlay() {
   if (!target) {
     return (
       <div className="fixed inset-0 z-40 flex flex-col justify-end">
-        <div className="flex-1 bg-slate-950/30" onClick={advance} />
-        <div className="border-t border-amber-900/50 bg-slate-950/95 p-4 backdrop-blur">
+        <div className="flex-1 bg-ink-950/30" onClick={advance} />
+        <div className="border-t border-line-gold/50 bg-ink-950/95 p-4 backdrop-blur">
           <div className="mx-auto max-w-2xl">{body}</div>
         </div>
       </div>
@@ -165,15 +165,15 @@ export function OnboardingOverlay() {
   }
   return (
     <div className="fixed inset-0 z-40">
-      <div className="absolute inset-0 bg-slate-950/25" onClick={advance} />
+      <div className="absolute inset-0 bg-ink-950/25" onClick={advance} />
       <div
         ref={bubbleRef}
-        className="absolute w-[min(19rem,calc(100vw-1.5rem))] rounded-xl border border-amber-800/60 bg-slate-950/97 p-3.5 shadow-2xl backdrop-blur"
+        className="absolute w-[min(19rem,calc(100vw-1.5rem))] rounded-xl border border-line-gold/60 bg-ink-950/97 p-3.5 shadow-2xl backdrop-blur"
         style={pos ? { top: pos.top, left: pos.left } : { top: -9999, left: -9999 }}
       >
         {pos && (
           <span
-            className={`absolute h-2.5 w-2.5 rotate-45 border-amber-800/60 bg-slate-950 ${arrowStyle[pos.place]}`}
+            className={`absolute h-2.5 w-2.5 rotate-45 border-line-gold/60 bg-ink-950 ${arrowStyle[pos.place]}`}
             style={
               pos.place === 'right' || pos.place === 'left'
                 ? ({ top: pos.arrow, marginTop: -5 } as React.CSSProperties)

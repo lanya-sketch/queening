@@ -29,7 +29,7 @@ function Notice() {
   if (!notice) return null
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-24 z-30 flex justify-center px-4 lg:bottom-8">
-      <p className="rounded-full bg-slate-800 px-4 py-2 text-sm text-slate-100 shadow-lg">
+      <p className="rounded-full bg-ink-800 px-4 py-2 text-sm text-parchment shadow-lg">
         {notice}
       </p>
     </div>

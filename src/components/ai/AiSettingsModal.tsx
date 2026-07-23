@@ -23,7 +23,7 @@ function NumberField({
   onChange: (v: number) => void
 }) {
   return (
-    <label className="mt-2 flex items-center gap-3 text-[11px] text-slate-400">
+    <label className="mt-2 flex items-center gap-3 text-[11px] text-muted">
       <span className="flex-1">{label}</span>
       <input
         type="number"
@@ -35,7 +35,7 @@ function NumberField({
           const next = Number(e.target.value)
           if (Number.isFinite(next)) onChange(Math.min(max, Math.max(min, next)))
         }}
-        className="min-h-[44px] w-24 rounded-lg border border-slate-700 bg-slate-900 px-2 text-right font-mono text-sm text-slate-100"
+        className="min-h-[44px] w-24 rounded-lg border border-line bg-ink-900 px-2 text-right font-mono text-sm text-parchment"
       />
     </label>
   )
@@ -93,38 +93,38 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
       aria-label="AI 설정"
     >
       <div
-        className="max-h-[94dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950 p-5"
+        className="max-h-[94dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-ink-950 p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-lg font-semibold text-slate-100">AI 설정</h1>
-            <p className="mt-1 text-xs text-slate-400">
+            <h1 className="text-lg font-semibold text-parchment">AI 설정</h1>
+            <p className="mt-1 text-xs text-muted">
               키를 넣지 않아도 게임 본편은 전부 플레이할 수 있습니다.
             </p>
           </div>
           <button
             onClick={onClose}
             aria-label="닫기"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-900 text-slate-300 active:bg-slate-800"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink-900 text-parchment active:bg-ink-800"
           >
             ✕
           </button>
         </div>
 
         {/* 공용 PC 경고 */}
-        <p className="mt-4 rounded-lg border border-amber-900/60 bg-amber-950/30 p-3 text-[11px] leading-relaxed text-amber-200">
+        <p className="mt-4 rounded-lg border border-line-gold/60 bg-ink-700/30 p-3 text-[11px] leading-relaxed text-gold-300">
           입력한 키는 <strong>이 브라우저에 그대로 저장</strong>되고, 요청도 이
           브라우저에서 직접 API로 나갑니다. 공용 PC나 남의 기기에서는 키를 넣지 마세요.
           자리를 뜨기 전에 아래 <strong>키 삭제</strong>를 누르면 지워집니다.
         </p>
 
-        <label className="mt-4 block text-xs text-slate-400">
+        <label className="mt-4 block text-xs text-muted">
           제공자
           <select
             value={providerId}
             onChange={(e) => setProviderId(e.target.value as AiProviderId)}
-            className="mt-1 block min-h-[44px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-slate-100"
+            className="mt-1 block min-h-[44px] w-full rounded-lg border border-line bg-ink-900 px-3 text-sm text-parchment"
           >
             {Object.entries(AI_PROVIDERS).map(([id, p]) => (
               <option key={id} value={id}>
@@ -134,7 +134,7 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
           </select>
         </label>
 
-        <label className="mt-3 block text-xs text-slate-400">
+        <label className="mt-3 block text-xs text-muted">
           API 키
           <input
             type={revealed ? 'text' : 'password'}
@@ -143,30 +143,30 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
             spellCheck={false}
             autoComplete="off"
             placeholder="sk-ant-..."
-            className="mt-1 block min-h-[44px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 font-mono text-sm text-slate-100"
+            className="mt-1 block min-h-[44px] w-full rounded-lg border border-line bg-ink-900 px-3 font-mono text-sm text-parchment"
           />
         </label>
 
         <div className="mt-2 flex items-center justify-between gap-2">
-          <span className="font-mono text-[11px] text-slate-500">
+          <span className="font-mono text-[11px] text-muted">
             {apiKey.trim() ? maskKey(apiKey) : '저장된 키 없음'}
           </span>
           <button
             onClick={() => setRevealed((v) => !v)}
-            className="min-h-[44px] px-2 text-xs text-slate-400 active:text-slate-200"
+            className="min-h-[44px] px-2 text-xs text-muted active:text-parchment"
           >
             {revealed ? '가리기' : '보기'}
           </button>
         </div>
 
         {keyLooksOff && (
-          <p className="mt-1 text-[11px] text-amber-400">
+          <p className="mt-1 text-[11px] text-gold-400">
             이 제공자의 키 형식과 다릅니다. 오타가 없는지 확인하세요.
           </p>
         )}
 
         {/* 모델 — 목록은 추천일 뿐이고 직접 입력해도 된다 */}
-        <label className="mt-3 block text-xs text-slate-400">
+        <label className="mt-3 block text-xs text-muted">
           모델
           <input
             list="ai-model-options"
@@ -175,7 +175,7 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
             spellCheck={false}
             autoComplete="off"
             placeholder={provider?.defaultModel}
-            className="mt-1 block min-h-[44px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 font-mono text-sm text-slate-100"
+            className="mt-1 block min-h-[44px] w-full rounded-lg border border-line bg-ink-900 px-3 font-mono text-sm text-parchment"
           />
         </label>
         <datalist id="ai-model-options">
@@ -185,13 +185,13 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
             </option>
           ))}
         </datalist>
-        <p className="mt-1 text-[11px] text-slate-500">
+        <p className="mt-1 text-[11px] text-muted">
           목록에 없는 모델도 직접 적을 수 있습니다. 비용은 유저 키로 청구되니 저렴한 모델을
           골라도 됩니다.
         </p>
 
         {provider?.editableBaseUrl && (
-          <label className="mt-3 block text-xs text-slate-400">
+          <label className="mt-3 block text-xs text-muted">
             엔드포인트
             <input
               value={baseUrl}
@@ -199,22 +199,22 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
               spellCheck={false}
               autoComplete="off"
               placeholder={provider.defaultBaseUrl}
-              className="mt-1 block min-h-[44px] w-full rounded-lg border border-slate-700 bg-slate-900 px-3 font-mono text-sm text-slate-100"
+              className="mt-1 block min-h-[44px] w-full rounded-lg border border-line bg-ink-900 px-3 font-mono text-sm text-parchment"
             />
           </label>
         )}
 
         {provider?.note && (
-          <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{provider.note}</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">{provider.note}</p>
         )}
 
         {/* 고급 — 기본값으로 잘 돌아가므로 접어둔다 */}
-        <details className="mt-4 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
-          <summary className="min-h-[44px] cursor-pointer list-none py-2 text-xs font-medium text-slate-300">
+        <details className="mt-4 rounded-lg border border-line bg-ink-900/40 p-3">
+          <summary className="min-h-[44px] cursor-pointer list-none py-2 text-xs font-medium text-parchment">
             고급 설정 ▾
           </summary>
 
-          <p className="mt-1 text-[11px] text-slate-500">
+          <p className="mt-1 text-[11px] text-muted">
             비용에 직접 영향을 주는 값입니다.
           </p>
           <NumberField
@@ -234,11 +234,11 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
             onChange={(v) => setGeneration({ contextTurns: v })}
           />
 
-          <p className="mt-3 text-[11px] text-slate-500">
+          <p className="mt-3 text-[11px] text-muted">
             응답의 다양성·성격을 바꿉니다. 비용과는 무관합니다.
           </p>
           {!samplingOk && (
-            <p className="mt-1 rounded border border-amber-900/60 bg-amber-950/30 p-2 text-[11px] text-amber-300">
+            <p className="mt-1 rounded border border-line-gold/60 bg-ink-700/30 p-2 text-[11px] text-gold-400">
               지금 고른 모델은 이 값들을 받지 않습니다. 보내면 오류가 나므로 요청에서 자동으로
               제외됩니다.
             </p>
@@ -275,7 +275,7 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
           돌발 현안의 제한 시간. 기본은 켜짐이지만 끄기가 쉬워야 한다 —
           시간 압박은 사람에 따라 재미가 아니라 장벽이 된다.
         */}
-        <label className="mt-4 flex items-start gap-3 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
+        <label className="mt-4 flex items-start gap-3 rounded-lg border border-line bg-ink-900/40 p-3">
           <input
             type="checkbox"
             checked={timerEnabled}
@@ -283,8 +283,8 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
             className="mt-0.5 h-5 w-5 shrink-0"
           />
           <span>
-            <span className="block text-sm text-slate-200">돌발 현안 제한 시간</span>
-            <span className="mt-0.5 block text-[11px] leading-relaxed text-slate-500">
+            <span className="block text-sm text-parchment">돌발 현안 제한 시간</span>
+            <span className="mt-0.5 block text-[11px] leading-relaxed text-muted">
               아주 급한 일에만 10초가 주어집니다. 끄면 언제나 무제한으로 고를 수 있습니다.
               시간을 넘겨도 손해는 없고, 가장 신중한 쪽으로 흘러갈 뿐입니다.
             </span>
@@ -306,14 +306,14 @@ export function AiSettingsModal({ onClose }: { onClose: () => void }) {
         {lastMessage && (
           <p
             className={`mt-3 text-xs ${
-              lastTestOk === false ? 'text-red-400' : 'text-emerald-400'
+              lastTestOk === false ? 'text-red-400' : 'text-gain'
             }`}
           >
             {lastMessage}
           </p>
         )}
 
-        <p className="mt-4 border-t border-slate-800 pt-3 text-[11px] leading-relaxed text-slate-500">
+        <p className="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
           수치(스탯·게이지·flag)와 큰 분기는 전부 게임 코드가 정합니다. AI는 그 상태에
           놓인 인물의 말과 반응만 만들고, 상태 변화를 제안하더라도 코드가 상한선까지
           잘라낸 뒤에야 반영됩니다.

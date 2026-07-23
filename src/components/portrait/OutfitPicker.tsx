@@ -11,7 +11,7 @@ export function OutfitPicker() {
 
   return (
     <div>
-      <h2 className="text-sm font-medium text-slate-300">착장</h2>
+      <h2 className="text-sm font-medium text-parchment">착장</h2>
 
       <ul className="mt-3 space-y-2">
         {manifest.outfits.map((outfit) => {
@@ -32,10 +32,10 @@ export function OutfitPicker() {
                 aria-pressed={selected}
                 className={`flex w-full min-h-[44px] items-center gap-3 rounded-xl border p-2 text-left transition-colors ${
                   selected
-                    ? 'border-amber-400 bg-amber-950/30'
+                    ? 'border-gold-400 bg-ink-700/30'
                     : unlocked
-                      ? 'border-slate-700 bg-slate-900/60 active:border-amber-500 active:bg-slate-800'
-                      : 'border-slate-800 bg-slate-900/30'
+                      ? 'border-line bg-ink-900/60 active:border-line-gold active:bg-ink-800'
+                      : 'border-line bg-ink-900/30'
                 }`}
               >
                 <img
@@ -49,20 +49,20 @@ export function OutfitPicker() {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5">
                     <span
-                      className={`text-sm font-medium ${unlocked ? 'text-slate-100' : 'text-slate-500'}`}
+                      className={`text-sm font-medium ${unlocked ? 'text-parchment' : 'text-muted'}`}
                     >
                       {outfit.name}
                     </span>
-                    {!unlocked && <span aria-hidden className="text-xs text-slate-500">🔒</span>}
+                    {!unlocked && <span aria-hidden className="text-xs text-muted">🔒</span>}
                     {selected && (
-                      <span className="rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-semibold text-slate-950">
+                      <span className="rounded bg-gold-400 px-1.5 py-0.5 text-[10px] font-semibold text-ink-950">
                         착용 중
                       </span>
                     )}
                   </span>
                   <span
                     className={`mt-0.5 block text-xs leading-relaxed ${
-                      unlocked ? 'text-slate-400' : 'text-slate-600'
+                      unlocked ? 'text-muted' : 'text-faint'
                     }`}
                   >
                     {unlocked
@@ -78,11 +78,11 @@ export function OutfitPicker() {
         })}
       </ul>
 
-      <p className="mt-4 rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-[11px] leading-relaxed text-slate-400">
-        착장 이미지는 <code className="text-slate-300">public/assets/outfits/</code> 폴더와{' '}
-        <code className="text-slate-300">manifest.json</code> 으로 교체할 수 있습니다.
+      <p className="mt-4 rounded-lg border border-line bg-ink-900/60 p-3 text-[11px] leading-relaxed text-muted">
+        착장 이미지는 <code className="text-parchment">public/assets/outfits/</code> 폴더와{' '}
+        <code className="text-parchment">manifest.json</code> 으로 교체할 수 있습니다.
         <br />
-        <span className="text-amber-300">{OUTFIT_SAFETY_NOTICE}</span>
+        <span className="text-gold-400">{OUTFIT_SAFETY_NOTICE}</span>
       </p>
 
       {manifestSource === 'fallback' && (

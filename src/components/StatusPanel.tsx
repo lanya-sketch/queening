@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { GAME_CONFIG, courtInfluenceCap, monthLabel } from '../data/config'
-import { RESOURCE_META, STAT_KEYS, STAT_META } from '../data/stats'
+import { STAT_KEYS, STAT_META } from '../data/stats'
+
+import { perilNotice, resourceGauge, statGauge } from '../systems/display'
 import { useAiEnabled } from '../store/aiStore'
 import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
@@ -9,8 +11,14 @@ import { resolveText } from '../systems/text'
 import { PortraitButton } from './portrait/PortraitButton'
 import { RomancePanel } from './romance/RomancePanel'
 import { Button } from './ui/Button'
-import { StatBar } from './ui/StatBar'
+import { Gauge, Lozenge, SectionHead } from './ui/Chrome'
 
+/**
+ * 사이드바 (UI 리디자인 1단계).
+ *
+ * ★ 수치는 화면에 없다. 게이지는 질적 라벨만 보이고, 정확한 값은
+ *   맨 아래 "상세 (내부값)" 접이식과 data-value 속성에만 있다.
+ */
 export function StatusPanel() {
   const [open, setOpen] = useState(false)
   const aiEnabled = useAiEnabled()
@@ -25,34 +33,55 @@ export function StatusPanel() {
   const reset = useGame((s) => s.reset)
 
   const locked = talkLocked(game.phase)
-  const lowWellbeing = game.wellbeing <= GAME_CONFIG.wellbeingWarning
-  const highSuspicion = game.regentSuspicion >= GAME_CONFIG.regentSuspicionWarning
+  // ★ 경고는 게이지 구간에서 나온다 — 칩과 게이지가 같은 어휘·같은 문턱을 쓰도록.
+  const notices = [
+    ['wellbeing', perilNotice('wellbeing', game.wellbeing)],
+    ['suspicion', perilNotice('regentSuspicion', game.regentSuspicion)],
+  ].filter((n): n is [string, string] => Boolean(n[1]))
+  const ap = game.actionPoints
+  const apMax = GAME_CONFIG.actionPointsPerTurn
 
   return (
-    <aside className="sticky top-0 z-20 lg:static lg:w-80 lg:shrink-0">
-      <div className="border-b border-slate-800 bg-slate-900/95 backdrop-blur lg:rounded-2xl lg:border">
-        {/* 항상 보이는 요약 줄. 폰=가로 한 줄, PC=초상이 위로 올라간 세로 배치 */}
-        <div className="flex items-center gap-3 px-4 py-3 lg:flex-col lg:gap-3 lg:pt-4">
-          <PortraitButton className="h-14 w-11 lg:h-40 lg:w-32" />
+    <aside className="sticky top-0 z-20 lg:static lg:w-[21rem] lg:shrink-0">
+      <div
+        className="border-b bg-ink-800/95 backdrop-blur lg:rounded-panel lg:border"
+        style={{ borderColor: 'rgba(212,176,106,.15)', boxShadow: '0 10px 30px rgba(0,0,0,.35)' }}
+      >
+        {/* 요약 줄. 폰=가로 한 줄, PC=초상이 위로 올라간 세로 배치 */}
+        <div className="flex items-center gap-3 px-4 py-3 lg:flex-col lg:gap-4 lg:pt-5">
+          <div
+            className="shrink-0 rounded-panel p-1.5 lg:p-2"
+            style={{
+              background: 'linear-gradient(180deg,#2a2218,#1b160f)',
+              border: '1px solid #5e4d2b',
+              boxShadow: 'inset 0 2px 12px rgba(0,0,0,.55)',
+            }}
+          >
+            <PortraitButton className="h-12 w-10 lg:h-48 lg:w-40" />
+          </div>
 
-          <div className="flex min-w-0 flex-1 items-center gap-3 lg:w-full lg:flex-none">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-amber-200">
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:w-full lg:flex-none lg:flex-col lg:gap-2">
+            <div className="min-w-0 lg:text-center">
+              <p
+                data-panel-date
+                className="truncate font-title text-[15px] font-bold text-parchment lg:text-lg"
+              >
                 즉위 {game.date.year}년 {monthLabel(game.date.month)}
               </p>
               {/* 20세를 넘겨 잠긴 상태에서는 본문과 어긋나지 않게 끝점 나이로 고정 */}
-            <p className="text-xs text-slate-400">
-              {resolveText('{왕}', game)}{' '}
-              {game.phase === 'ended' ? GAME_CONFIG.endAge : game.age}세
-            </p>
+              <p data-panel-age className="text-xs text-muted">
+                {resolveText('{왕}', game)}{' '}
+                {game.phase === 'ended' ? GAME_CONFIG.endAge : game.age}세
+              </p>
             </div>
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2 lg:ml-0 lg:mt-1 lg:w-full lg:justify-center">
               <button
                 onClick={openSettings}
                 aria-label="설정"
                 data-settings-button
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-sm text-slate-300 active:bg-slate-700"
+                className="flex h-7 w-7 items-center justify-center rounded-full border text-sm text-muted"
+                style={{ borderColor: 'rgba(212,176,106,.2)' }}
               >
                 ⚙
               </button>
@@ -60,17 +89,11 @@ export function StatusPanel() {
                 onClick={openHelp}
                 aria-label="도움말"
                 data-help-button
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-sm font-semibold text-slate-300 active:bg-slate-700"
+                className="flex h-7 w-7 items-center justify-center rounded-full border text-sm font-semibold text-muted"
+                style={{ borderColor: 'rgba(212,176,106,.2)' }}
               >
                 ?
               </button>
-              <div data-onboard="ap" className="rounded-lg bg-slate-800 px-2.5 py-1 text-center">
-                <p className="text-[10px] leading-none text-slate-400">행동력</p>
-                <p className="text-sm font-semibold tabular-nums leading-tight text-slate-100">
-                  {game.actionPoints}
-                  <span className="text-slate-500">/{GAME_CONFIG.actionPointsPerTurn}</span>
-                </p>
-              </div>
               <Button
                 className="px-3 lg:hidden"
                 aria-expanded={open}
@@ -82,115 +105,132 @@ export function StatusPanel() {
           </div>
         </div>
 
-        {/* 경고는 접혀 있어도 보여야 한다 */}
-        {(lowWellbeing || highSuspicion) && (
-          <div className="flex flex-wrap gap-1.5 px-4 pb-3">
-            {lowWellbeing && (
-              <span className="rounded-full bg-amber-950 px-2.5 py-1 text-[11px] text-amber-300">
-                심신이 바닥났습니다
+        {/* 행동력 — 마름모 핍. 수치도 함께 두는 유일한 예외(자원이 아니라 '칸 수'라서) */}
+        <div className="px-4 pb-3 lg:px-5">
+          <div
+            data-onboard="ap"
+            data-gauge="actionPoints"
+            data-value={ap}
+            className="rounded-panel border px-4 py-3 text-center"
+            style={{ borderColor: 'rgba(212,176,106,.15)', background: 'rgba(255,255,255,.02)' }}
+          >
+            <p className="font-display text-[10px] uppercase text-muted" style={{ letterSpacing: '.24em' }}>
+              Action Points
+            </p>
+            <div className="mt-2 flex items-center justify-center gap-2">
+              {Array.from({ length: apMax }, (_, i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  className="h-3 w-3 rotate-45"
+                  style={
+                    i < ap
+                      ? { background: 'linear-gradient(135deg,#F7D791,#b8842e)' }
+                      : { border: '1px solid rgba(212,176,106,.35)', opacity: 0.55 }
+                  }
+                />
+              ))}
+            </div>
+            <p className="sr-only">
+              행동력 {ap} / {apMax}
+            </p>
+          </div>
+        </div>
+
+        {/* 경고는 접혀 있어도 보인다 */}
+        {notices.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 px-4 pb-3 lg:px-5">
+            {notices.map(([key, text]) => (
+              <span
+                key={key}
+                data-warning={key}
+                className="rounded-full px-2.5 py-1 text-[11px]"
+                style={{ background: 'rgba(192,90,90,.16)', color: 'var(--color-peril-soft)' }}
+              >
+                {text}
               </span>
-            )}
-            {highSuspicion && (
-              <span className="rounded-full bg-red-950 px-2.5 py-1 text-[11px] text-red-300">
-                섭정의 의심이 높습니다
-              </span>
-            )}
+            ))}
           </div>
         )}
 
         {/* 상세: 폰에선 접힘, PC(lg)에선 항상 펼침 */}
         <div
-          className={`${open ? 'block' : 'hidden'} max-h-[60vh] overflow-y-auto px-4 pb-4 lg:block lg:max-h-none`}
+          className={`${open ? 'block' : 'hidden'} max-h-[60vh] overflow-y-auto px-4 pb-5 lg:block lg:max-h-none lg:px-5`}
         >
-          <div className="space-y-2.5">
+          <SectionHead className="mb-3.5">Primary Attributes</SectionHead>
+          <div className="flex flex-col gap-3">
             {STAT_KEYS.map((key) => (
-              <StatBar
-                key={key}
-                label={STAT_META[key].label}
-                value={game.stats[key]}
-                bar={STAT_META[key].bar}
-              />
+              <Gauge key={key} view={statGauge(key, game)} />
             ))}
           </div>
 
-          <div className="my-4 h-px bg-slate-800" />
-
-          {/* 국정 — 계획에 쓰는 공개 지표 */}
-          <p className="mb-2 text-[11px] font-medium text-slate-500">국정</p>
-          <div data-onboard="gauges" className="space-y-2.5">
-            <StatBar
-              label={RESOURCE_META.courtInfluence.label}
-              value={game.courtInfluence}
-              bar={RESOURCE_META.courtInfluence.bar}
-              emphasis
-              suffix={`/ ${courtInfluenceCap(game.age)}`}
-            />
-            <StatBar
-              label={RESOURCE_META.wellbeing.label}
-              value={game.wellbeing}
-              bar={RESOURCE_META.wellbeing.bar}
-              warning={lowWellbeing ? '위험' : undefined}
-            />
-            <StatBar
-              label={RESOURCE_META.tutorTrust.label}
-              value={game.tutorTrust}
-              bar={RESOURCE_META.tutorTrust.bar}
-            />
+          <SectionHead className="mb-3.5 mt-6">Kingdom Status</SectionHead>
+          <div data-onboard="gauges" className="flex flex-col gap-3">
+            <Gauge view={resourceGauge('courtInfluence', game, courtInfluenceCap(game.age))} />
+            <Gauge view={resourceGauge('wellbeing', game)} />
+            <Gauge view={resourceGauge('tutorTrust', game)} />
           </div>
 
-          <div className="my-4 h-px bg-slate-800" />
-
-          {/* 섭정 — 값은 보이되 선택지에서 변화가 미리 표시되지 않는다 */}
-          <p className="mb-2 text-[11px] font-medium text-slate-500">섭정</p>
-          <div className="space-y-2.5">
-            <StatBar
-              label={RESOURCE_META.regentRapport.label}
-              value={game.regentRapport}
-              bar={RESOURCE_META.regentRapport.bar}
-            />
-            <StatBar
-              label={RESOURCE_META.regentSuspicion.label}
-              value={game.regentSuspicion}
-              bar={RESOURCE_META.regentSuspicion.bar}
-              warning={highSuspicion ? '주의' : undefined}
-            />
+          <SectionHead tone="peril" className="mb-3.5 mt-6">
+            Regency
+          </SectionHead>
+          <div className="flex flex-col gap-3">
+            <Gauge view={resourceGauge('regentRapport', game)} />
+            <Gauge view={resourceGauge('regentSuspicion', game)} />
           </div>
           {/*
             ★ 표시 정책을 정확히 적는다 (실플레이 피드백 #5).
-              예전 문구는 "선택지에서 … 미리 표시되지 않습니다" 뿐이라, 활동 카드에
-              섭정 의심·신망이 버젓이 뜨는 것과 모순처럼 읽혔다. 실제 설계는
-              "내 일과는 계산 가능하되, 남의 속마음은 아니다" —
-              활동 카드는 예상치를 주고(HIDDEN_GAUGES 미적용), 사건 선택지는 가린다(적용).
+              활동 카드는 예상 변화를 주고(HIDDEN_GAUGES 미적용), 사건 선택지는 가린다(적용).
           */}
-          <p className="mt-2 text-[10px] leading-relaxed text-slate-600">
-            활동 카드에는 예상 변화가 보이지만, 사건 선택지에서는 이 두 지표의 변화가
-            미리 표시되지 않습니다.
+          <p className="mt-2.5 text-[10.5px] italic leading-relaxed text-faint">
+            활동 카드에는 예상 변화가 보이지만, 사건 선택지에서는 이 두 지표의 변화가 미리
+            표시되지 않습니다.
           </p>
 
-          {/*
-            상세(내부값) — 스탯의 정확한 소수 + 내구도.
-            평소 UI 는 정수만 보여주지만, 여기서 매달 조금씩 차오르는 것을 확인할 수 있다.
-            내구도는 숨은 상태라 막대 없이 여기서만 보인다(월 단위 전환).
-          */}
-          <details className="mt-4 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
-            <summary className="cursor-pointer text-[11px] font-medium text-slate-400">
+          {/* 상세(내부값) — 화면에서 유일하게 정확한 수치가 나오는 자리 */}
+          <details
+            data-detail-values
+            className="mt-5 rounded-panel border p-3"
+            style={{ borderColor: 'rgba(212,176,106,.14)', background: 'rgba(0,0,0,.22)' }}
+          >
+            <summary className="cursor-pointer select-none text-[11px] text-muted">
               상세 (내부값)
             </summary>
-            <div className="mt-2 space-y-1">
+            <div className="mt-2.5 space-y-1">
               {STAT_KEYS.map((key) => (
                 <div key={key} className="flex justify-between text-[11px]">
-                  <span className="text-slate-500">{STAT_META[key].label}</span>
-                  <span className="tabular-nums text-slate-300">{game.stats[key].toFixed(2)}</span>
+                  <span className="text-muted">{STAT_META[key].label}</span>
+                  <span className="font-display tabular-nums text-parchment/80">
+                    {game.stats[key].toFixed(2)}
+                  </span>
                 </div>
               ))}
-              <div className="mt-1.5 flex justify-between border-t border-slate-800 pt-1.5 text-[11px]">
-                <span className="text-slate-500">내구도</span>
-                <span className="tabular-nums text-slate-300">{game.durability.toFixed(1)}</span>
-              </div>
+              {(
+                [
+                  ['국정 영향도', game.courtInfluence],
+                  ['심신', game.wellbeing],
+                  ['신뢰', game.tutorTrust],
+                  ['섭정 신망', game.regentRapport],
+                  ['섭정 의심', game.regentSuspicion],
+                  ['내구도', game.durability],
+                ] as const
+              ).map(([label, v]) => (
+                <div
+                  key={label}
+                  className="flex justify-between border-t pt-1 text-[11px]"
+                  style={{ borderColor: 'rgba(212,176,106,.1)' }}
+                >
+                  <span className="text-muted">{label}</span>
+                  <span className="font-display tabular-nums text-parchment/80">
+                    {v.toFixed(label === '내구도' ? 1 : 2)}
+                  </span>
+                </div>
+              ))}
             </div>
           </details>
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <SectionHead className="mb-3 mt-6">Quick Actions</SectionHead>
+          <div className="grid grid-cols-2 gap-2">
             <Button onClick={save}>저장</Button>
             <Button onClick={load}>불러오기</Button>
             <Button variant="danger" className="col-span-2" onClick={reset}>
@@ -200,7 +240,6 @@ export function StatusPanel() {
               인연
             </Button>
           </div>
-          {/* ★ D-3: AI 설정 버튼은 설정 오버레이로, 성별 선택은 인트로로 옮겼다(게임 화면 정리). */}
 
           {/* 군주와의 대화 — 키가 있고 이벤트 씬이 아닐 때만 */}
           {aiEnabled && (
@@ -214,14 +253,15 @@ export function StatusPanel() {
                 {resolveText('{왕}', game)}과 대화하기
               </Button>
               {locked && (
-                <p className="mt-1 text-[11px] text-slate-500">
-                  지금은 다른 일이 벌어지는 중입니다.
-                </p>
+                <p className="mt-1 text-[11px] text-faint">지금은 다른 일이 벌어지는 중입니다.</p>
               )}
             </>
           )}
-          <p className="mt-2 text-[11px] text-slate-500">
-            {savedAt ? `마지막 저장: ${new Date(savedAt).toLocaleString('ko-KR')}` : '저장된 기록 없음'}
+          <p className="mt-3 flex items-center gap-1.5 text-[11px] text-faint">
+            <Lozenge size={4} dim />
+            {savedAt
+              ? `마지막 저장: ${new Date(savedAt).toLocaleString('ko-KR')}`
+              : '저장된 기록 없음'}
           </p>
         </div>
       </div>

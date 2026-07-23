@@ -43,11 +43,11 @@ export function PortraitModal() {
       aria-label="군주 초상"
     >
       <div
-        className="flex max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 lg:flex-row"
+        className="flex max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-ink-950 lg:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 전신 이미지 */}
-        <div className="relative flex shrink-0 items-center justify-center bg-slate-900 p-3 lg:w-[46%]">
+        <div className="relative flex shrink-0 items-center justify-center bg-ink-900 p-3 lg:w-[46%]">
           <img
             src={fullSrc}
             alt={`${outfit.name}을 입은 군주`}
@@ -57,14 +57,14 @@ export function PortraitModal() {
           <button
             onClick={close}
             aria-label="닫기"
-            className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-slate-950/80 text-lg text-slate-200 active:bg-slate-800"
+            className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-ink-950/80 text-lg text-parchment active:bg-ink-800"
           >
             ✕
           </button>
         </div>
 
         {/* 착장 선택 */}
-        <div className="min-h-0 flex-1 overflow-y-auto border-t border-slate-800 p-4 lg:border-l lg:border-t-0">
+        <div className="min-h-0 flex-1 overflow-y-auto border-t border-line p-4 lg:border-l lg:border-t-0">
           <OutfitPicker />
         </div>
       </div>

@@ -31,12 +31,20 @@ const res = (key: 'wellbeing' | 'tutorTrust' | 'regentSuspicion' | 'regentRappor
  *
  * sideEffect 는 "한쪽을 키우면 한쪽이 녹슨다"는 대비 쌍(#19)에만 붙인다.
  */
+/**
+ * ★ 등급 문턱은 여기가 단일 출처다.
+ *   게이지 라벨(systems/display.ts)이 이 값을 가져다 쓴다 — 게이지가 "제법"으로 바뀌는
+ *   순간이 카드가 "중급"으로 바뀌는 순간이어야 두 표시가 서로를 설명한다.
+ *   양쪽에 숫자를 따로 적으면 언젠가 반드시 어긋난다.
+ */
+export const LESSON_TIER_MIN = { middle: 45, high: 72 } as const
+
 function lessonTiers(key: StatKey, sideEffect?: Effect): ActivityTier[] {
   const side = sideEffect ? [sideEffect] : []
   return [
     { min: 0, label: '초급', effects: [stat(key, 5, 2), res('wellbeing', -9), res('regentSuspicion', 1), ...side] },
-    { min: 45, label: '중급', effects: [stat(key, 10, 3), res('wellbeing', -12), res('regentSuspicion', 2), ...side] },
-    { min: 72, label: '고급', effects: [stat(key, 17, 4), res('wellbeing', -17), res('regentSuspicion', 4), ...side] },
+    { min: LESSON_TIER_MIN.middle, label: '중급', effects: [stat(key, 10, 3), res('wellbeing', -12), res('regentSuspicion', 2), ...side] },
+    { min: LESSON_TIER_MIN.high, label: '고급', effects: [stat(key, 17, 4), res('wellbeing', -17), res('regentSuspicion', 4), ...side] },
   ]
 }
 

@@ -93,7 +93,10 @@
       "Bash(cd c:/queening && tail -14 /tmp/simF2.txt | head -10; echo \"=== 실권/무리 곡선 ===\"; sed -n '/=== 실권 빌드 곡선/,/^$/p;/=== 무리 빌드 곡선/,/^$/p' /tmp/gates3.txt)",
       "Bash(node tools/verify/simulate.mjs F)",
       "Bash(grep -n \"const { gates, tiered }\\\\|return { gates: out, tiered }\" tools/verify/analyze-gates.mjs)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(grep -rn \"readGauge\\\\|readPanel\\\\|match\\(/\\(\\\\\\\\\\\\\\\\d+\\)/\\)\" tools/verify/*.mjs)",
+      "Bash(node tools/verify/redesign-shots.mjs)",
+      "Bash(echo \"ABL_EXIT=$?\")"
     ],
     "additionalDirectories": [
       "C:\\queening\\tools\\verify",

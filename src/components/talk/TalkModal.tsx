@@ -100,11 +100,11 @@ export function TalkModal() {
       aria-label="대화"
     >
       <div
-        className="flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950"
+        className="flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-line bg-ink-950"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 머리 */}
-        <div className="flex items-center gap-3 border-b border-slate-800 px-4 py-3">
+        <div className="flex items-center gap-3 border-b border-line px-4 py-3">
           {portraitSrc && (
             <img
               src={portraitSrc}
@@ -114,10 +114,10 @@ export function TalkModal() {
             />
           )}
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-amber-200">
+            <p className="truncate text-sm font-semibold text-gold-300">
               {isMonarch ? `${info.name}과의 대화` : info.name}
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted">
               즉위 {game.date.year}년 {monthLabel(game.date.month)} · {resolveText('{왕}', game)}{' '}
               {game.age}세
             </p>
@@ -125,7 +125,7 @@ export function TalkModal() {
           <button
             onClick={close}
             aria-label="닫기"
-            className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-900 text-slate-300 active:bg-slate-800"
+            className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink-900 text-parchment active:bg-ink-800"
           >
             ✕
           </button>
@@ -133,8 +133,8 @@ export function TalkModal() {
 
         {/* 첫 진입 도움말 — 1회만 */}
         {!helpSeen && (
-          <div className="border-b border-slate-800 bg-slate-900/60 px-4 py-3">
-            <p className="text-[11px] leading-relaxed text-slate-300">
+          <div className="border-b border-line bg-ink-900/60 px-4 py-3">
+            <p className="text-[11px] leading-relaxed text-parchment">
               무엇이든 물어보거나 말을 걸어 보세요. 상대는 지금까지의 관계와 겪은 일에 따라
               다르게 답합니다. 말이 상대에게 가 닿으면 호감도나 심신이 조금씩 움직이고, 그
               변화는 대사 아래에 표시됩니다.
@@ -153,14 +153,14 @@ export function TalkModal() {
         >
           {/* 캐릭터별 맥락 프레이밍 */}
           {info.framing && (
-            <p className="border-l-2 border-slate-700 pl-3 text-xs italic leading-relaxed text-slate-500">
+            <p className="border-l-2 border-line pl-3 text-xs italic leading-relaxed text-muted">
               {info.framing}
             </p>
           )}
 
           {/* 고정 화제 씬 — 재생 중에는 이것만 보여준다 */}
           {activeTopicId && (
-            <div className="rounded-xl border border-amber-900/50 bg-slate-900/60 p-3">
+            <div className="rounded-xl border border-line-gold/50 bg-ink-900/60 p-3">
               <ScenePlayer
                 sceneId={TOPIC_BY_ID[activeTopicId].sceneId}
                 onFinished={endTopic}
@@ -169,7 +169,7 @@ export function TalkModal() {
           )}
 
           {!activeTopicId && turns.length === 0 && streaming === null && !error && (
-            <p className="py-6 text-center text-sm text-slate-500">
+            <p className="py-6 text-center text-sm text-muted">
               {isMonarch
                 ? `무엇이든 물어보세요. ${info.name}은 지금까지 자란 대로 답합니다.`
                 : '먼저 말을 걸어 보세요.'}
@@ -181,8 +181,8 @@ export function TalkModal() {
               <div
                 className={`inline-block max-w-[85%] rounded-xl px-3 py-2 text-left text-sm leading-relaxed ${
                   turn.role === 'user'
-                    ? 'bg-slate-800 text-slate-100'
-                    : 'border border-amber-900/50 bg-slate-900/60 text-slate-200'
+                    ? 'bg-ink-800 text-parchment'
+                    : 'border border-line-gold/50 bg-ink-900/60 text-parchment'
                 }`}
               >
                 {turn.content.split('\n').map((line, j) => (
@@ -199,8 +199,8 @@ export function TalkModal() {
                           key={String(d.target)}
                           className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
                             d.amount > 0
-                              ? 'bg-slate-800 text-emerald-300'
-                              : 'bg-slate-800 text-rose-300'
+                              ? 'bg-ink-800 text-gain'
+                              : 'bg-ink-800 text-peril-soft'
                           }`}
                         >
                           {label} {d.amount > 0 ? '+' : ''}
@@ -216,12 +216,12 @@ export function TalkModal() {
 
           {streaming !== null && (
             <div>
-              <div className="inline-block max-w-[85%] rounded-xl border border-amber-900/50 bg-slate-900/60 px-3 py-2 text-sm leading-relaxed text-slate-200">
-                {streaming || <span className="text-slate-500">…</span>}
-                {busy && <span className="ml-0.5 animate-pulse text-amber-400">▌</span>}
+              <div className="inline-block max-w-[85%] rounded-xl border border-line-gold/50 bg-ink-900/60 px-3 py-2 text-sm leading-relaxed text-parchment">
+                {streaming || <span className="text-muted">…</span>}
+                {busy && <span className="ml-0.5 animate-pulse text-gold-400">▌</span>}
               </div>
               {busy && (
-                <p className="mt-1 text-[11px] text-slate-600">탭하면 바로 다 보입니다</p>
+                <p className="mt-1 text-[11px] text-faint">탭하면 바로 다 보입니다</p>
               )}
             </div>
           )}
@@ -235,13 +235,13 @@ export function TalkModal() {
                 </Button>
                 <button
                   onClick={() => setDetailOpen((v) => !v)}
-                  className="min-h-[44px] px-2 text-[11px] text-slate-500 active:text-slate-300"
+                  className="min-h-[44px] px-2 text-[11px] text-muted active:text-parchment"
                 >
                   자세히
                 </button>
               </div>
               {detailOpen && (
-                <p className="mt-2 break-all font-mono text-[10px] text-slate-500">
+                <p className="mt-2 break-all font-mono text-[10px] text-muted">
                   {error.detail}
                 </p>
               )}
@@ -250,7 +250,7 @@ export function TalkModal() {
         </div>
 
         {/* 입력 */}
-        <div className="border-t border-slate-800 p-3">
+        <div className="border-t border-line p-3">
           {/*
             해금된 고정 화제. 미해금이면 이 영역 자체가 없다.
             AI 호출이 아니라 미리 쓴 씬이라 키가 없어도 눌린다.
@@ -262,7 +262,7 @@ export function TalkModal() {
                   key={topic.id}
                   onClick={() => pickTopic(topic.id)}
                   disabled={busy}
-                  className="min-h-[44px] rounded-lg border border-amber-800/70 bg-amber-950/20 px-3 text-xs text-amber-200 active:bg-amber-900/30 disabled:opacity-50"
+                  className="min-h-[44px] rounded-lg border border-line-gold/70 bg-ink-700/20 px-3 text-xs text-gold-300 active:bg-ink-700/30 disabled:opacity-50"
                 >
                   {resolveText(topic.label, game)}
                 </button>
@@ -270,7 +270,7 @@ export function TalkModal() {
             </div>
           )}
           {callCount >= CALL_SOFT_LIMIT && (
-            <p className="mb-2 text-[11px] text-amber-400">
+            <p className="mb-2 text-[11px] text-gold-400">
               이번 세션에서 {callCount}번 호출했습니다. 비용이 쌓이고 있으니 확인해 주세요.
             </p>
           )}
@@ -286,7 +286,7 @@ export function TalkModal() {
               }}
               disabled={busy}
               placeholder={busy ? '생각하고 있습니다…' : '무엇을 말할까요'}
-              className="min-h-[44px] flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-slate-100 disabled:opacity-60"
+              className="min-h-[44px] flex-1 rounded-lg border border-line bg-ink-900 px-3 text-sm text-parchment disabled:opacity-60"
             />
             <Button
               variant="primary"

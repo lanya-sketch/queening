@@ -20,18 +20,18 @@ export function GalleryScreen({ onClose }: { onClose: () => void }) {
   const count = achieved.size
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-950/97 backdrop-blur">
-      <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+    <div data-screen="gallery" className="fixed inset-0 z-50 flex flex-col bg-ink-950/97 backdrop-blur">
+      <header className="flex items-center justify-between border-b border-line px-4 py-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-base font-semibold tracking-wide text-amber-100">엔딩 기록</h1>
-          <span className="text-xs tabular-nums text-slate-400">
+          <h1 className="font-title text-base font-semibold tracking-wide text-gold-300">엔딩 기록</h1>
+          <span className="text-xs tabular-nums text-muted">
             {count} / {GALLERY_TOTAL} 달성
           </span>
         </div>
         <button
           onClick={onClose}
           aria-label="엔딩 기록 닫기"
-          className="rounded-lg px-3 py-1 text-sm text-slate-400 active:text-slate-100"
+          className="rounded-lg px-3 py-1 text-sm text-muted active:text-parchment"
         >
           닫기
         </button>
@@ -41,7 +41,12 @@ export function GalleryScreen({ onClose }: { onClose: () => void }) {
         <div className="mx-auto max-w-3xl space-y-6">
           {GROUPS.map((group) => (
             <section key={group}>
-              <h2 className="mb-2 text-xs font-semibold tracking-widest text-slate-500">{group}</h2>
+              <div className="mb-3 flex items-baseline gap-3">
+                <h2 className="font-title text-[17px] font-bold" style={{ color: '#E6C06E', letterSpacing: '.03em' }}>
+                  {group}
+                </h2>
+                <span aria-hidden className="h-px flex-1" style={{ background: 'linear-gradient(90deg,rgba(214,179,96,.5),transparent)' }} />
+              </div>
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {GALLERY.filter((it) => it.group === group).map((item) => (
                   <GalleryCard
@@ -57,7 +62,7 @@ export function GalleryScreen({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <footer className="border-t border-slate-800 p-3">
+      <footer className="border-t border-line p-3">
         <div className="mx-auto max-w-3xl">
           <Button variant="primary" className="w-full" onClick={onClose}>
             닫는다
@@ -82,15 +87,20 @@ function GalleryCard({
 
   if (done) {
     return (
-      <div className="rounded-xl border border-amber-800/50 bg-slate-900/60 p-3.5">
+      <div className="rounded-panel border border-line-gold/50 bg-ink-900/60 p-3.5">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-amber-100">{item.title}</h3>
-          <span className="text-[10px] tracking-wider text-amber-500">달성</span>
+          <h3 className="font-title text-sm font-semibold text-gold-300">{item.title}</h3>
+          <span
+            className="rounded px-1.5 py-0.5 text-[10px]"
+            style={{ background: 'rgba(212,176,106,.12)', color: 'var(--color-gold-300)', letterSpacing: '.1em' }}
+          >
+            달성
+          </span>
         </div>
-        <p className="mt-2 text-[13px] italic leading-relaxed text-slate-300">
+        <p className="mt-2 text-[13px] italic leading-relaxed text-parchment">
           “{resolveText(item.scene, game)}”
         </p>
-        <p className="mt-2 border-t border-slate-800 pt-2 text-[11px] leading-relaxed text-slate-500">
+        <p className="mt-2 border-t border-line pt-2 text-[11px] leading-relaxed text-muted">
           {resolveText(item.summary, game)}
         </p>
       </div>
@@ -98,16 +108,21 @@ function GalleryCard({
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/30 p-3.5">
+    <div className="flex items-center gap-3 rounded-panel border border-line bg-ink-900/30 p-3.5">
       {/* 실루엣 — 잠긴 결말. */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-600">
-        <span className="text-lg">🔒</span>
+      {/* ★ 이모지 자물쇠는 색이 튀어 화면 톤을 깬다 — 빈 마름모로 대신한다. */}
+      <div
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-panel"
+        style={{ border: '1px solid rgba(212,176,106,.16)', background: 'rgba(255,255,255,.02)' }}
+        aria-hidden
+      >
+        <span className="h-3 w-3 rotate-45" style={{ border: '1px solid rgba(212,176,106,.4)' }} />
       </div>
       <div className="min-w-0">
-        <h3 className="truncate text-sm font-medium text-slate-500">
+        <h3 className="font-title truncate text-sm font-medium text-muted">
           {showTitle ? item.title : '???'}
         </h3>
-        <p className="text-[11px] text-slate-600">아직 보지 못한 결말입니다.</p>
+        <p className="text-[11px] text-faint">아직 보지 못한 결말입니다.</p>
       </div>
     </div>
   )

@@ -89,8 +89,8 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
 
   if (loading) {
     return (
-      <article className="rounded-xl border border-amber-900/60 bg-slate-900/60 p-5">
-        <p className="text-sm text-slate-500">소식이 올라오고 있습니다…</p>
+      <article className="rounded-xl border border-line-gold/60 bg-ink-900/60 p-5">
+        <p className="text-sm text-muted">소식이 올라오고 있습니다…</p>
       </article>
     )
   }
@@ -103,33 +103,47 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
   const chosen = chosenIndex !== undefined ? incident.choices[chosenIndex] : undefined
 
   return (
-    <div className="pb-28 lg:pb-6">
-      <article className="rounded-xl border border-amber-900/60 bg-slate-900/60 p-5">
-        <p className="text-xs text-amber-500">
+    <div data-screen="event" className="pb-28 lg:pb-6">
+      <article
+        className="rounded-panel border p-5"
+        style={{
+          borderColor: 'rgba(212,176,106,.34)',
+          background: 'linear-gradient(180deg,rgba(212,176,106,.06),rgba(255,255,255,.012))',
+          boxShadow: '0 16px 44px rgba(0,0,0,.45)',
+        }}
+      >
+        <p data-event-category className="text-[11px]" style={{ letterSpacing: '.16em', color: 'var(--color-gold-600)' }}>
           국정 현안
-          {incident.urgent && <span className="ml-2 text-rose-400">급보</span>}
+          {incident.urgent && (
+            <span className="ml-2" style={{ color: 'var(--color-peril-soft)' }}>급보</span>
+          )}
         </p>
-        <h1 className="mt-1 text-xl font-semibold text-amber-100">
+        {/* ★ 돌발 현안도 같은 훅을 단다 — 손으로 쓴 이벤트와 같은 방법으로 찾히도록. */}
+        <h1
+          data-event-title
+          className="mt-2 font-title text-[22px] font-bold leading-tight"
+          style={{ color: 'var(--color-gold-300)' }}
+        >
           {resolveText(incident.title, game)}
         </h1>
 
         <div className="mt-4 space-y-3">
           {resolveText(incident.text, game).split('\n').map((line, i) => (
-            <p key={i} className="text-sm leading-relaxed text-slate-200">
+            <p key={i} className="text-sm leading-relaxed text-parchment">
               {line}
             </p>
           ))}
         </div>
 
         {chosen && (
-          <div className="mt-5 border-t border-slate-800 pt-4">
-            <p className="text-xs text-amber-500">{resolveText(chosen.label, game)}</p>
+          <div className="mt-5 border-t border-line pt-4">
+            <p className="text-xs text-gold-400">{resolveText(chosen.label, game)}</p>
             {timedOut && (
-              <p className="mt-1 text-xs italic text-slate-500">
+              <p className="mt-1 text-xs italic text-muted">
                 머뭇거리는 사이 일은 그렇게 흘러갔다.
               </p>
             )}
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+            <p className="mt-2 text-sm leading-relaxed text-parchment">
               {resolveText(chosen.resultText, game)}
             </p>
             <Deltas deltas={chosen.deltas} />
@@ -142,7 +156,7 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
       {awaiting && (
         <div className="mt-4 space-y-2">
           {left !== null && (
-            <p className="text-center text-xs tabular-nums text-rose-300">
+            <p className="text-center text-xs tabular-nums text-peril-soft">
               {left}초 안에 결정해야 합니다
             </p>
           )}
@@ -150,9 +164,9 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
             <button
               key={i}
               onClick={() => choose(eventId, i)}
-              className="min-h-[44px] w-full rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-left active:border-amber-500 active:bg-slate-800"
+              className="min-h-[44px] w-full rounded-xl border border-line bg-ink-900/60 p-3 text-left active:border-line-gold active:bg-ink-800"
             >
-              <span className="text-sm font-medium text-slate-100">
+              <span className="text-sm font-medium text-parchment">
                 {resolveText(choice.label, game)}
               </span>
             </button>
@@ -161,7 +175,7 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
       )}
 
       {!awaiting && (
-        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-ink-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
           <Button variant="primary" className="w-full" onClick={onDone}>
             다음 달로
           </Button>
@@ -174,12 +188,12 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
 function Deltas({ deltas }: { deltas: { target: string; amount: number }[] }) {
   if (!deltas.length) return null
   return (
-    <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-800 pt-4">
+    <div className="mt-4 flex flex-wrap gap-1.5 border-t border-line pt-4">
       {deltas.map((d) => (
         <span
           key={d.target}
           className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
-            d.amount > 0 ? 'bg-slate-800 text-emerald-300' : 'bg-slate-800 text-rose-300'
+            d.amount > 0 ? 'bg-ink-800 text-gain' : 'bg-ink-800 text-peril-soft'
           }`}
         >
           {RESOURCE_META[d.target as 'wellbeing' | 'regentSuspicion']?.label ?? d.target}{' '}

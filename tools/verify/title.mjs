@@ -56,7 +56,7 @@ await passIntro(q)
 await q.waitForTimeout(300)
 log('B1 인트로 뒤 온보딩 진입:', ok(await q.getByText('노귀족').isVisible()))
 log('B2 게임 화면이 뒤에 비침(오버레이):',
-  ok(await q.getByText('활동 선택').isVisible().catch(() => false)))
+  ok(await q.locator('[data-screen="schedule"]').isVisible().catch(() => false)))
 
 // 순차 진행하며 툴팁 하이라이트 확인
 const next = () => q.getByRole('button', { name: '다음', exact: true }).click()
@@ -92,7 +92,7 @@ for (let i = 0; i < 6; i++) {
 await q.waitForTimeout(300)
 log('B6 ★ 온보딩 종료 후 플레이 진입:',
   ok(!(await q.getByText('노귀족').isVisible().catch(() => false)) &&
-     (await q.getByText('활동 선택').isVisible())))
+     (await q.locator('[data-screen="schedule"]').isVisible())))
 // 온보딩 종료 후 하이라이트가 남지 않아야 한다
 const anyHi = await q.evaluate(() => !!document.querySelector('.onboard-highlight'))
 log('B7 하이라이트 잔상 없음:', ok(!anyHi))
@@ -108,7 +108,7 @@ await s.getByRole('button', { name: '건너뛰기' }).click()
 await s.waitForTimeout(300)
 log('C1 ★ (온보딩) 건너뛰기 → 바로 플레이:',
   ok(!(await s.getByText('노귀족').isVisible().catch(() => false)) &&
-     (await s.getByText('활동 선택').isVisible())))
+     (await s.locator('[data-screen="schedule"]').isVisible())))
 
 // ─────────────────────────────────────────────────────────────
 log('')
@@ -134,7 +134,7 @@ await c.getByRole('button', { name: '이어하기' }).click()
 await c.waitForTimeout(400)
 log('D1 ★ 이어하기 → 온보딩 없이 플레이:',
   ok(!(await c.getByText('노귀족').isVisible().catch(() => false)) &&
-     (await c.getByText('활동 선택').isVisible())))
+     (await c.locator('[data-screen="schedule"]').isVisible())))
 log('D2 세이브 상태로 이어짐(14세):',
   ok((await c.getByText(/14세/).isVisible().catch(() => false))))
 

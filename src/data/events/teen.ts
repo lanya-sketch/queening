@@ -41,7 +41,7 @@ export const TEEN_EVENTS: GameEvent[] = [
               { target: { kind: 'resource', key: 'regentRapport' }, amount: -4 },
               { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 4 },
             ],
-            hint: '어설펐다',
+            hint: '장부를 아직 못 읽는다',
             resultText:
               '{왕}은 장부를 펼쳤지만 어디를 짚어야 할지 몰랐다. 재무청의 관리가 ' +
               '공손한 얼굴로 항목을 하나하나 설명했고, 설명이 길어질수록 어전은 조용해졌다.\n' +
@@ -79,7 +79,7 @@ export const TEEN_EVENTS: GameEvent[] = [
               { target: { kind: 'resource', key: 'courtInfluence' }, amount: 3 },
               { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 10 },
             ],
-            hint: '어설펐다',
+            hint: '병무를 아직 모른다',
             resultText:
               '{왕}은 구휼을 수비대에 맡기라 명했다. 병무청은 명을 받들었으나, ' +
               '누구를 어디에 세울지는 아무도 {왕}에게 묻지 않았다.\n' +
@@ -116,7 +116,7 @@ export const TEEN_EVENTS: GameEvent[] = [
               { target: { kind: 'resource', key: 'regentRapport' }, amount: -2 },
               { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
             ],
-            hint: '어설펐다',
+            hint: '사람을 아직 못 읽는다',
             resultText:
               '{왕}은 몇 사람의 자리를 바꿨다. 이름은 바뀌었으나 누가 누구의 사람인지까지는 ' +
               '읽지 못했고, 밀려난 자리에 앉은 것은 결국 같은 편의 다른 얼굴이었다.\n' +
@@ -184,7 +184,7 @@ export const TEEN_EVENTS: GameEvent[] = [
               { target: { kind: 'stat', key: 'rhetoric' }, amount: 4 },
               { target: { kind: 'resource', key: 'wellbeing' }, amount: -10 },
             ],
-            hint: '말문이 막혔다',
+            hint: '말이 아직 여물지 않았다',
             resultText:
               '"경들이 말하는 균형이란, 그러니까, 과인이…"\n' +
               '{왕}은 문장을 끝맺지 못했다. 청원서를 올린 백작이 기다려 주었고, ' +

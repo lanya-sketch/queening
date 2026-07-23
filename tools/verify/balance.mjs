@@ -166,7 +166,7 @@ async function run(browser, build) {
       if (turns < 24) monthly.push({ t: turns, wb, plan: plan.join('+') })
       void before
       for (const name of plan) {
-        const c = page.locator('ul.grid').getByRole('button', { name: new RegExp(`^${name}`) })
+        const c = page.locator('[data-activity]').filter({ hasText: new RegExp(name) })
         if (await c.isEnabled().catch(() => false)) await c.click()
       }
       await page.getByRole('button', { name: /턴 종료/ }).click()
@@ -183,7 +183,7 @@ async function run(browser, build) {
 
     if (phase === 'event') {
       await advanceScene(page)
-      const title = await page.locator('article h1').innerText().catch(() => '')
+      const title = await page.locator('[data-event-title]').innerText().catch(() => '')
       const choices = choiceButtons(page)
       const count = await choices.count()
       if (count > 0) {

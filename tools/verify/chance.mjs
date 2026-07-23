@@ -158,7 +158,7 @@ async function runTurn() {
     await next.click()
     await page.waitForTimeout(400)
     await advanceScene(page)
-    const t = await page.locator('article h1').innerText().catch(() => null)
+    const t = await page.locator('[data-event-title]').innerText().catch(() => null)
     if (t && !titles.includes(t)) titles.push(t)
     if (/다음 달로/.test(label)) break
   }

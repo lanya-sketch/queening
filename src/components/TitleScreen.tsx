@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Lozenge } from './ui/Chrome'
 import { TITLE, TITLE_BACKGROUND } from '../data/title'
 import { getSavedAt } from '../systems/save'
 import { useApp } from '../store/appStore'
@@ -31,7 +32,7 @@ export function TitleScreen() {
   }
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-slate-950">
+    <div data-screen="title" className="relative min-h-dvh overflow-hidden bg-ink-950">
       {/* 빈 옥좌 배경 */}
       <img
         src={TITLE_BACKGROUND}
@@ -40,16 +41,27 @@ export function TitleScreen() {
         className="absolute inset-0 h-full w-full object-cover object-center opacity-90"
       />
       {/* 어둠으로 가라앉히는 그라디언트 — 타이포가 배경 위에서 읽히게 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/70 via-ink-950/40 to-ink-950/90" />
 
       <div className="relative flex min-h-dvh flex-col items-center px-6 py-10">
         {/* 제목 */}
-        <header className="mt-6 text-center">
-          <h1 className="text-5xl font-light tracking-[0.2em] text-amber-100/95 sm:text-6xl">
+        <header className="mt-6 flex flex-col items-center text-center">
+          {/* 금빛 실선 + 마름모 — 게임 전체가 쓰는 구획 장식 */}
+          <div className="mb-5 flex items-center gap-3.5 opacity-70">
+            <span aria-hidden className="h-px w-14" style={{ background: 'linear-gradient(90deg,transparent,var(--color-gold-400))' }} />
+            <Lozenge size={7} />
+            <span aria-hidden className="h-px w-14" style={{ background: 'linear-gradient(90deg,var(--color-gold-400),transparent)' }} />
+          </div>
+          <h1 className="font-display text-5xl font-semibold tracking-[0.12em] text-gold-300 sm:text-6xl">
             {TITLE.main}
           </h1>
-          <p className="mt-3 text-lg tracking-[0.35em] text-amber-200/70">{TITLE.sub}</p>
-          <p className="mt-6 max-w-sm text-xs leading-relaxed text-slate-300/80">
+          <p
+            className="mt-4 font-display text-[13px] uppercase text-gold-400/80"
+            style={{ letterSpacing: '.42em' }}
+          >
+            {TITLE.sub}
+          </p>
+          <p className="mt-6 max-w-sm text-[12.5px] italic leading-relaxed text-parchment/70">
             {TITLE.tagline}
           </p>
         </header>
@@ -85,14 +97,14 @@ function TitleButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`min-h-[52px] rounded-xl border tracking-widest transition-colors ${
+      className={`min-h-[52px] rounded-panel border font-title tracking-[0.14em] transition-colors ${
         small ? 'text-xs' : 'text-sm'
       } ${
         disabled
-          ? 'cursor-not-allowed border-slate-800/60 bg-slate-900/30 text-slate-600'
+          ? 'cursor-not-allowed border-line/60 bg-ink-900/30 text-faint'
           : primary
-            ? 'border-amber-700/60 bg-amber-950/40 text-amber-100 active:bg-amber-900/50'
-            : 'border-slate-700/70 bg-slate-900/50 text-slate-200 active:bg-slate-800/60'
+            ? 'border-line-gold/60 bg-ink-700/40 text-gold-300 active:bg-ink-700/50'
+            : 'border-line/70 bg-ink-900/50 text-parchment active:bg-ink-800/60'
       }`}
     >
       {label}

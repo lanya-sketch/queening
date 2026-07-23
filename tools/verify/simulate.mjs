@@ -376,7 +376,7 @@ async function runSimulation(browser, run) {
       if (turns % 8 === 0) influenceTrack.push(`${panel.age.replace('왕 ', '')}:${infl}`)
 
       for (const name of planTurn(panel, run)) {
-        const c = page.locator('ul.grid').getByRole('button', { name: new RegExp(name) })
+        const c = page.locator('[data-activity]').filter({ hasText: new RegExp(name) })
         if (await c.isEnabled().catch(() => false)) await c.click()
       }
       await page.getByRole('button', { name: /턴 종료/ }).click()
@@ -394,7 +394,7 @@ async function runSimulation(browser, run) {
     if (phase === 'event') {
       // 씬이 붙은 이벤트는 대사를 먼저 넘긴다
       await advanceScene(page)
-      const title = await page.locator('article h1').innerText()
+      const title = await page.locator('[data-event-title]').innerText()
       const panel = await readPanel(page)
       let picked = null
       const choices = choiceButtons(page)

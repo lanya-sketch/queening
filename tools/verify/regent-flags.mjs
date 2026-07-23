@@ -33,7 +33,7 @@ for (let t = 0; t < 250; t++) {
       while (plan.length < 3) plan.push('통치학 수업')
     }
     for (const n of plan) {
-      const c = page.locator('ul.grid').getByRole('button', { name: new RegExp(n) })
+      const c = page.locator('[data-activity]').filter({ hasText: new RegExp(n) })
       if (await c.isEnabled().catch(() => false)) await c.click()
     }
     await page.getByRole('button', { name: /턴 종료/ }).click()
@@ -48,7 +48,7 @@ for (let t = 0; t < 250; t++) {
   }
 
   if (p === 'event') {
-    order.push(await page.locator('article h1').innerText())
+    order.push(await page.locator('[data-event-title]').innerText())
     const btns = choiceButtons(page)
     const n = await btns.count()
     for (let i = 0; i < n; i++) {

@@ -19,7 +19,7 @@ export const STAT_META: Record<StatKey, StatMeta> = {
   statecraft: {
     label: '통치학',
     description: '통치의 원리와 선례. 어전 회의에서 스스로 판단할 힘.',
-    bar: 'bg-amber-400',
+    bar: 'bg-gold-400',
   },
   finance: {
     label: '재정',
@@ -46,11 +46,11 @@ export const STAT_META: Record<StatKey, StatMeta> = {
 
 export const RESOURCE_META: Record<ResourceKey, { label: string; bar: string }> = {
   wellbeing: { label: '심신', bar: 'bg-teal-400' },
-  tutorTrust: { label: '신뢰', bar: 'bg-amber-300' },
+  tutorTrust: { label: '신뢰', bar: 'bg-gold-300' },
   courtInfluence: { label: '국정 영향도', bar: 'bg-yellow-500' },
   regentSuspicion: { label: '섭정 의심', bar: 'bg-red-500' },
   regentRapport: { label: '섭정 신망', bar: 'bg-indigo-400' },
-  actionPoints: { label: '행동력', bar: 'bg-slate-400' },
+  actionPoints: { label: '행동력', bar: 'bg-ink-600' },
 }
 
 /**

@@ -24,7 +24,7 @@ await enterGame(page)
 await page.waitForTimeout(300)
 
 log('=== A. 키 없이도 코어 게임이 완전한가 ===')
-log('A1 스케줄 화면 정상:', ok(await page.getByText('활동 선택').isVisible()))
+log('A1 스케줄 화면 정상:', ok(await page.locator('[data-screen="schedule"]').isVisible()))
 // D-3: AI 설정은 게임 화면 ⚙(설정) 오버레이 안으로 옮겨졌다.
 log('A2 AI 설정 상태(설정 오버레이):', (await readAiSettingLabel(page)),
   ok((await readAiSettingLabel(page)).includes('꺼짐')))

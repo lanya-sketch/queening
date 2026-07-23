@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { EVENT_BY_ID } from '../data/events'
 import { HIDDEN_GAUGES } from '../data/stats'
-import { formatEffect, targetLabel } from '../systems/effects'
+import { targetLabel } from '../systems/effects'
+import { deltaView, effectView } from '../systems/display'
+import { EffectPill, Lozenge, PrimaryAction } from './ui/Chrome'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
-import { resolvedChoice } from '../systems/activityTier'
+import { activeChoiceTier, resolvedChoice } from '../systems/activityTier'
 import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
 import { IncidentView } from './IncidentView'
 import { ScenePlayer } from './scene/ScenePlayer'
 import type { Choice, Delta, Effect } from '../types/game'
-import { Button } from './ui/Button'
 
 /**
  * 선택지 미리보기에서는 히든 게이지(의심·신망)를 가린다.
@@ -21,19 +22,13 @@ function visibleEffects(effects: Effect[] | undefined): Effect[] {
   )
 }
 
-function EffectChips({ effects }: { effects: Effect[] }) {
+/** ★ 선택지 미리보기도 수치 없이 ▲▼ + 정도. 활동 카드와 같은 어법. */
+function EffectList({ effects }: { effects: Effect[] }) {
   if (effects.length === 0) return null
   return (
-    <span className="mt-2 flex flex-wrap gap-1">
+    <span className="mt-3 flex flex-col gap-1.5">
       {effects.map((effect, i) => (
-        <span
-          key={i}
-          className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
-            effect.amount > 0 ? 'bg-slate-800 text-emerald-300' : 'bg-slate-800 text-rose-300'
-          }`}
-        >
-          {formatEffect(effect)}
-        </span>
+        <EffectPill key={i} {...effectView(effect)} />
       ))}
     </span>
   )
@@ -42,16 +37,13 @@ function EffectChips({ effects }: { effects: Effect[] }) {
 function DeltaChips({ deltas }: { deltas: Delta[] }) {
   if (deltas.length === 0) return null
   return (
-    <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-800 pt-4">
+    <div
+      className="mt-4 flex flex-col gap-1.5 border-t pt-4"
+      style={{ borderColor: 'rgba(212,176,106,.14)' }}
+    >
       {deltas.map((delta) => (
-        <span
-          key={delta.label}
-          className={`rounded px-1.5 py-0.5 text-[11px] tabular-nums ${
-            delta.amount > 0 ? 'bg-slate-800 text-emerald-300' : 'bg-slate-800 text-rose-300'
-          }`}
-        >
-          {delta.label} {delta.amount > 0 ? '+' : ''}
-          {delta.amount}
+        <span key={delta.label} data-delta={delta.label}>
+          <EffectPill {...deltaView(delta)} />
         </span>
       ))}
     </div>
@@ -85,28 +77,37 @@ function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) 
 
   return (
     <button
+      data-choice={choice.id}
+      data-choice-tier={choice.tiers?.length ? (activeChoiceTier(choice, game)?.min ? '제대로' : '어설픔') : ''}
+      data-locked={available ? 'false' : 'true'}
       onClick={() => chooseOption(eventId, choice.id)}
       disabled={!available}
-      className={`w-full min-h-[44px] rounded-xl border p-3 text-left transition-colors ${
-        available
-          ? 'border-slate-700 bg-slate-900/60 active:border-amber-500 active:bg-slate-800'
-          : 'border-slate-800 bg-slate-900/30'
-      }`}
+      className="min-h-[44px] w-full rounded-panel border p-3.5 text-left"
+      style={{
+        borderColor: available ? 'rgba(212,176,106,.24)' : 'rgba(212,176,106,.1)',
+        background: available
+          ? 'linear-gradient(180deg,#181924,#141520)'
+          : 'rgba(255,255,255,.015)',
+        opacity: available ? 1 : 0.5,
+      }}
     >
-      <span className={`text-sm font-medium ${available ? 'text-slate-100' : 'text-slate-500'}`}>
+      <span
+        className="font-title text-[14.5px] font-bold"
+        style={{ color: available ? 'var(--color-parchment)' : 'var(--color-faint)' }}
+      >
         {resolveText(choice.label, game)}
       </span>
       {available ? (
         <>
           {/* ★ 4-C: 결과 차등 선택지는 **지금 스탯의 등급**을 미리 보여준다.
               공통분만 보여주면 "무엇이 달라지는지"가 화면에서 사라진다(수업 카드와 같은 규칙). */}
-          <EffectChips effects={visibleEffects(preview.effects)} />
+          <EffectList effects={visibleEffects(preview.effects)} />
           {preview.hint && (
-            <span className="mt-2 block text-[11px] italic text-slate-500">{preview.hint}</span>
+            <span className="mt-2.5 block text-[11px] italic text-faint">{preview.hint}</span>
           )}
         </>
       ) : (
-        <span className="mt-1 block text-xs text-slate-500">
+        <span className="mt-1.5 block text-[11.5px] text-faint">
           🔒 {requirements.join(', ')} 필요
         </span>
       )}
@@ -147,12 +148,35 @@ export function EventScreen() {
   const awaitingChoice = Boolean(event.choices?.length) && !chosen && !playingScene
 
   return (
-    <div className="pb-28 lg:pb-6">
-      <article className="rounded-xl border border-amber-900/60 bg-slate-900/60 p-5">
-        <p className="text-xs text-amber-500">
-          {event.category === 'state_affair' ? '국정 현안' : '사건'}
-        </p>
-        <h1 className="mt-1 text-xl font-semibold text-amber-100">
+    <div data-screen="event" className="pb-28 lg:pb-6">
+      <article
+        className="rounded-panel border p-5"
+        style={{
+          borderColor: 'rgba(212,176,106,.34)',
+          background: 'linear-gradient(180deg,rgba(212,176,106,.06),rgba(255,255,255,.012))',
+          boxShadow: '0 16px 44px rgba(0,0,0,.45)',
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <Lozenge size={5} />
+          {/*
+            ★ 카테고리는 장식이 아니라 뜻을 지닌 말이다(사건 / 국정 현안).
+              라틴으로 바꿨더니 한국어 독자에게 구분이 흐려져서 되돌렸다.
+              장식용 라틴 소제목은 상시 UI 가구(ACTION POINTS 등)에만 쓴다.
+          */}
+          <span
+            data-event-category
+            className="text-[11px]"
+            style={{ letterSpacing: '.16em', color: 'var(--color-gold-600)' }}
+          >
+            {event.category === 'state_affair' ? '국정 현안' : '사건'}
+          </span>
+        </div>
+        <h1
+          data-event-title
+          className="mt-2 font-title text-[22px] font-bold leading-tight"
+          style={{ color: 'var(--color-gold-300)' }}
+        >
           {resolveText(event.title, game)}
         </h1>
 
@@ -165,7 +189,7 @@ export function EventScreen() {
               onFinished={() => setSceneDone(true)}
             />
           ) : (
-            <Paragraphs text={event.text} className="text-sm leading-relaxed text-slate-200" />
+            <Paragraphs text={event.text} className="text-[14px] leading-relaxed text-parchment/85" />
           )}
         </div>
 
@@ -176,13 +200,15 @@ export function EventScreen() {
         )}
 
         {chosen && (
-          <div className="mt-5 border-t border-slate-800 pt-4">
-            <p className="text-xs text-amber-500">{resolveText(chosen.label, game)}</p>
+          <div className="mt-5 border-t pt-4" style={{ borderColor: 'rgba(212,176,106,.14)' }}>
+            <p className="font-title text-[13px]" style={{ color: 'var(--color-gold-400)' }}>
+              {resolveText(chosen.label, game)}
+            </p>
             <div className="mt-2 space-y-3">
               {/* ★ 4-C: 결과 차등 선택지는 고른 순간 확정된 후일담을 쓴다(재계산 금지). */}
               <Paragraphs
                 text={outcome?.resultText ?? chosen.resultText}
-                className="text-sm leading-relaxed text-slate-300"
+                className="text-[13.5px] leading-relaxed text-parchment/75"
               />
               {/* chosen.label 도 토큰 치환을 거친다 */}
             </div>
@@ -200,10 +226,15 @@ export function EventScreen() {
       )}
 
       {!awaitingChoice && !playingScene && (
-        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
-          <Button variant="primary" className="w-full" onClick={dismissEvent}>
-            {remaining > 1 ? `계속 (${remaining - 1}건 더)` : '다음 달로'}
-          </Button>
+        <div
+          className="fixed inset-x-0 bottom-0 z-10 border-t bg-ink-950/95 p-3 backdrop-blur lg:static lg:mt-7 lg:border-0 lg:bg-transparent lg:p-0"
+          style={{ borderColor: 'rgba(212,176,106,.15)' }}
+        >
+          <div className="flex justify-center">
+            <PrimaryAction onClick={dismissEvent}>
+              {remaining > 1 ? `계속 (${remaining - 1}건 더)` : '다음 달로'}
+            </PrimaryAction>
+          </div>
         </div>
       )}
     </div>

@@ -34,13 +34,13 @@ export function IntroSequence() {
   const skipToGender = () => setStep(INTRO_LINES.length)
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col justify-center bg-slate-950/97 px-6 backdrop-blur">
+    <div data-screen="intro" className="fixed inset-0 z-40 flex flex-col justify-center bg-ink-950/97 px-6 backdrop-blur">
       <div className="mx-auto w-full max-w-lg">
         {!onGender ? (
           <>
             <div className="min-h-[7rem]">
               {tw.shown.split('\n').map((part, i) => (
-                <p key={i} className="text-base leading-relaxed text-slate-100">
+                <p key={i} className="text-base leading-relaxed text-parchment">
                   {part}
                 </p>
               ))}
@@ -48,7 +48,7 @@ export function IntroSequence() {
             <div className="mt-8 flex items-center justify-between">
               <button
                 onClick={skipToGender}
-                className="text-[11px] text-slate-500 active:text-slate-300"
+                className="text-[11px] text-muted active:text-parchment"
               >
                 건너뛰기
               </button>
@@ -59,7 +59,7 @@ export function IntroSequence() {
           </>
         ) : (
           <>
-            <p className="text-sm text-slate-400">{INTRO_GENDER.prompt}</p>
+            <p className="text-sm text-muted">{INTRO_GENDER.prompt}</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <GenderChoice
                 label={INTRO_GENDER.male}
@@ -72,7 +72,7 @@ export function IntroSequence() {
                 onClick={() => setGender('female')}
               />
             </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-slate-500">{INTRO_GENDER.note}</p>
+            <p className="mt-3 text-[11px] leading-relaxed text-muted">{INTRO_GENDER.note}</p>
             <Button variant="primary" className="mt-8 w-full" onClick={dismissIntro}>
               {INTRO_GENDER.start}
             </Button>
@@ -98,8 +98,8 @@ function GenderChoice({
       aria-pressed={selected}
       className={`min-h-[76px] rounded-xl border px-3 text-sm tracking-wide transition-colors ${
         selected
-          ? 'border-amber-500/70 bg-amber-950/40 text-amber-100'
-          : 'border-slate-700 bg-slate-900/50 text-slate-300 active:bg-slate-800/60'
+          ? 'border-line-gold/70 bg-ink-700/40 text-gold-300'
+          : 'border-line bg-ink-900/50 text-parchment active:bg-ink-800/60'
       }`}
     >
       {label}

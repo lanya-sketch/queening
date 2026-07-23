@@ -12,6 +12,8 @@ import { useGame } from '../store/gameStore'
 import { resolveText } from '../systems/text'
 import { ScenePlayer } from './scene/ScenePlayer'
 import { Button } from './ui/Button'
+import { Gauge } from './ui/Chrome'
+import { resourceGauge, statGauge } from '../systems/display'
 
 /**
  * 엔딩 화면 (M3-2).
@@ -59,9 +61,9 @@ export function EndedScreen() {
 
   if (!sceneDone) {
     return (
-      <div className="pb-28 lg:pb-6">
-        <article className="rounded-xl border border-amber-900/60 bg-slate-900/60 p-5">
-          <p className="text-xs text-amber-500">
+      <div data-screen={dead ? 'dead' : 'ended'} className="pb-28 lg:pb-6">
+        <article className="rounded-xl border border-line-gold/60 bg-ink-900/60 p-5">
+          <p className="text-xs text-gold-400">
             {dead ? `즉위 ${game.date.year}년 · ${game.age}세 · 채우지 못한 치세` : `즉위 ${game.date.year}년 · 아홉 해의 끝`}
           </p>
           <div className="mt-4">
@@ -75,10 +77,10 @@ export function EndedScreen() {
   // ★ 조기 데드엔딩 — 판정 결산 없이 짧은 마감만. 정식 엔딩과 화면이 갈린다.
   if (dead) {
     return (
-      <div className="pb-28 lg:pb-6">
+      <div data-screen="dead" className="pb-28 lg:pb-6">
         <header className="mb-4">
-          <h1 className="text-xl font-semibold text-rose-200">{dead.title}</h1>
-          <p className="mt-2 text-xs text-rose-200/60">
+          <h1 className="font-title text-xl font-semibold text-peril-soft">{dead.title}</h1>
+          <p className="mt-2 text-xs text-peril-soft/60">
             {resolveText('{왕}', game)}의 치세는 {game.age}세에, 스무 살에 이르지 못하고 끝났다.
           </p>
         </header>
@@ -93,26 +95,19 @@ export function EndedScreen() {
   }
 
   return (
-    <div className="pb-28 lg:pb-6">
+    <div data-screen={dead ? 'dead' : 'ended'} className="pb-28 lg:pb-6">
       <header className="mb-4">
-        <h1 className="text-xl font-semibold text-amber-100">
+        <h1 className="font-title text-xl font-semibold text-gold-300">
           {resolveText('{왕}', game)}은 {GAME_CONFIG.endAge}세가 되었다
         </h1>
-        <p className="mt-2 text-xs text-amber-200/70">{summary && describeEnding(summary)}</p>
+        <p className="mt-2 text-xs text-gold-300/70">{summary && describeEnding(summary)}</p>
       </header>
 
-      <section className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-        <h2 className="mb-2 text-sm font-medium text-slate-300">결산</h2>
-        <div className="flex items-baseline justify-between">
-          <span className="text-sm text-slate-300">국정 영향도</span>
-          <span className="tabular-nums text-lg font-semibold text-yellow-500">
-            {game.courtInfluence}
-            <span className="ml-1 text-xs font-normal text-slate-500">
-              / 상한 {courtInfluenceCap(game.age)}
-            </span>
-          </span>
-        </div>
-        <p className="mt-2 text-xs text-slate-500">모은 단서 {clueCount}개 · 국력 {summary?.power}</p>
+      {/* ★ 결산도 같은 어법으로 — 마지막 화면이라고 수치로 돌아가면 규칙이 무너진다. */}
+      <section className="mb-4 rounded-panel border border-line-gold/50 bg-ink-900/60 p-4">
+        <h2 className="font-title mb-3 text-sm font-medium text-parchment">결산</h2>
+        <Gauge view={resourceGauge('courtInfluence', game, courtInfluenceCap(game.age))} />
+        <p className="mt-3 text-xs text-muted">모은 단서 {clueCount}개</p>
       </section>
 
       {/* ★ 결산 차등 — 엔딩별로 다른 행. 배드 tier 는 어두운 톤으로. */}
@@ -120,18 +115,18 @@ export function EndedScreen() {
         <section
           className={`mb-4 rounded-xl border p-4 ${
             isBadEnding(summary)
-              ? 'border-rose-950/60 bg-rose-950/20'
-              : 'border-slate-800 bg-slate-900/60'
+              ? 'border-peril/40 bg-peril/10'
+              : 'border-line bg-ink-900/60'
           }`}
         >
-          <h2 className="mb-3 text-sm font-medium text-slate-300">아홉 해가 남긴 것</h2>
+          <h2 className="font-title mb-3 text-sm font-medium text-parchment">아홉 해가 남긴 것</h2>
           <dl className="space-y-2">
             {endingSummaryRows(summary).map((row) => (
               <div key={row.label} className="flex items-baseline justify-between gap-3">
-                <dt className="shrink-0 text-xs text-slate-500">{row.label}</dt>
+                <dt className="shrink-0 text-xs text-muted">{row.label}</dt>
                 <dd
                   className={`text-right text-sm ${
-                    isBadEnding(summary) ? 'text-rose-100/90' : 'text-slate-100'
+                    isBadEnding(summary) ? 'text-peril-soft/90' : 'text-parchment'
                   }`}
                 >
                   {resolveText(row.value, game)}
@@ -142,18 +137,39 @@ export function EndedScreen() {
         </section>
       )}
 
-      <section className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-        <h2 className="mb-3 text-sm font-medium text-slate-300">
+      <section className="mb-4 rounded-xl border border-line bg-ink-900/60 p-4">
+        <h2 className="font-title mb-3 text-sm font-medium text-parchment">
           스무 살의 {resolveText('{왕}', game)}
         </h2>
-        <ul className="space-y-1.5">
+        <div className="flex flex-col gap-3">
           {STAT_KEYS.map((key) => (
-            <li key={key} className="flex items-center justify-between text-sm">
-              <span className="text-slate-300">{STAT_META[key].label}</span>
-              <span className="tabular-nums text-slate-100">{game.stats[key]}</span>
-            </li>
+            <Gauge key={key} view={statGauge(key, game)} />
           ))}
-        </ul>
+        </div>
+
+        {/* 정확한 값은 사이드바와 같은 규칙으로 접이식에만 */}
+        <details
+          data-detail-values
+          className="mt-4 rounded-panel border border-line/70 bg-black/25 p-3"
+        >
+          <summary className="cursor-pointer select-none text-[11px] text-muted">
+            상세 (내부값)
+          </summary>
+          <div className="mt-2 space-y-1">
+            {STAT_KEYS.map((key) => (
+              <div key={key} className="flex justify-between text-[11px]">
+                <span className="text-muted">{STAT_META[key].label}</span>
+                <span className="font-display tabular-nums text-parchment/80">
+                  {game.stats[key].toFixed(2)}
+                </span>
+              </div>
+            ))}
+            <div className="flex justify-between border-t border-line pt-1 text-[11px]">
+              <span className="text-muted">국력</span>
+              <span className="font-display tabular-nums text-parchment/80">{summary?.power}</span>
+            </div>
+          </div>
+        </details>
       </section>
 
       <div className="grid grid-cols-2 gap-2">

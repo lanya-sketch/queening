@@ -40,10 +40,10 @@ async function runTurn(choose) {
     await next.click()
     await page.waitForTimeout(350)
     await advanceScene(page)
-    const t = await page.locator('article h1').innerText().catch(() => null)
+    const t = await page.locator('[data-event-title]').innerText().catch(() => null)
     if (t && !titles.includes(t)) titles.push(t)
     if (choose) {
-      const btn = page.locator('div.mt-4.space-y-2 > button').filter({ hasText: choose })
+      const btn = page.locator('[data-choice]').filter({ hasText: choose })
       if (await btn.first().isVisible().catch(() => false)) {
         await btn.first().click()
         await page.waitForTimeout(250)

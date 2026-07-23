@@ -141,7 +141,7 @@ await page.getByRole('button', { name: /턴 종료/ }).click()
 await page.waitForTimeout(300)
 await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
 await page.waitForTimeout(400)
-const title = await page.locator('article h1').innerText().catch(() => '—')
+const title = await page.locator('[data-event-title]').innerText().catch(() => '—')
 log('D1 입궁 발동 (17세 10월):', title, ok(title === '입궁'))
 log('D2 스텁 텍스트도 성별 토큰 사용:',
   ok((await page.locator('article').innerText()).includes('왕은 그 말이 포상이 아니라')))

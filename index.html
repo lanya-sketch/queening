@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>어린 군주 육성 시뮬</title>
+    <!--
+      ★ 서체 (UI 리디자인). 여태 index.css 가 Pretendard 를 지정만 하고 어디서도 싣지
+        않아 시스템 기본 글꼴로 렌더되고 있었다. 화면이 밋밋했던 원인의 상당 부분이
+        디자인이 아니라 이것이다.
+          Cinzel      — 라틴 소제목·수치(장식)
+          Gowun Batang — 한글 제목(명조)
+          Pretendard  — 본문
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cinzel:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      as="style"
+      crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
   </head>
   <body>
     <div id="root"></div>
