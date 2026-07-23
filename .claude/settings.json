@@ -96,7 +96,11 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(grep -rn \"readGauge\\\\|readPanel\\\\|match\\(/\\(\\\\\\\\\\\\\\\\d+\\)/\\)\" tools/verify/*.mjs)",
       "Bash(node tools/verify/redesign-shots.mjs)",
-      "Bash(echo \"ABL_EXIT=$?\")"
+      "Bash(echo \"ABL_EXIT=$?\")",
+      "Bash(node --check tools/verify/analyze-gates.mjs)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(data-*)"
     ],
     "additionalDirectories": [
       "C:\\queening\\tools\\verify",
