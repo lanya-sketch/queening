@@ -95,22 +95,28 @@ export function PrimaryAction({
   children,
   onClick,
   className = '',
+  disabled,
   ...rest
 }: {
   children: ReactNode
   onClick?: () => void
   className?: string
+  disabled?: boolean
 } & Record<string, unknown>) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={`w-full rounded-panel border px-10 py-3.5 font-title text-[16px] font-bold lg:w-auto ${className}`}
       style={{
-        borderColor: 'rgba(212,176,106,.55)',
-        color: '#1a1208',
+        borderColor: disabled ? 'rgba(212,176,106,.2)' : 'rgba(212,176,106,.55)',
+        color: disabled ? 'var(--color-muted)' : '#1a1208',
         letterSpacing: '.08em',
-        background: 'linear-gradient(180deg,#F3DBA1,#D4B06A)',
-        boxShadow: '0 14px 34px -12px rgba(212,176,106,.6)',
+        background: disabled
+          ? 'rgba(255,255,255,.03)'
+          : 'linear-gradient(180deg,#F3DBA1,#D4B06A)',
+        boxShadow: disabled ? 'none' : '0 14px 34px -12px rgba(212,176,106,.6)',
+        cursor: disabled ? 'progress' : undefined,
       }}
       {...rest}
     >

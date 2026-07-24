@@ -6,6 +6,10 @@
  */
 import { APP_URL, enterGame, launch, log, ok, shotsDir } from './helpers.mjs'
 
+// ★ 이 도구는 "실제 화면"을 보는 것이 목적이라 서체가 살아 있어야 한다.
+//   helpers.launch 의 폰트 CDN 차단을 끈다(검증 스위트는 계속 차단).
+process.env.QUEENING_KEEP_FONTS = '1'
+
 const OUT = shotsDir('redesign')
 
 const browser = await launch()

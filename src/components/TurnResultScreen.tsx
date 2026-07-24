@@ -36,6 +36,7 @@ export function TurnResultScreen() {
   const pendingEventIds = useGame((s) => s.game.pendingEventIds)
   const continueFromResult = useGame((s) => s.continueFromResult)
   const generateIncident = useIncidents((s) => s.generate)
+  const byEvent = useIncidents((s) => s.byEvent)
 
   // ★ AI 돌발은 여기서 **미리** 생성한다 (#7). 플레이어가 결과를 읽는 동안 만들어 두고,
   //   실패하면 generate 가 큐에서 빼므로 "사건이 있었다"는 알림도 함께 사라진다.
@@ -45,6 +46,11 @@ export function TurnResultScreen() {
       if (EVENT_BY_ID[id]?.source === 'ai_generated') void generateIncident(id)
     }
   }, [pendingEventIds, generateIncident])
+
+  /** 예고된 AI 돌발 가운데 아직 생성 결과가 정해지지 않은 것이 있는가. */
+  const incidentPending = pendingEventIds.some(
+    (id) => EVENT_BY_ID[id]?.source === 'ai_generated' && !(id in byEvent),
+  )
 
   if (!report) return null
 
@@ -117,8 +123,18 @@ export function TurnResultScreen() {
         style={{ borderColor: 'rgba(212,176,106,.15)' }}
       >
         <div className="flex justify-center">
-          <PrimaryAction onClick={continueFromResult}>
-            {report.triggeredEventIds.length > 0 ? '무슨 일이 있었는지 본다' : '다음 달로'}
+          {/*
+            ★ 예고한 돌발이 아직 만들어지는 중이면 여기서 기다린다.
+              넘어가 버리면 "소식이 올라오고 있습니다" 를 본 뒤 아무 일도 없이 끝나는
+              빈 예고가 된다. 여기서 기다리면 내용이 오거나(사건이 뜬다),
+              실패해 예고가 조용히 사라지거나(다음 달로) 둘 중 하나로 끝난다.
+          */}
+          <PrimaryAction onClick={continueFromResult} disabled={incidentPending}>
+            {incidentPending
+              ? '소식을 기다리는 중…'
+              : report.triggeredEventIds.length > 0
+                ? '무슨 일이 있었는지 본다'
+                : '다음 달로'}
           </PrimaryAction>
         </div>
       </div>

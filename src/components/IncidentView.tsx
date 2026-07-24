@@ -22,6 +22,8 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
   const game = useGame((s) => s.game)
   const incident = useIncidents((s) => s.byEvent[eventId])
   const loading = useIncidents((s) => s.loading === eventId)
+  /** 스토어가 이 사건의 결과(성공이든 실패든)를 이미 아는가. */
+  const resolved = useIncidents((s) => eventId in s.byEvent)
   const generate = useIncidents((s) => s.generate)
   const choose = useIncidents((s) => s.choose)
   const chosenIndex = useIncidents((s) => s.chosen[eventId])
@@ -31,12 +33,22 @@ export function IncidentView({ eventId, onDone }: { eventId: string; onDone: () 
   const [left, setLeft] = useState<number | null>(null)
   const [timedOut, setTimedOut] = useState(false)
 
+  /**
+   * ★ "예고했으면 내용이 있다" 를 **자가 치유**로 보장한다 (#7 의 다른 경로).
+   *
+   *   결과가 없고 도는 중도 아니면 다시 부른다. 이렇게 두면
+   *   "가드에 막혀 시도조차 못 한" 상태가 스스로 풀린다.
+   *
+   *   ★ 처음엔 로컬 플래그(attempted)로 "시도했는데 없으면 버린다" 로 짰는데,
+   *     같은 eventId 로 스토어만 리셋되면 effect 가 재실행되지 않아 낡은 플래그가 남고
+   *     멀쩡한 사건을 즉시 버렸다(verify:incidents F 절이 잡았다).
+   *     상태를 컴포넌트에 두지 않고 **스토어가 아는 사실**만 보게 해서 그 창을 없앴다.
+   */
   useEffect(() => {
-    void generate(eventId)
-  }, [eventId, generate])
+    if (!loading && !resolved) void generate(eventId)
+  }, [loading, resolved, eventId, generate])
 
-  // ★ 생성 실패(null)면 사건이 아니다 — 큐에서 빼서 없던 일로 만든다(#7).
-  //   generate 쪽에서도 빼지만, 이미 실패한 결과가 캐시된 채 다시 들어오는 경우까지 덮는다.
+  // 생성이 실패로 확정되면(null) 사건이 아니다 — 큐에서 빼서 없던 일로 만든다.
   useEffect(() => {
     if (incident === null) dropPendingEvent(eventId)
   }, [incident, eventId, dropPendingEvent])

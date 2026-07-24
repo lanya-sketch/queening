@@ -60,6 +60,16 @@ export const YOUTH_EVENTS: GameEvent[] = [
       '섭정공이었고, 명분은 "전하의 심기를 어지럽히지 않기 위함"이었다.\n' +
       '늙은 의관이 물러나며 아주 잠깐 {왕}의 얼굴을 보았다. 그 눈빛이 ' +
       '연민인지 두려움인지 당신은 끝내 판단하지 못했다.',
+    // ★ 변론 통찰 — 봉인의 '명분'을 문장으로 뜯어 읽는다. 초반 변론의 두 번째 자리.
+    insights: [
+      {
+        requires: { stats: { rhetoric: { min: 20 } } },
+        text:
+          '"심기를 어지럽히지 않기 위함"은 금지가 아니라 배려의 형식을 쓴다. ' +
+          '거절을 배려로 적어 두면 항의하는 쪽이 무례해진다 — 이 문장을 쓴 사람은 ' +
+          '{왕}이 언젠가 다시 물을 것을 이미 계산해 두었다.',
+      },
+    ],
     condition: { minAge: 12, stats: { statecraft: { min: 11 } } },
     effects: [{ target: { kind: 'resource', key: 'regentSuspicion' }, amount: 5 }],
     setFlags: { clue_sealed_report: true },

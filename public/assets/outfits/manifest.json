@@ -21,8 +21,7 @@
       "name": "대례복",
       "description": "대관식과 국가 의례에만 꺼내는 옷. 무겁고, 그만큼 눈에 띈다.",
       "thumbSrc": "/assets/characters/monarch/portraits/male/monarch_m_royal_16.png",
-      "fullSrc": "/assets/characters/monarch/male/monarch_m_royal_16.png",
-      "unlockCondition": { "stats": { "courtcraft": { "min": 25 } } }
+      "fullSrc": "/assets/characters/monarch/male/monarch_m_royal_16.png"
     },
     {
       "id": "armor",

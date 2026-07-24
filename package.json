@@ -36,7 +36,10 @@
     "verify:portraits2": "node tools/verify/portraits2.mjs",
     "simulate": "node tools/verify/simulate.mjs",
     "gen:outfits": "node tools/verify/gen-outfits.mjs",
-    "gen:characters": "node tools/verify/gen-characters.mjs"
+    "gen:characters": "node tools/verify/gen-characters.mjs",
+    "verify:insights": "node tools/verify/insights.mjs",
+    "analyze:stats": "node tools/verify/analyze-stat-use.mjs",
+    "sweep": "node tools/verify/sweep.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

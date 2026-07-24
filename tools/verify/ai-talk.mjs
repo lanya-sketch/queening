@@ -5,7 +5,9 @@
 //   ("내가 키운 대로 군주가 반응한다" 가 진짜 되는지의 증명)
 //
 // 네트워크는 전부 가로챈다 — 실제 키도 과금도 없다.
-import { APP_URL, launch, log, ok, openAiSettings, overflow, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import {
+  APP_URL, launch, log, ok, openAiSettings, overflow, readGauge, shotsDir, SAVE_VERSION,
+} from './helpers.mjs'
 
 const OUT = shotsDir('ai-talk')
 
@@ -187,9 +189,12 @@ await page.waitForTimeout(300)
 const dialog = page.getByRole('dialog', { name: '대화' })
 log('C1 대화 모달 열림:', ok(await dialog.isVisible()))
 
-const trustBefore = await page.evaluate(() =>
-  JSON.parse(JSON.stringify(window.__queeningAi ? 0 : 0)) ||
-  Number(document.querySelector('aside')?.innerText.match(/신뢰\s*(\d+)/)?.[1] ?? 0))
+/*
+ * ★ 사이드바는 이제 숫자가 아니라 구간 라벨("서먹함")을 보여준다 —
+ *   `신뢰 (\d+)` 정규식은 매치가 없어 늘 0 을 돌려주고 있었다.
+ *   정확한 값은 data-value 훅에 있으므로 readGauge 로 읽는다(단언의 뜻은 그대로).
+ */
+const trustBefore = await readGauge(page, '신뢰')
 
 await dialog.locator('input').fill('아버님 이야기를 해도 될까요')
 await dialog.getByRole('button', { name: '보내기' }).click()
@@ -211,8 +216,7 @@ log('C5 신뢰 +3 칩 표시 (9 → 상한 3 으로 축소):', ok(afterText.incl
 log('C6 통치학 칩 없음 (이 화면 허용 목록 밖):', ok(!afterText.includes('통치학')))
 log('C7 국정 영향도 칩 없음 (전역 금지):', ok(!afterText.includes('국정 영향도 +')))
 
-const trustAfter = await page.evaluate(() =>
-  Number(document.querySelector('aside')?.innerText.match(/신뢰\s*(\d+)/)?.[1] ?? 0))
+const trustAfter = await readGauge(page, '신뢰')
 log(`C8 실제 게임 상태에 반영: 신뢰 ${trustBefore} → ${trustAfter}`,
   ok(trustAfter === trustBefore + 3))
 await page.screenshot({ path: `${OUT}/01-talk.png`, fullPage: false })

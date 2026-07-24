@@ -59,11 +59,13 @@ const locked = []
 for (const id of ['사복', '정무복', '대례복', '갑주', '연회복']) {
   if (await dialog.locator('ul button').filter({ hasText: id }).isDisabled()) locked.push(id)
 }
-// 11세 시작: 대례복(궁정처세25)·갑주(무예30)·연회복(16세) 잠김.
-log('A7 잠긴 착장:', locked.join(', '), ok(locked.join(',') === '대례복,갑주,연회복'))
-const lockText = await dialog.locator('ul button').filter({ hasText: '대례복' }).innerText()
+// 11세 시작: 갑주(무예30)·연회복(16세) 잠김.
+// ★ 대례복은 해금 대상이 아니다 — 왕의 기본 예복이라 즉위한 날부터 입는다(실플레이 피드백).
+log('A7 잠긴 착장:', locked.join(', '), ok(locked.join(',') === '갑주,연회복'))
+// 잠긴 착장에 사유가 붙는가 — 대상을 갑주로 옮겼을 뿐 단언의 뜻은 같다.
+const lockText = await dialog.locator('ul button').filter({ hasText: '갑주' }).innerText()
 log('A8 해금 조건 문구:', JSON.stringify(lockText.split('\n').pop()),
-  ok(lockText.includes('궁정처세 25 이상')))
+  ok(lockText.includes('무예 30 이상')))
 log('A9 안전 안내 노출:',
   ok(await dialog.getByText('노출 등 부적절한 이미지로 교체하지 마세요').isVisible()))
 log('A10 모달 가로 오버플로:', JSON.stringify(await overflow(page)))
@@ -202,14 +204,16 @@ await portrait(page).click()
 await page.waitForTimeout(250)
 const d2 = page.getByRole('dialog')
 const stillLocked = []
-for (const id of ['대례복', '기사 갑주']) {
+for (const id of ['대례복', '갑주']) {
   if (await d2.locator('ul button').filter({ hasText: id }).isDisabled()) stillLocked.push(id)
 }
-log('C6 스탯 충족 → 대례복·기사 갑주 해금:', ok(stillLocked.length === 0))
-await d2.locator('ul button').filter({ hasText: '기사 갑주' }).click()
+log('C6 스탯 충족 → 대례복·갑주 해금:', ok(stillLocked.length === 0))
+await d2.locator('ul button').filter({ hasText: '갑주' }).click()
 await page.waitForTimeout(250)
+// ★ 'military-full' 은 SVG 자리표시자 시절 경로다. 에셋 배선 뒤로는 PNG(_armor_)다.
+//   C6 의 옛 이름과 같은 시기에 낡은 것이고, 크래시에 가려 여태 안 보였다.
 log('C7 잠겨있던 착장 착용:',
-  ok((await d2.locator('img').first().getAttribute('src')).includes('military-full')))
+  ok((await d2.locator('img').first().getAttribute('src')).includes('_armor_')))
 await shot(page, '04-migrated-unlocked')
 await page.keyboard.press('Escape')
 
@@ -234,7 +238,9 @@ await page.getByRole('button', { name: '상세' }).click()
 await page.getByRole('button', { name: '불러오기' }).click()
 await page.waitForTimeout(300)
 log('C8 v2 세이브 로드됨:', await dateText(page), ok((await dateText(page)) === '즉위 2년 6월'))
-log('C9 신망 기본값 주입:', ok((await readGauge(page, '섭정 신망')) === 20))
+// ★ 초기값이 20→0 으로 바뀌었다(C4·C13 과 같은 이유). 숫자 대신 구간 라벨로 확인한다.
+log('C9 신망 기본값 주입:', await readBand(page, '섭정 신망'),
+  ok((await readBand(page, '섭정 신망')) === '아이로만 봄'))
 log('C10 기존 착장 보존:',
   ok((await portrait(page).locator('img').getAttribute('src')).includes('_office_')))
 await page.getByRole('button', { name: '저장', exact: true }).click()
@@ -330,21 +336,27 @@ log('E9 세이브 버전 그대로 (구조 변경 없음):', affairSave.version,
   ok(affairSave.version === SAVE_VERSION))
 
 // (2) 재정·무예 요구를 못 채운 경우 — 직접 결정은 잠기고 위임만 열려야 한다
-await seedAffairSave(apage, { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 })
+// ★ 시점을 빠뜨리면 기본값(6월)으로 심겨 「변경의 불빛」(3월 게이팅)이 아예 안 뜬다.
+//   월 단위 전환 때 E1 에만 FRONTIER_WHEN 을 붙이고 여기를 놓쳤고, 앞선 크래시에 가려 안 보였다.
+await seedAffairSave(apage, { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, FRONTIER_WHEN)
 const ch2 = choiceButtons(apage)
 const states = []
 for (let i = 0; i < 3; i++) states.push((await ch2.nth(i).isEnabled()) ? '열림' : '잠김')
 log('E10 스탯 미충족 시 선택지 상태:', states.join(' / '),
   ok(states.join(',') === '잠김,잠김,열림'))
 const lockText2 = await ch2.first().innerText()
+// ★ 게이트 재조정으로 재정 요구가 30→15 로 내려갔다(밸런스 2단계). 뜻은 같고 숫자만 따라간다.
 log('E11 잠금 사유 표시:', JSON.stringify(lockText2.split('\n').pop()),
-  ok(lockText2.includes('재정 30 이상')))
+  ok(lockText2.includes('재정 15 이상')))
 await apage.screenshot({ path: `${OUT}/08-state-affair.png`, fullPage: false })
 
 // --- 현안 2: 제국의 청구서 (15세+, 즉위 4년+, 가을) ---
 const EMPIRE_WHEN = { year: 4, month: 8, age: 15 } // 8월+1턴=9월(제국 발동)
+// ★ 「첫 친정」을 '이미 본 것'으로 막는다 — 문턱이 통치학 40→20 으로 내려가면서
+//   이 시드(통치학 20, 15세)에서 먼저 발동해 제국의 청구서 자리를 뺏는다.
 await seedAffairSave(apage,
-  { statecraft: 20, finance: 44, rhetoric: 10, martial: 45, courtcraft: 10 }, EMPIRE_WHEN, ['issue-frontier-raid'])
+  { statecraft: 20, finance: 44, rhetoric: 10, martial: 45, courtcraft: 10 }, EMPIRE_WHEN,
+  ['issue-frontier-raid', 'teen-first-policy'])
 log('E12 제국의 청구서 발동 (15세 + 즉위 4년 + 가을):',
   await apage.locator('[data-event-title]').innerText(),
   ok((await apage.locator('[data-event-title]').innerText()) === '제국의 청구서'))
@@ -363,16 +375,28 @@ log(`E15 교역 → 재정 ${eFinBefore}→${await readGauge(apage, '재정')} (
   ok((await readGauge(apage, '재정')) === eFinBefore + 4))
 
 await seedAffairSave(apage,
-  { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, EMPIRE_WHEN, ['issue-frontier-raid'])
+  { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, EMPIRE_WHEN,
+  ['issue-frontier-raid', 'teen-first-policy'])
 const ec2 = choiceButtons(apage)
 const eStates = []
 for (let i = 0; i < 4; i++) eStates.push((await ec2.nth(i).isEnabled()) ? '열림' : '잠김')
-log('E16 스탯 미충족 시:', eStates.join(' / '), ok(eStates.join(',') === '잠김,잠김,열림,열림'))
+/*
+ * ★ 이 둘은 밸런스 2단계에서 **잠금 → 결과 차등(4-C)** 으로 바뀌었다.
+ *   왕은 서툴러도 사절 앞에서 답해야 하므로 잠기지 않고, 대신 스탯에 따라 결과가 갈린다.
+ *   그래서 이제 단언은 '잠기는가' 가 아니라 '항상 열리되 등급이 어설픔인가' 다.
+ */
+log('E16 스탯 미충족이어도 전부 열림(차등이라 잠기지 않음):', eStates.join(' / '),
+  ok(eStates.join(',') === '열림,열림,열림,열림'))
+const eTiers = await ec2.evaluateAll((els) =>
+  els.map((e) => e.getAttribute('data-choice-tier')).filter(Boolean))
+log('E16b ★ 낮은 스탯이면 등급이 어설픔:', eTiers.join(' / '),
+  ok(eTiers.length === 2 && eTiers.every((t) => t === '어설픔')))
 
 // --- 현안 3: 선왕이 남긴 방 (16세+, 즉위 5년+, 여름) ---
 const COMMONS_WHEN = { year: 5, month: 5, age: 16 } // 5월+1턴=6월(하원 발동)
 await seedAffairSave(apage,
-  { statecraft: 20, finance: 10, rhetoric: 50, martial: 10, courtcraft: 50 }, COMMONS_WHEN, ['issue-frontier-raid', 'issue-empire-tribute'])
+  { statecraft: 20, finance: 10, rhetoric: 50, martial: 10, courtcraft: 50 }, COMMONS_WHEN,
+  ['issue-frontier-raid', 'issue-empire-tribute', 'teen-first-policy'])
 log('E17 선왕이 남긴 방 발동 (16세 + 즉위 5년 + 여름):',
   await apage.locator('[data-event-title]').innerText(),
   ok((await apage.locator('[data-event-title]').innerText()) === '선왕이 남긴 방'))
@@ -397,11 +421,14 @@ log('E20 house_commons_defended + people_relieved_commons 기록:',
 log('E21 세이브 버전 그대로:', hSave.version, ok(hSave.version === SAVE_VERSION))
 
 await seedAffairSave(apage,
-  { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, COMMONS_WHEN, ['issue-frontier-raid', 'issue-empire-tribute'])
+  { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 }, COMMONS_WHEN,
+  ['issue-frontier-raid', 'issue-empire-tribute', 'teen-first-policy'])
 const hc2 = choiceButtons(apage)
 const hStates = []
 for (let i = 0; i < 4; i++) hStates.push((await hc2.nth(i).isEnabled()) ? '열림' : '잠김')
-log('E22 스탯 미충족 시:', hStates.join(' / '), ok(hStates.join(',') === '잠김,잠김,열림,열림'))
+// ★ 첫째 「어전에서 존속을 선포한다」는 결과 차등(4-C)이라 **잠기지 않는다** — 왕은 서툴러도 말은 한다.
+//   둘째 「귀족들을 따로 구슬려 지킨다」만 궁정처세 26 잠금이 남아 있다.
+log('E22 스탯 미충족 시:', hStates.join(' / '), ok(hStates.join(',') === '열림,잠김,열림,열림'))
 await apage.screenshot({ path: `${OUT}/09-house-of-commons.png`, fullPage: false })
 
 log('')

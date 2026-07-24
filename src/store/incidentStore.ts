@@ -64,7 +64,16 @@ export const useIncidents = create<IncidentStore>()((set, get) => ({
   reset: () => set({ byEvent: {}, chosen: {}, loading: null }),
 
   generate: async (eventId) => {
-    if (get().loading || eventId in get().byEvent) return
+    /**
+     * ★ 가드는 **이 사건이** 이미 도는 중인지만 본다 (실플레이 피드백: 빈 예고).
+     *
+     *   예전엔 `get().loading` — 전역 단일 플래그였다. 그래서 다른 사건이 생성 중이면
+     *   이 사건은 **시도조차 못 하고** 내용 없이 큐에 남았다. 그 상태의 byEvent 는
+     *   `undefined`(실패를 뜻하는 `null` 이 아니라)라, 실패 감지에도 안 걸려
+     *   "소식이 올라오고 있습니다" 뒤에 조용히 아무 일도 안 일어났다.
+     *   한 턴에 돌발이 둘 이상 예고될 수 있으므로 실제로 밟히는 경로다.
+     */
+    if (get().loading === eventId || eventId in get().byEvent) return
     const withChoices = incidentHasChoices(eventId)
     const game = useGame.getState().game
     set({ loading: eventId })

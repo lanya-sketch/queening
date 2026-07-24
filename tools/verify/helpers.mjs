@@ -50,9 +50,57 @@ export function shotsDir(name) {
   return dir
 }
 
+/** 외부 서체 CDN. 검증은 여기에 매달릴 이유가 없다. */
+const FONT_HOSTS = [
+  '**://fonts.googleapis.com/**',
+  '**://fonts.gstatic.com/**',
+  '**://cdn.jsdelivr.net/**',
+]
+
+/**
+ * ★ 검증 실행에서는 서체 CDN 을 끊는다 (UI 리디자인 후속).
+ *
+ *   index.html 이 Pretendard·Cinzel·Gowun Batang 을 CDN 에서 싣는데, Pretendard 는
+ *   woff 폴백을 여럿 물어오고 그중 일부가 끝나지 않는다. 스위트 대부분이
+ *   `waitUntil: 'networkidle'` 로 기다리므로, 26종을 몰아 돌리면 그 대기가 30초를 넘겨
+ *   **크래시**한다(ai-talk B 절에서 실제로 터졌다).
+ *
+ *   폰트는 게임의 겉모습이지 검증 대상이 아니다 — 끊으면 대기가 결정론적으로 끝난다.
+ *   ★ 단, 실제 화면을 눈으로 보는 스크린샷 도구는 서체가 살아야 하므로
+ *     `QUEENING_KEEP_FONTS=1` 로 이 차단을 끈다(redesign-shots 가 그렇게 쓴다).
+ */
 export async function launch() {
   await assertServer()
-  return chromium.launch({ executablePath: findChrome(), headless: true })
+  const browser = await chromium.launch({ executablePath: findChrome(), headless: true })
+  if (process.env.QUEENING_KEEP_FONTS === '1') return browser
+
+  /*
+   * ★ abort 가 아니라 **빈 CSS 로 응답**한다.
+   *   abort 하면 콘솔에 net::ERR_FAILED 가 남아, 콘솔 에러를 모으는 스위트(regression)가
+   *   그걸 진짜 오류로 보고한다 — 잡음을 만들면서 신호를 가린다.
+   *   빈 스타일시트를 주면 @font-face 자체가 없으니 폰트 파일 요청도 따라오지 않는다.
+   */
+  const blockFonts = async (target) => {
+    for (const pattern of FONT_HOSTS) {
+      await target
+        .route(pattern, (route) =>
+          route.fulfill({ status: 200, contentType: 'text/css; charset=utf-8', body: '' }))
+        .catch(() => {})
+    }
+  }
+  const newPage = browser.newPage.bind(browser)
+  const newContext = browser.newContext.bind(browser)
+  browser.newPage = async (...args) => {
+    const page = await newPage(...args)
+    await blockFonts(page)
+    return page
+  }
+  browser.newContext = async (...args) => {
+    const ctx = await newContext(...args)
+    await blockFonts(ctx)
+    return ctx
+  }
+  return browser
 }
 
 /**

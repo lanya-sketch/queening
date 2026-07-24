@@ -270,11 +270,31 @@ export interface Choice {
   resultText: string
 }
 
+/**
+ * ★ 지식 체크 통찰 (4-D).
+ *
+ * 스탯이 일정 이상이면 사건의 **배경을 한 줄 더 읽어낸다.** 분기도 잠금도 아니고
+ * 정보 보상이라, 균형 육성을 막지 않으면서 그 스탯에 초반 의미를 준다.
+ *
+ * 왜 게이트를 늘리지 않는가: 게이트를 더 두면 "못 넘으면 못 한다"가 늘어 초반이 좁아진다.
+ * 통찰은 못 읽어도 사건은 그대로 흘러가고, 읽으면 같은 사건이 더 깊게 보인다.
+ *
+ * ★ 통치학처럼 이미 쓰임이 있는 스탯에는 **가시성**을 준다 —
+ *   쓰임 셋이 전부 "조건을 넘으면 이벤트가 열린다"라, 넘고 나면 쓰였는지 알 수 없었다.
+ *   통찰 한 줄이 조용한 게이트에게 말을 하게 한다.
+ */
+export interface EventInsight {
+  requires: Condition
+  text: string
+}
+
 export interface GameEvent {
   id: string
   title: string
   /** 확장 예약: 나중에 scene: Scene 으로 승격될 자리. */
   text: string
+  /** 조건을 넘으면 본문 뒤에 붙는 통찰 한 줄. 분기 없음(정보 보상). */
+  insights?: EventInsight[]
   condition: Condition
   /** 기본 true. 발동 시 flag `event:<id>` 가 자동 기록된다. */
   once?: boolean

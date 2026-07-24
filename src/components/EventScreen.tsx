@@ -191,6 +191,24 @@ export function EventScreen() {
           )}
         </div>
 
+        {/*
+          ★ 지식 체크 통찰 — 스탯이 받쳐 주면 배경을 한 줄 더 읽는다(분기 없음).
+            씬이 도는 중에는 감춘다 — 대사를 다 본 뒤에 얹혀야 "알아챘다"가 된다.
+        */}
+        {!playingScene &&
+          event.insights
+            ?.filter((ins) => matchesCondition(game, ins.requires))
+            .map((ins, i) => (
+              <p
+                key={i}
+                data-insight
+                className="mt-4 border-l-2 py-1 pl-3 text-[13px] italic leading-relaxed"
+                style={{ borderColor: 'rgba(212,176,106,.45)', color: 'var(--color-gold-300)' }}
+              >
+                {resolveText(ins.text, game)}
+              </p>
+            ))}
+
         {!playingScene && event.effects && event.effects.length > 0 && (
           <DeltaChips
             deltas={event.effects.map((e) => ({ label: targetLabel(e.target), amount: e.amount }))}

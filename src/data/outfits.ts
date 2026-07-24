@@ -31,12 +31,16 @@ export const FALLBACK_MANIFEST: OutfitManifest = {
       fullSrc: `${FULL}/monarch_m_office_16.png`,
     },
     {
+      /**
+       * ★ 해금 조건 없음 (실플레이 피드백).
+       *   대례복은 **왕의 기본 예복**이지 얻어야 할 보상이 아니다. 열한 살에 즉위했으면
+       *   대관식에서 이미 입은 옷이다. 궁정처세 25 를 걸어 두었던 건 앞뒤가 안 맞았다.
+       */
       id: 'royal',
       name: '대례복',
       description: '대관식과 국가 의례에만 꺼내는 옷. 무겁고, 그만큼 눈에 띈다.',
       thumbSrc: `${PORT}/monarch_m_royal_16.png`,
       fullSrc: `${FULL}/monarch_m_royal_16.png`,
-      unlockCondition: { stats: { courtcraft: { min: 25 } } },
     },
     {
       id: 'armor',
