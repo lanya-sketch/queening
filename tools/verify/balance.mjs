@@ -12,7 +12,9 @@
  *   node tools/verify/balance.mjs          전체
  *   node tools/verify/balance.mjs BAL      한 빌드만
  */
-import { APP_URL, advanceScene, choiceButtons, enterGame, launch, ok, phaseOf, readPanel } from './helpers.mjs'
+import {
+  APP_URL, advanceScene, choiceButtons, clickCard, enterGame, launch, ok, phaseOf, readPanel,
+} from './helpers.mjs'
 
 const LESSON = {
   통치학: '통치학 수업',
@@ -165,10 +167,7 @@ async function run(browser, build) {
       const plan = planTurn(panel, build, tally)
       if (turns < 24) monthly.push({ t: turns, wb, plan: plan.join('+') })
       void before
-      for (const name of plan) {
-        const c = page.locator('[data-activity]').filter({ hasText: new RegExp(name) })
-        if (await c.isEnabled().catch(() => false)) await c.click()
-      }
+      for (const name of plan) await clickCard(page, name)
       await page.getByRole('button', { name: /턴 종료/ }).click()
       await page.waitForTimeout(55)
       turns++

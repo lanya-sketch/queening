@@ -41,6 +41,15 @@ for (const s of targets) {
     // 크래시는 원인 줄을 바로 보여 준다 — 로그를 다시 뒤지지 않도록.
     const tail = r.out.trim().split('\n').slice(-12).join('\n')
     console.log(tail.replace(/^/gm, '    │ '))
+  } else if (r.fails > 0) {
+    /*
+     * ★ 실패한 단언 줄도 함께 찍는다.
+     *   숫자만 내면 어느 단언인지 알려고 30분짜리 스위트를 다시 돌려야 한다 —
+     *   실제로 ablation 에서 그랬다.
+     */
+    for (const line of r.out.split('\n').filter((l) => l.includes('*** FAIL'))) {
+      console.log(`    │ ${line.trim()}`)
+    }
   }
 }
 

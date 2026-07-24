@@ -235,6 +235,29 @@ export async function passIntro(page, gender = 'male') {
 export const card = (p, name) =>
   p.locator('[data-activity]').filter({ hasText: new RegExp(name) })
 
+/**
+ * ★ 활동 카드 클릭 — **확인하고 누르는 사이의 경쟁**을 견딘다.
+ *
+ *   `isEnabled()` 로 확인한 직후 앞선 클릭의 리렌더가 AP 를 소진시켜 카드가 비활성으로
+ *   바뀌면, 이어지는 click 은 "visible, enabled and stable" 을 기다리다 30초 뒤에 죽는다.
+ *   리디자인으로 카드에 트랜지션이 붙으면서 그 창이 넓어져 실제로 ablation 이 그렇게 죽었다.
+ *
+ *   계획은 어차피 최선 노력이라(못 고르면 건너뛴다), 짧은 시한을 주고 실패하면 넘어간다.
+ *   30초를 기다리다 스위트를 죽이는 것보다 그 칸 하나를 빠뜨리는 편이 낫다.
+ */
+export async function clickCard(page, name) {
+  const c = page.locator('[data-activity]').filter({ hasText: new RegExp(name) })
+  if (!(await c.isEnabled().catch(() => false))) return false
+  /*
+   * ★ force:true — 안정성(actionability) 대기를 건너뛴다.
+   *   카드에 transition-transform 이 걸려 있어 Playwright 의 "stable" 판정이 끝나지 않는다
+   *   (막 리렌더된 카드는 늘 미세하게 움직이는 중이라 3초 시한도 못 채운다).
+   *   우리는 방금 isEnabled 로 눌러도 되는지 확인했으니 안정성 대기는 불필요하다 —
+   *   force 로 즉시 누른다. 이게 ablation 이 스윕에서만 죽던 진짜 원인이었다.
+   */
+  return c.click({ force: true, timeout: 3000 }).then(() => true).catch(() => false)
+}
+
 /** 활동 카드 — id 로 정확히 집는다(이름이 바뀌어도 안 깨진다). 새 검증은 이쪽을 쓸 것. */
 export const cardById = (p, id) => p.locator(`[data-activity="${id}"]`)
 

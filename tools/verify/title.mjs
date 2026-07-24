@@ -232,8 +232,15 @@ await g.waitForTimeout(200)
 // 게임 중 ? 버튼
 await g.getByRole('button', { name: '새 게임' }).click()
 await g.waitForTimeout(300)
-await g.getByRole('button', { name: '건너뛰기' }).click()
-await g.waitForTimeout(300)
+// ★ 건너뛰기만 누르면 성별 선택 단계가 남아 인트로 오버레이가 클릭을 가로챈다.
+//   passIntro 가 건너뛰기 → 성별 → 시작한다 를 다 밟는다(다른 스위트는 이미 그걸 쓴다).
+await passIntro(g)
+// 인트로 다음은 온보딩 오버레이다 — 이것도 걷어내야 게임 화면의 ? 버튼을 누를 수 있다.
+const onboardSkip = g.getByRole('button', { name: '건너뛰기' })
+if (await onboardSkip.isVisible().catch(() => false)) {
+  await onboardSkip.click()
+  await g.waitForTimeout(250)
+}
 await g.locator('[data-help-button]').first().click()
 await g.waitForTimeout(200)
 log('G7 ★ 게임 중 ? 버튼 → 도움말 열림:',

@@ -65,7 +65,9 @@ async function runTurn(choose) {
     if (choose) {
       const btn = page.locator('[data-choice]').filter({ hasText: choose })
       if (await btn.first().isVisible().catch(() => false)) {
-        await btn.first().click(); await page.waitForTimeout(200)
+        // ★ force — 씬 마지막 프레임의 트랜지션과 겹치면 안정성 대기에 걸려 클릭이 씹힌다.
+        //   부하 상태에서 그 창이 넓어져 거절이 반영 안 되고 A4 가 흔들렸다(단독은 통과).
+        await btn.first().click({ force: true }); await page.waitForTimeout(200)
       }
     }
     if (/다음 달로/.test(label)) break

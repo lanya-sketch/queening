@@ -5,7 +5,8 @@
 //   node tools/verify/simulate.mjs        전체 빌드
 //   node tools/verify/simulate.mjs D      머리글자가 D 인 빌드만
 import {
-  APP_URL, advanceScene, choiceButtons, enterGame, launch, ok, phaseOf, readPanel, shotsDir,
+  APP_URL, advanceScene, choiceButtons, clickCard, enterGame, launch, ok, phaseOf, readPanel,
+  shotsDir,
 } from './helpers.mjs'
 
 const OUT = shotsDir('simulate')
@@ -375,10 +376,7 @@ async function runSimulation(browser, run) {
       minInfluence = Math.min(minInfluence, infl)
       if (turns % 8 === 0) influenceTrack.push(`${panel.age.replace('왕 ', '')}:${infl}`)
 
-      for (const name of planTurn(panel, run)) {
-        const c = page.locator('[data-activity]').filter({ hasText: new RegExp(name) })
-        if (await c.isEnabled().catch(() => false)) await c.click()
-      }
+      for (const name of planTurn(panel, run)) await clickCard(page, name)
       await page.getByRole('button', { name: /턴 종료/ }).click()
       await page.waitForTimeout(60)
       turns++
