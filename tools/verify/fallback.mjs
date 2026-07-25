@@ -77,8 +77,9 @@ await p4.getByRole('button', { name: '상세' }).click()
 await p4.getByRole('button', { name: '불러오기' }).click()
 await p4.waitForTimeout(300)
 const src4 = await portrait(p4).locator('img').getAttribute('src')
-// ★ 이제 초상은 성별×나이×착장 크롭본으로 해석된다 — 유령 착장은 casual 로 복귀.
-log('4) 존재하지 않는 착장 id → 기본값(casual) 복귀:', src4?.split('/').pop(),
-  ok(src4.includes('_casual_')))
+// ★ 세이브의 유령 착장은 load 시 resolveOutfit 이 DEFAULT_OUTFIT_ID 로 되돌린다.
+//   기본 착장이 실플레이 피드백 #22 로 정무복(office)이 됐다(예전 casual).
+log('4) 존재하지 않는 착장 id → 기본 착장(정무복) 복귀:', src4?.split('/').pop(),
+  ok(src4.includes('_office_')))
 
 await browser.close()

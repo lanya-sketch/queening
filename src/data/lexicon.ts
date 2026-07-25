@@ -25,6 +25,15 @@ export const MONARCH_TERMS: Record<Gender, Terms> = {
   female: { title: '여왕', address: '전하', child: '왕녀', third: '그녀' },
 }
 
+/**
+ * 군주 기본 이름(성별별). 인트로에서 빈칸이면 이 값이 쓰이고, 플레이어가 고쳐 쓸 수 있다.
+ * 이름은 역할 호칭과 별개라 여기(호칭 표)와 나란히 두되 Terms 구조 밖에 둔다.
+ */
+export const DEFAULT_MONARCH_NAME: Record<Gender, string> = {
+  male: '카이로스',
+  female: '아일라',
+}
+
 export const CHARACTER_TERMS: Record<Gender, Terms> = {
   male: { title: '공자', address: '경', child: '아들', third: '그' },
   female: { title: '영애', address: '경', child: '딸', third: '그녀' },
@@ -35,6 +44,7 @@ export const CHARACTER_TERMS: Record<Gender, Terms> = {
  *   {왕}          군주의 호칭      → 왕 / 여왕
  *   {전하}        군주를 부를 때
  *   {그}          군주 3인칭       → 그 / 그녀
+ *   {이름}        군주 고유명      → 플레이어가 정한 이름(빈칸이면 성별 기본값)
  *   {그:heir}     캐릭터 3인칭     → 해당 캐릭터의 gender 로 결정
  *   {이름:heir}   캐릭터 표시 이름
  */

@@ -1,5 +1,6 @@
 import { ACTIVITY_BY_ID } from '../data/activities'
 import { DURABILITY, GAME_CONFIG, INITIAL_RESOURCES, INITIAL_STATS, MONTH_SCALE } from '../data/config'
+import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import { durabilityGain, growthFactor, wellbeingCostFactor } from './durability'
 import { initialAffection } from './romance'
@@ -34,6 +35,7 @@ export function createInitialState(): GameState {
     actionPoints: GAME_CONFIG.actionPointsPerTurn,
     currentOutfitId: DEFAULT_OUTFIT_ID,
     monarchGender: 'male',
+    monarchName: DEFAULT_MONARCH_NAME.male,
     affection: initialAffection(),
     plannedActivityIds: [],
     counters: {},

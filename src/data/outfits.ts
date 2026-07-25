@@ -3,7 +3,10 @@ import type { OutfitManifest } from '../types/game'
 /** 유저가 직접 고치는 매니페스트의 위치. public/ 아래라 재빌드 없이 반영된다. */
 export const OUTFIT_MANIFEST_URL = '/assets/outfits/manifest.json'
 
-export const DEFAULT_OUTFIT_ID = 'casual'
+// ★ 기본(시작) 착장 = 정무복 — 어린 왕도 평소 갖춰 입은 모습(실플레이 피드백 #22).
+//   대례복은 '의례 전용·무겁고 눈에 띄는' 옷이라 늘 입기엔 어색해 실무용 정무복을 기본으로.
+//   플레이어는 언제든 착장을 바꿀 수 있다(이건 11세 출발 모습일 뿐).
+export const DEFAULT_OUTFIT_ID = 'office'
 
 /**
  * 내장 폴백 매니페스트.
@@ -43,20 +46,28 @@ export const FALLBACK_MANIFEST: OutfitManifest = {
       fullSrc: `${FULL}/monarch_m_royal_16.png`,
     },
     {
+      /**
+       * ★ 해금 조건 없음 (실플레이 피드백 #3).
+       *   "선왕이 물려준 것, 아직 조금 크다" — 이미 **입되 큰** 상태를 전제한 옷이다.
+       *   무예 30 게이트는 그 설명과 앞뒤가 안 맞아 걷어낸다(게이트는 데뷔탕트복만).
+       */
       id: 'armor',
       name: '갑주',
       description: '선왕이 물려준 것을 치수만 고쳐 지었다. 아직은 조금 크다.',
       thumbSrc: `${PORT}/monarch_m_armor_16.png`,
       fullSrc: `${FULL}/monarch_m_armor_16.png`,
-      unlockCondition: { stats: { martial: { min: 30 } } },
     },
     {
+      /**
+       * ★ 해금 조건 없음 (실플레이 피드백 #21).
+       *   어린 왕도 튜터·섭정공의 손을 잡고 연회에 나간다. 데뷔탕트(16세) 전에도
+       *   연회 참석이 있으니 그때 입을 수 있어야 한다. 16세 게이트를 걷어낸다.
+       */
       id: 'ball',
       name: '연회복',
       description: '연회와 사교의 자리를 위한 옷. 처음으로 어른들 틈에 선다.',
       thumbSrc: `${PORT}/monarch_m_ball_16.png`,
       fullSrc: `${FULL}/monarch_m_ball_16.png`,
-      unlockCondition: { minAge: 16 },
     },
   ],
   portraits: {

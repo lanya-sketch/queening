@@ -18,11 +18,12 @@ export const INTRO_LINES: string[] = [
     '그때 아이가 왕으로 서 있을지 아닐지는 — 이제 당신에게 달렸다.',
 ]
 
-/** 성별 선택 화면 문구. */
+/** 성별 선택 + 이름 화면 문구. */
 export const INTRO_GENDER = {
   prompt: '당신이 키울 이는 —',
   male: '왕이 될 소년',
   female: '여왕이 될 소녀',
   note: '성별은 이야기의 표기를 정합니다. 정치적 위치에는 차이가 없습니다.',
+  namePrompt: '이 아이의 이름은 —',
   start: '시작한다',
 } as const

@@ -501,6 +501,12 @@ export interface GameState {
   currentOutfitId: string
   /** 군주의 성별. 연애 대상들의 성별은 데이터(CHARACTERS)에 있다. */
   monarchGender: Gender
+  /**
+   * 군주의 고유명(플레이어가 인트로에서 정함). 역할 호칭 {왕}/{전하} 과 **별개** —
+   * 이름은 `{이름}`(인자 없음) 토큰으로만 치환되고 {왕} 을 대체하지 않는다.
+   * 비어 있으면 성별 기본 이름(lexicon.DEFAULT_MONARCH_NAME)으로 표시한다.
+   */
+  monarchName: string
   /** 캐릭터별 호감도 0~100. 키는 charId. */
   affection: Record<string, number>
   plannedActivityIds: string[]

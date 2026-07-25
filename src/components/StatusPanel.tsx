@@ -7,7 +7,7 @@ import { useAiEnabled } from '../store/aiStore'
 import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
 import { talkLocked, useTalk } from '../store/talkStore'
-import { resolveText } from '../systems/text'
+import { monarchName, resolveText } from '../systems/text'
 import { PortraitButton } from './portrait/PortraitButton'
 import { RomancePanel } from './romance/RomancePanel'
 import { Button } from './ui/Button'
@@ -74,6 +74,8 @@ export function StatusPanel() {
               </p>
               {/* 20세를 넘겨 잠긴 상태에서는 본문과 어긋나지 않게 끝점 나이로 고정 */}
               <p data-panel-age className="text-xs text-muted">
+                <span data-panel-name className="text-parchment/90">{monarchName(game)}</span>
+                {' · '}
                 {resolveText('{왕}', game)}{' '}
                 {game.phase === 'ended' ? GAME_CONFIG.endAge : game.age}세
               </p>

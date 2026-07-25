@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { GAME_CONFIG, courtInfluenceCap } from '../data/config'
+import { courtInfluenceCap } from '../data/config'
 import { STAT_KEYS, STAT_META } from '../data/stats'
 import { buildEndingScene } from '../systems/endingScene'
 import { judgeEnding, describeEnding } from '../systems/ending'
@@ -9,7 +9,7 @@ import { endingSummaryRows, isBadEnding } from '../data/endings/summary'
 import { recordEnding } from '../systems/gallery'
 import { SCENE_BY_ID } from '../data/scenes'
 import { useGame } from '../store/gameStore'
-import { resolveText } from '../systems/text'
+import { monarchName, resolveText } from '../systems/text'
 import { ScenePlayer } from './scene/ScenePlayer'
 import { Button } from './ui/Button'
 import { Gauge } from './ui/Chrome'
@@ -51,7 +51,7 @@ export function EndedScreen() {
   // ★ 갤러리 기록 — 이 엔딩(정식/데드)이 해금하는 항목을 별도 키에 누적한다.
   //   마운트 시 한 번. 판정과 무관하게 안전(실패해도 게임에 영향 없음).
   useEffect(() => {
-    recordEnding(summary, deadEndReason(game))
+    recordEnding(summary, deadEndReason(game), monarchName(game))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -81,7 +81,7 @@ export function EndedScreen() {
         <header className="mb-4">
           <h1 className="font-title text-xl font-semibold text-peril-soft">{dead.title}</h1>
           <p className="mt-2 text-xs text-peril-soft/60">
-            {resolveText('{왕}', game)}의 치세는 {game.age}세에, 스무 살에 이르지 못하고 끝났다.
+            {monarchName(game)} {resolveText('{왕}', game)}의 치세는 {game.age}세에, 스무 살에 이르지 못하고 끝났다.
           </p>
         </header>
         <div className="grid grid-cols-2 gap-2">
@@ -98,7 +98,7 @@ export function EndedScreen() {
     <div data-screen={dead ? 'dead' : 'ended'} className="pb-28 lg:pb-6">
       <header className="mb-4">
         <h1 className="font-title text-xl font-semibold text-gold-300">
-          {resolveText('{왕}', game)}은 {GAME_CONFIG.endAge}세가 되었다
+          {monarchName(game)}, 스무 살의 {resolveText('{왕}', game)}
         </h1>
         <p className="mt-2 text-xs text-gold-300/70">{summary && describeEnding(summary)}</p>
       </header>

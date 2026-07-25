@@ -1,4 +1,5 @@
 import { GAME_CONFIG, INITIAL_RESOURCES } from '../data/config'
+import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import { durabilityBase } from './durability'
 import { initialAffection } from './romance'
@@ -40,6 +41,11 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
       durability: durabilityBase(state.age ?? GAME_CONFIG.startAge),
     }
   },
+  // v7 -> v8 : 군주 고유명 도입. 옛 세이브는 성별 기본 이름으로 채운다(카이로스/아일라).
+  7: (state) => ({
+    ...state,
+    monarchName: DEFAULT_MONARCH_NAME[(state.monarchGender as 'male' | 'female') ?? 'male'],
+  }),
 }
 
 function migrate(state: any, fromVersion: number): GameState | null {

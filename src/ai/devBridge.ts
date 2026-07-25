@@ -2,6 +2,7 @@ import { EVENTS, EVENT_BY_ID } from '../data/events'
 import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
 import { CONQUEST_EVENTS } from '../data/events/conquest'
 import { DECISIVE_EVENTS } from '../data/events/decisive'
+import { DAILY_EVENTS } from '../data/events/daily'
 import { DEVICE_EVENTS } from '../data/events/devices'
 import { INCIDENT_EVENTS } from '../data/events/incidents'
 import { RECKONING_AFTERMATH, RECKONING_EVENTS } from '../data/events/reckoning'
@@ -216,6 +217,12 @@ export function installDevBridge(): void {
     /** 정치 고유장치 이벤트 id. */
     deviceIds() {
       return DEVICE_EVENTS.map((e) => e.id)
+    },
+    /** 일상 소소 풀(계절 조건 검증용) — id·title·조건·본문. */
+    dailyEvents() {
+      return DAILY_EVENTS.map((e) => ({
+        id: e.id, title: e.title, month: e.condition?.month ?? null, text: e.text,
+      }))
     },
     /** 결정적 씬 이벤트 id. */
     decisiveIds() {

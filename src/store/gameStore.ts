@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { ACTIVITY_BY_ID } from '../data/activities'
 import { EVENT_BY_ID } from '../data/events'
+import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { FALLBACK_MANIFEST } from '../data/outfits'
 import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '../types/game'
 import { applyEffects } from '../systems/effects'
@@ -43,6 +44,8 @@ interface GameStore {
   continueFromResult: () => void
   /** 군주 성별. 새 게임을 시작하기 전에만 바꾸는 것을 권한다. */
   setMonarchGender: (gender: Gender) => void
+  /** 군주 이름. 인트로에서 정한다(빈칸이면 성별 기본값이 표시됨). */
+  setMonarchName: (name: string) => void
   /** 이벤트 선택지를 고른다. 효과는 이 시점에 적용된다. */
   chooseOption: (eventId: string, choiceId: string) => void
   /** 이벤트 하나를 소화한다. */
@@ -144,7 +147,15 @@ export const useGame = create<GameStore>()((set, get) => ({
     set({ game: { ...game, phase: game.pendingEventIds.length ? 'event' : idlePhase(game) } })
   },
 
-  setMonarchGender: (monarchGender) => set({ game: { ...get().game, monarchGender } }),
+  setMonarchGender: (monarchGender) => {
+    const game = get().game
+    // 이름을 손대지 않았으면(이전 성별의 기본값 그대로면) 새 성별 기본값으로 따라가게 한다.
+    // 플레이어가 직접 입력한 이름이면 성별을 바꿔도 유지한다.
+    const wasDefault = game.monarchName.trim() === DEFAULT_MONARCH_NAME[game.monarchGender]
+    const monarchName = wasDefault ? DEFAULT_MONARCH_NAME[monarchGender] : game.monarchName
+    set({ game: { ...game, monarchGender, monarchName } })
+  },
+  setMonarchName: (name) => set({ game: { ...get().game, monarchName: name } }),
 
   chooseOption: (eventId, choiceId) => {
     const { game } = get()

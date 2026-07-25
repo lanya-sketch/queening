@@ -59,13 +59,13 @@ const locked = []
 for (const id of ['사복', '정무복', '대례복', '갑주', '연회복']) {
   if (await dialog.locator('ul button').filter({ hasText: id }).isDisabled()) locked.push(id)
 }
-// 11세 시작: 갑주(무예30)·연회복(16세) 잠김.
-// ★ 대례복은 해금 대상이 아니다 — 왕의 기본 예복이라 즉위한 날부터 입는다(실플레이 피드백).
-log('A7 잠긴 착장:', locked.join(', '), ok(locked.join(',') === '갑주,연회복'))
-// 잠긴 착장에 사유가 붙는가 — 대상을 갑주로 옮겼을 뿐 단언의 뜻은 같다.
-const lockText = await dialog.locator('ul button').filter({ hasText: '갑주' }).innerText()
-log('A8 해금 조건 문구:', JSON.stringify(lockText.split('\n').pop()),
-  ok(lockText.includes('무예 30 이상')))
+// ★ 실플레이 피드백 #3/#21: 선택 착장의 게이트를 전부 걷어냈다(갑주 무예30·연회복 16세 제거).
+//   왕의 기본 예복(대례복)도, 물려받은 갑주도, 연회복도 즉위한 날부터 입는다. 게이트는
+//   데뷔탕트복(16세 씬 전용, 선택지 밖)뿐이라 여기 목록에서 잠긴 것은 0 이어야 한다.
+log('A7 11세 잠긴 선택 착장 0:', locked.join(', '), ok(locked.length === 0))
+// 어린 왕도 연회복을 바로 입을 수 있는가(#21 — 튜터·섭정공 손 잡고 연회에).
+const ballDisabled = await dialog.locator('ul button').filter({ hasText: '연회복' }).isDisabled()
+log('A8 ★ 어린 왕도 연회복 착용 가능:', ok(!ballDisabled))
 log('A9 안전 안내 노출:',
   ok(await dialog.getByText('노출 등 부적절한 이미지로 교체하지 마세요').isVisible()))
 log('A10 모달 가로 오버플로:', JSON.stringify(await overflow(page)))
@@ -187,7 +187,8 @@ log('C1 v1 세이브 로드됨:', await dateText(page), ok((await dateText(page)
 log('C2 나이 보존:', ok((await page.locator('aside p.text-xs').first().innerText()).includes('14세')))
 const migratedOutfit = await page.evaluate(() =>
   document.querySelector('aside button[aria-label*="군주 초상"] img').getAttribute('src'))
-log('C3 착장 기본값 주입:', ok(migratedOutfit.includes('_casual_')))
+// ★ 마이그레이션이 주입하는 기본 착장 = DEFAULT_OUTFIT_ID. 실플레이 피드백 #22 로 정무복이 됐다.
+log('C3 착장 기본값 주입(정무복):', ok(migratedOutfit.includes('_office_')))
 /*
  * ★ 옛 세이브에 없던 신망을 마이그레이션이 **초기값으로 주입**했는가.
  *   초기값이 20→0 으로 바뀌었으므로 숫자를 박지 않는다(C13 과 같은 이유).

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { LockIcon } from './ui/Chrome'
 import { GALLERY, GALLERY_TOTAL, type GalleryGroup, type GalleryItem } from '../data/gallery'
-import { getAchieved } from '../systems/gallery'
+import { getAchieved, getAchievedNames } from '../systems/gallery'
 import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
 import { Button } from './ui/Button'
@@ -18,6 +18,7 @@ export function GalleryScreen({ onClose }: { onClose: () => void }) {
   const game = useGame((s) => s.game)
   // 마운트 시 한 번 읽는다(이 화면이 열려 있는 동안 기록이 바뀌지 않는다).
   const achieved = useMemo(() => getAchieved(), [])
+  const names = useMemo(() => getAchievedNames(), [])
   const count = achieved.size
 
   return (
@@ -54,6 +55,7 @@ export function GalleryScreen({ onClose }: { onClose: () => void }) {
                     key={item.id}
                     item={item}
                     done={achieved.has(item.id)}
+                    monarchName={names[item.id]}
                     game={game}
                   />
                 ))}
@@ -77,10 +79,12 @@ export function GalleryScreen({ onClose }: { onClose: () => void }) {
 function GalleryCard({
   item,
   done,
+  monarchName,
   game,
 }: {
   item: GalleryItem
   done: boolean
+  monarchName?: string
   game: Parameters<typeof resolveText>[1]
 }) {
   // 스포일러 변주는 달성 전까지 제목까지 가린다. 그 외는 제목을 보여 도전 목표가 되게 한다.
@@ -98,6 +102,9 @@ function GalleryCard({
             달성
           </span>
         </div>
+        {monarchName && (
+          <p data-gallery-name className="mt-1 text-[11px] text-gold-300/60">{monarchName}의 치세</p>
+        )}
         <p className="mt-2 text-[13px] italic leading-relaxed text-parchment">
           “{resolveText(item.scene, game)}”
         </p>

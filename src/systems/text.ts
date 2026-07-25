@@ -1,6 +1,11 @@
 import { CHARACTER_BY_ID } from '../data/characters'
-import { CHARACTER_TERMS, MONARCH_TERMS, TOKEN_PATTERN } from '../data/lexicon'
+import { CHARACTER_TERMS, DEFAULT_MONARCH_NAME, MONARCH_TERMS, TOKEN_PATTERN } from '../data/lexicon'
 import type { GameState } from '../types/game'
+
+/** 군주 표시 이름 — 비어 있으면 성별 기본값. 여러 화면이 공유하도록 한 곳에 둔다. */
+export function monarchName(game: GameState): string {
+  return game.monarchName?.trim() || DEFAULT_MONARCH_NAME[game.monarchGender]
+}
 
 /**
  * 서사 텍스트의 토큰 치환 (M2b-3a).
@@ -44,6 +49,9 @@ export function resolveText(text: string, game: GameState): string {
         return monarch.third
       case '왕자':
         return monarch.child
+      case '이름':
+        // {이름}(인자 없음) = 군주 고유명. {이름:heir}(인자 있음)는 위에서 처리됨.
+        return monarchName(game)
       default:
         return whole
     }

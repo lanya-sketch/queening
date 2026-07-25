@@ -157,15 +157,48 @@ export const DAILY_EVENTS: GameEvent[] = [
     id: 'daily-rain',
     title: '긴 비',
     text: '사흘째 비가 내렸다. 처마 끝의 물줄기를 오래 보았다.',
-    condition: {}, once: false, category: 'story',
+    // ★ 계절감(월 단위 전환 후속) — 장마는 여름(6월)에.
+    condition: { month: 6 }, once: false, category: 'story',
     effects: [res('wellbeing', 0.5, 0.5)],
   },
   {
     id: 'daily-first-snow',
     title: '첫눈',
     text: '옥좌의 뜰에 눈이 얇게 앉았다.',
-    condition: {}, once: false, category: 'story',
+    // ★ 계절감 — 첫눈은 겨울(12월)에.
+    condition: { month: 12 }, once: false, category: 'story',
     effects: [res('wellbeing', 1, 0.3)],
+  },
+  // ── 계절 행사 (서양 중세 왕국 — 동양 소재 금지) ────────────
+  // ★ 계절이 도는 게 느껴지도록 봄·여름·가을·겨울 대표 행사를 하나씩. 축제는 특정 달이라
+  //   month 단일 조건이 자연스럽다. 규모는 작게(±0.5~1) — "그 계절이구나" 정도.
+  {
+    id: 'daily-spring-thaw',
+    title: '봄맞이',
+    text: '성 밖 들녘에서 파종이 시작됐다는 전갈이 올라왔다. 언 땅이 풀리고, 궁에도 볕이 길어졌다.',
+    condition: { month: 3 }, once: false, category: 'story',
+    effects: [res('wellbeing', 1, 0.3)],
+  },
+  {
+    id: 'daily-midsummer-bonfire',
+    title: '하지의 불놓이',
+    text: '한여름 밤, 강가에 백성들이 불을 피워 올렸다. 담 너머로 그 불빛이 오래 흔들렸다.',
+    condition: { month: 6 }, once: false, category: 'story',
+    effects: [res('wellbeing', 0.5, 0.5), stat('courtcraft', 0.3, 0.2)],
+  },
+  {
+    id: 'daily-harvest-feast',
+    title: '수확제',
+    text: '성 앞 광장에 추수를 기리는 잔치가 섰다. 곳간이 차는 계절이라, 백성의 얼굴에도 웃음이 돌았다.',
+    condition: { month: 9 }, once: false, category: 'story',
+    effects: [res('wellbeing', 0.6, 0.3), stat('rhetoric', 0.3, 0.2)],
+  },
+  {
+    id: 'daily-winter-mass',
+    title: '성탄 미사',
+    text: '한 해의 끝, 대성당의 종이 울리고 미사가 열렸다. 왕도 그 자리에 서서 백성과 같은 기도를 올렸다.',
+    condition: { month: 12 }, once: false, category: 'story',
+    effects: [res('wellbeing', 1, 0.3), stat('courtcraft', 0.3, 0.2)],
   },
   {
     id: 'daily-festival-noise',
