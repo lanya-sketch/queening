@@ -413,6 +413,13 @@ export interface TurnReport {
   /** 이벤트로 인한 변화. */
   eventDeltas: Delta[]
   triggeredEventIds: string[]
+  /**
+   * ★ 결과 화면에 **인라인**으로 펼칠 조용한 이벤트(선택지·씬 없는 소소).
+   *   원인(사건 내용)과 결과(스탯 변화)를 한 화면에서 읽게 한다 —
+   *   예전엔 "무슨 일이 있었는지 본다"를 눌러 다음 페이지로 가야 사건 내용이 보였다.
+   *   선택지·씬이 있는 큰 이벤트는 여기 들어오지 않고 pendingEventIds 로 별도 화면에 뜬다.
+   */
+  inlineEventIds: string[]
 }
 
 export interface Delta {

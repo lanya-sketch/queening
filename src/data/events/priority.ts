@@ -89,6 +89,21 @@ export const PRIORITY: Record<string, number> = {
   'issue-empire-tribute': 42,
   'teen-noble-check': 40,
 
+  // ── 1–9 유년기 인물 (배경보다도 먼저 양보) ─────────────────
+  // 위화감 씨앗(11~12세)과 첫 등장(13세). 전부 once 이고 서로 다른 달에 걸려 있어
+  // 경쟁이 거의 없으므로 가장 낮게 둔다 — 무엇이 겹쳐도 그것에 자리를 내준다.
+  // 13세 첫 등장은 그달의 유일한 서사라 낮은 값으로도 어김없이 뜬다.
+  // ★ 1~6 만 비어 있어 8개가 안 들어가므로 소수 슬롯을 쓴다 — 값은 **정렬 순서만** 정하니
+  //   무방하다. 전부 배경 대역 바닥(돌발·손편지 7~9)보다도 아래라 무엇에도 자리를 내준다.
+  'child-uncle-evening': 6,
+  'child-mother-room': 5,
+  'child-uncle-corridor': 4,
+  'child-mother-dinner': 3,
+  'child-meet-heir': 2.4,
+  'child-meet-loyalist': 2.3,
+  'child-meet-commander': 2.2,
+  'child-meet-prince': 2.1,
+
   // ── 10–29 배경·단서 + 청산 후일담
   // 후일담은 청산이 flag 를 세운 **다음 턴**에 온다("며칠 뒤"). 서로 배타적인
   // 호감도 구간이라 실제로 경쟁하지 않지만, 표 규칙상 값은 전부 유일하게 둔다.

@@ -34,6 +34,7 @@ export function PortraitButton({ className = '' }: PortraitButtonProps) {
       onClick={openPortrait}
       aria-label={`군주 초상 — 현재 착장 ${outfit.name}. 눌러서 크게 보기`}
       data-throne={tier}
+      data-onboard="outfit"
       className={`group relative shrink-0 overflow-hidden rounded-xl border transition-all duration-700 active:border-gold-400 ${throne.ring} ${className}`}
     >
       {/* 옥좌 분위기 — 나중에 assetSrc 가 채워지면 이 자리에 배경 <img> 가 온다. */}

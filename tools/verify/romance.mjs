@@ -96,14 +96,24 @@ await page.screenshot({ path: `${OUT}/01-queen.png`, fullPage: false })
 // ─────────────────────────────────────────────────────────────
 log('')
 log('=== D. 호감도 · 게이팅 · 배타성 ===')
+// ★ 유년기 등장(실플레이 피드백): 만난 사람만 명부에 오른다. 13세에 ①②③⑤ 를 만난
+//   상태를 심고, ④ 평민 영웅은 아직 안 나타난 ??? 임을 확인한다(단언의 뜻이 새 설계로 이동).
+await page.evaluate(() =>
+  window.__queeningAi.setGame({
+    age: 13,
+    flags: { met_heir: true, met_loyalist: true, met_prince: true, met_commander: true },
+  }),
+)
+await page.waitForTimeout(150)
 await page.getByRole('button', { name: '인연', exact: true }).click()
 await page.waitForTimeout(300)
 const romance = page.getByRole('dialog', { name: '인연' })
 log('D1 명부 열림:', ok(await romance.isVisible()))
-log('D2 캐릭터 5인 등록:', ok((await romance.locator('li').count()) === 5))
+log('D2 만난 4인 + ④는 ??? = 5항목:', ok((await romance.locator('li').count()) === 5))
 const lockedCount = (await romance.locator('[data-romance-locked]').count())
-log('D3 데뷔탕트 전 전원 잠김:', lockedCount, ok(lockedCount === 5))
-log('D4 초상 표시:', ok((await romance.locator('img').count()) === 5))
+log('D3 만난 넷은 "아는 사이"(로맨스 전):', lockedCount, ok(lockedCount === 4))
+log('D4 ★ ④ 평민 영웅은 ??? 로 숨음:',
+  ok((await romance.getByText('???').count()) >= 1))
 log('D5 375px 대비 오버플로:', JSON.stringify(await overflow(page)))
 await page.screenshot({ path: `${OUT}/02-romance-locked.png`, fullPage: false })
 await page.keyboard.press('Escape')
@@ -121,7 +131,10 @@ await page.getByRole('button', { name: '인연', exact: true }).click()
 await page.waitForTimeout(300)
 const romance2 = page.getByRole('dialog', { name: '인연' })
 const stillLocked = await romance2.locator('[data-romance-locked]').count()
-log('D6 데뷔탕트 후 ①②③⑤ 해금 (④만 잠김):', stillLocked, ok(stillLocked === 1))
+// ★ 데뷔탕트로 ①②③⑤ 가 열려 "아는 사이"가 사라진다. ④ 는 입궁(hero_at_court) 전이라
+//   여전히 ??? — 자물쇠 배지가 아니라 미등장이므로 locked 는 0 이고 ??? 가 남는다.
+log('D6 데뷔탕트 후 ①②③⑤ 해금 · ④는 아직 ???:',
+  stillLocked, ok(stillLocked === 0 && (await romance2.getByText('???').count()) >= 1))
 // 헤더 안내문에도 "깊은 관계"가 있으므로 목록 항목의 배지만 센다
 const deepCount = await romance2.locator('li').getByText('깊은 관계', { exact: true }).count()
 log('D7 ★ 느슨한 배타성 — 두 명이 동시에 깊은 관계:', deepCount, ok(deepCount === 2))

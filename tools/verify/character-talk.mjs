@@ -150,7 +150,7 @@ log('=== D. 진입 — 통일 진입 · 프레이밍 · 잠금 · 도움말 ==='
 await page.evaluate(() => localStorage.clear())
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
-await setGame({ age: 12, flags: {}, affection: UNLOCKED.affection })
+await setGame({ age: 13, flags: {}, affection: UNLOCKED.affection })
 await page.getByRole('button', { name: '인연', exact: true }).click()
 await page.waitForTimeout(300)
 log('D1 키 없으면 안내:',
@@ -161,7 +161,7 @@ await page.evaluate(() =>
   localStorage.setItem('queening.ai.key.anthropic', 'sk-ant-fake-for-route-000000'))
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
-await setGame({ age: 12, flags: {}, affection: UNLOCKED.affection })
+await setGame({ age: 13, flags: {}, affection: UNLOCKED.affection })
 await page.getByRole('button', { name: '인연', exact: true }).click()
 await page.waitForTimeout(300)
 const rp = page.getByRole('dialog', { name: '인연' })

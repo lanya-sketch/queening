@@ -144,7 +144,10 @@ export function installDevBridge(): void {
       const next = endTurn(staged, rng)
       useGame.setState({ game: next })
       return {
-        triggeredEventIds: next.pendingEventIds,
+        // ★ 인라인 소소까지 포함한 **이번 달 전체** 이벤트. pendingEventIds 는
+        //   별도 화면으로 갈 것만 담으므로, 밀도·발동을 재는 검증엔 리포트 쪽을 준다.
+        triggeredEventIds: next.lastTurnReport?.triggeredEventIds ?? next.pendingEventIds,
+        pendingEventIds: next.pendingEventIds,
         age: next.age,
         date: next.date,
         phase: next.phase,

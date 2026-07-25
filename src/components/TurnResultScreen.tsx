@@ -3,6 +3,7 @@ import { ACTIVITY_BY_ID } from '../data/activities'
 import { monthLabel } from '../data/config'
 import { EVENT_BY_ID } from '../data/events'
 import { deltaView } from '../systems/display'
+import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
 import { useIncidents } from '../store/incidentStore'
 import type { Delta } from '../types/game'
@@ -32,6 +33,7 @@ function DeltaList({ deltas }: { deltas: Delta[] }) {
 }
 
 export function TurnResultScreen() {
+  const game = useGame((s) => s.game)
   const report = useGame((s) => s.game.lastTurnReport)
   const pendingEventIds = useGame((s) => s.game.pendingEventIds)
   const continueFromResult = useGame((s) => s.continueFromResult)
@@ -107,12 +109,27 @@ export function TurnResultScreen() {
               일어난 일
             </h2>
           </div>
-          <ul className="mb-4 space-y-1.5">
-            {report.triggeredEventIds.map((id) => (
-              <li key={id} className="font-title text-[13.5px] text-parchment/90">
-                · {EVENT_BY_ID[id]?.title ?? id}
-              </li>
-            ))}
+          {/*
+            ★ 조용한 소소는 제목 + 본문을 **여기서 바로** 펼친다(원인+결과 한 화면).
+              선택지·씬이 있는 큰 이벤트(pendingEventIds)는 제목만 짚고 다음 화면에서 본다.
+          */}
+          <ul className="mb-4 space-y-2.5">
+            {report.triggeredEventIds.map((id) => {
+              const ev = EVENT_BY_ID[id]
+              const inline = report.inlineEventIds.includes(id)
+              return (
+                <li key={id} data-report-event={id}>
+                  <p className="font-title text-[13.5px] text-parchment/90">
+                    · {ev?.title ?? id}
+                  </p>
+                  {inline && ev?.text && (
+                    <p className="mt-1 pl-3 text-[12.5px] leading-relaxed text-parchment/60">
+                      {resolveText(ev.text, game)}
+                    </p>
+                  )}
+                </li>
+              )
+            })}
           </ul>
           <DeltaList deltas={report.eventDeltas} />
         </Panel>
@@ -129,10 +146,11 @@ export function TurnResultScreen() {
               빈 예고가 된다. 여기서 기다리면 내용이 오거나(사건이 뜬다),
               실패해 예고가 조용히 사라지거나(다음 달로) 둘 중 하나로 끝난다.
           */}
+          {/* ★ "본다"는 **선택지·씬이 남았을 때만**. 소소만 있으면 이미 위에서 다 봤으니 "다음 달로". */}
           <PrimaryAction onClick={continueFromResult} disabled={incidentPending}>
             {incidentPending
               ? '소식을 기다리는 중…'
-              : report.triggeredEventIds.length > 0
+              : pendingEventIds.length > 0
                 ? '무슨 일이 있었는지 본다'
                 : '다음 달로'}
           </PrimaryAction>

@@ -69,9 +69,41 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {/*
+          ★ 만난 사람만 보인다 (실플레이 피드백: 13세에도 전원 잠김이라 만난 이도 안 보였다).
+            13세 첫 등장이 met_<id> 를 세우고, 그때부터 "아는 사이"로 명부에 오른다.
+            ④ 평민 영웅은 등장 자체가 스포일러라 입궁(hero_at_court) 전까지 ??? 로만 둔다.
+        */}
         <ul className="mt-4 space-y-3">
           {CHARACTERS.map((character) => {
             const unlocked = isRomanceUnlocked(character, game)
+            const isHero = character.id === 'hero'
+            // 만남: 로맨스 해금됐거나, 유년기 등장 flag(hero 는 입궁)가 섰다.
+            const metFlag = isHero ? 'hero_at_court' : `met_${character.id}`
+            const met = unlocked || game.flags[metFlag] === true
+
+            // ④ 는 만나기 전까지 존재를 감춘다(???). 나머지는 만나기 전이면 명부에서 뺀다.
+            if (!met) {
+              if (!isHero) return null
+              return (
+                <li
+                  key={character.id}
+                  className="flex items-center gap-3 rounded-xl border border-line bg-ink-900/40 p-3"
+                >
+                  <div
+                    className="flex h-12 w-9 shrink-0 items-center justify-center rounded text-muted"
+                    style={{ background: 'rgba(255,255,255,.03)' }}
+                  >
+                    <LockIcon size={13} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-muted">???</p>
+                    <p className="text-[11px] text-faint">아직 나타나지 않은 인연입니다.</p>
+                  </div>
+                </li>
+              )
+            }
+
             const present = isPresent(character, game)
             const away = unlocked && !present
             const deep = isDeepBond(game, character.id)
@@ -104,9 +136,7 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
                     }
                     alt=""
                     draggable={false}
-                    className={`h-12 w-9 shrink-0 rounded object-cover object-top ${
-                      unlocked ? '' : 'opacity-40 grayscale'
-                    }`}
+                    className="h-12 w-9 shrink-0 rounded object-cover object-top"
                   />
                   <span className="text-sm font-medium text-parchment">
                     {resolveText(character.name, game)}
@@ -119,12 +149,10 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
                       깊은 관계
                     </span>
                   )}
+                  {/* ★ 만났지만 로맨스는 아직 — 자물쇠 대신 "아는 사이"로. 겁주지 않는다. */}
                   {!unlocked && (
-                    <span
-                      data-romance-locked
-                      className="ml-auto flex items-center gap-1 text-[11px] text-muted"
-                    >
-                      <LockIcon size={11} /> 잠김
+                    <span data-romance-locked className="ml-auto text-[11px] text-muted">
+                      아는 사이
                     </span>
                   )}
                   {/* 부재는 잠금이 아니다 — 조건은 이미 채웠고 지금 자리에 없을 뿐. */}

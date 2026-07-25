@@ -13,8 +13,36 @@ import { AiSettingsModal } from './components/ai/AiSettingsModal'
 import { TalkModal } from './components/talk/TalkModal'
 import { TitleScreen } from './components/TitleScreen'
 import { TurnResultScreen } from './components/TurnResultScreen'
+import { CoachMark } from './components/CoachMark'
 import { useApp } from './store/appStore'
+import { useAiEnabled } from './store/aiStore'
 import { useGame } from './store/gameStore'
+
+/**
+ * 코치마크 트리거 — 게임 상태를 보고 "지금이 그 기능이 처음 의미를 갖는 시점"이면
+ * 아직 안 본 안내를 띄운다. 스케줄·중복은 appStore.maybeCoach 가 판단한다.
+ *
+ *   bond   — 13세(첫 캐릭터 등장). 그전엔 인연에 아무도 없어 눌러야 실망만 한다.
+ *   talk   — 신뢰가 쌓이고 AI 가 켜졌을 때.
+ *   outfit — 연회복이 처음 필요한 16세.
+ */
+function CoachTriggers() {
+  const age = useGame((s) => s.game.age)
+  const trust = useGame((s) => s.game.tutorTrust)
+  const phase = useGame((s) => s.game.phase)
+  const aiEnabled = useAiEnabled()
+  const maybeCoach = useApp((s) => s.maybeCoach)
+
+  useEffect(() => {
+    // 스케줄 화면일 때만 — 이벤트·씬 위에 겹치지 않게.
+    if (phase !== 'schedule') return
+    if (age >= 13) maybeCoach('bond')
+    if (age >= 16) maybeCoach('outfit')
+    if (aiEnabled && trust >= 40) maybeCoach('talk')
+  }, [age, trust, phase, aiEnabled, maybeCoach])
+
+  return null
+}
 
 function Notice() {
   const notice = useGame((s) => s.notice)
@@ -96,6 +124,8 @@ export default function App() {
           {/* 새 게임 진입: 인트로(선왕 배경 → 성별) → 온보딩 순. 게임 화면 위 오버레이. */}
           {intro && <IntroSequence />}
           {onboarding && <OnboardingOverlay />}
+          <CoachMark />
+          <CoachTriggers />
           <Notice />
         </div>
       )}

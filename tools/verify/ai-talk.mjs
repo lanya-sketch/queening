@@ -168,9 +168,10 @@ await page.evaluate(() => {
 })
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
-await page.evaluate((p) => window.__queeningAi.setGame(p), TIMID)
+await page.evaluate((p) => window.__queeningAi.setGame(p), { ...TIMID, age: 13 })
 
-const talkButton = page.getByRole('button', { name: '왕과 대화하기' })
+// ★ 버튼은 관계 자리로 옮겨졌고 라벨이 '왕과 대화'다 — 훅으로 잡는다.
+const talkButton = page.locator('[data-talk-button]')
 log('B1 키가 있으면 대화 버튼 노출:', ok(await talkButton.isVisible()))
 log('B2 스케줄 중에는 활성:', ok(await talkButton.isEnabled()))
 await page.evaluate(() => window.__queeningAi.setGame({ phase: 'event' }))
@@ -260,8 +261,8 @@ await page.evaluate(() => {
 })
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
-await page.evaluate((p) => window.__queeningAi.setGame(p), TIMID)
-await page.getByRole('button', { name: '왕과 대화하기' }).click()
+await page.evaluate((p) => window.__queeningAi.setGame(p), { ...TIMID, age: 13 })
+await page.locator('[data-talk-button]').click()
 await page.waitForTimeout(300)
 const d2 = page.getByRole('dialog', { name: '대화' })
 await d2.locator('input').fill('안녕하십니까')

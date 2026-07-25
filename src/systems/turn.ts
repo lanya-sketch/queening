@@ -193,16 +193,30 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   }
 
   // 4. 다음 턴 준비 + 리포트
+  //   ★ 조용한 소소(선택지·씬 없음)는 결과 화면에 인라인으로 펼치고 큐에 넣지 않는다.
+  //     효과는 이미 적용됐으니, 남은 건 "어떻게 보여줄까"뿐이다 — 고를 게 없으면
+  //     별도 페이지로 넘기지 않는다(실플레이 피드백: 원인과 결과가 갈렸다).
+  //   ★ 인라인 대상은 **손 풀 소소(daily-)로 한정**한다. 그것이 사용자가 말한 "미니 이벤트"다.
+  //     마일스톤 서사(첫 어전 회의 등)는 선택지가 없어도 통찰·본문이 있어 제 지면이 필요하고,
+  //     AI 돌발은 IncidentView 가 그려야 하며, 씬 이벤트는 VN 으로 재생돼야 한다.
+  //     그래서 "daily- 이고 선택지·씬이 없다"만 인라인으로 펼친다.
+  const isQuiet = (e: GameEvent) =>
+    e.id.startsWith('daily-') && !e.choices?.length && !e.sceneId
+  const inline = triggered.filter(isQuiet)
+  const queued = triggered.filter((e) => !isQuiet(e))
+
   next.actionPoints = GAME_CONFIG.actionPointsPerTurn
   next.plannedActivityIds = []
-  next.pendingEventIds = triggered.map((e) => e.id)
+  next.pendingEventIds = queued.map((e) => e.id)
   next.phase = 'result'
   next.lastTurnReport = {
     date: state.date,
     activityIds: state.plannedActivityIds,
     activityDeltas: applied.deltas,
     eventDeltas,
-    triggeredEventIds: next.pendingEventIds,
+    // 인라인 것까지 포함해 "이번 달에 일어난 일" 전체를 결과 화면이 안다.
+    triggeredEventIds: triggered.map((e) => e.id),
+    inlineEventIds: inline.map((e) => e.id),
   }
 
   return next

@@ -2,6 +2,7 @@ import type { GameEvent } from '../../types/game'
 import { ADULT_EVENTS } from './adult'
 import { AFFAIR_EVENTS } from './affairs'
 import { BLOOD_OATH_EVENTS } from './bloodoath'
+import { CHILDHOOD_EVENTS } from './childhood'
 import { CHARACTER_EVENTS } from './characters'
 import { CONQUEST_EVENTS } from './conquest'
 import { DECISIVE_EVENTS } from './decisive'
@@ -27,6 +28,7 @@ import { YOUTH_EVENTS } from './youth'
  */
 const RAW_EVENTS: GameEvent[] = [
   ...M1_EVENTS,
+  ...CHILDHOOD_EVENTS,
   ...YOUTH_EVENTS,
   ...TEEN_EVENTS,
   ...ADULT_EVENTS,

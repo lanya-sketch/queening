@@ -195,6 +195,39 @@ export const DAILY_EVENTS: GameEvent[] = [
     condition: { minAge: 13 }, once: false, category: 'story',
     effects: [stat('martial', 0.5, 0.3), res('wellbeing', 0.5, 0.3)],
   },
+  // ── 유년기 인물감 (실플레이 피드백: 11~12세에 사람이 안 나온다) ──
+  // ★ 스프라이트 없는 텍스트 소소 — 노귀족·모브. 궁이 살아 있다는 감각을 채운다.
+  //   섭정공·모후의 위화감 씬은 별도(events/childhood.ts, once·스프라이트).
+  {
+    id: 'daily-old-noble',
+    title: '옛 신하의 방문',
+    text:
+      '온보딩의 그 노귀족이 이따금 들른다. 오늘도 선왕 이야기를 한 조각 흘리고 갔다.\n' +
+      '"선왕께서는 이 회랑을 좋아하셨지요. …그분을 닮으셨습니다, 눈매가."',
+    condition: {}, once: false, category: 'story',
+    effects: [res('wellbeing', 1, 0.5), res('tutorTrust', 1, 0.5)],
+  },
+  {
+    id: 'daily-chamberlain',
+    title: '시녀장의 잔소리',
+    text: '시녀장이 옷매무새를 고쳐 주며 낮게 잔소리를 했다. 궁이 아이 하나를 키우고 있었다.',
+    condition: {}, once: false, category: 'story',
+    effects: [res('wellbeing', 1, 0.5)],
+  },
+  {
+    id: 'daily-training-yard',
+    title: '연무장의 기사들',
+    text: '연무장 난간에 기대 기사들의 대련을 구경했다. 검이 부딪는 소리가 오래 남았다.',
+    condition: { minAge: 12 }, once: false, category: 'story',
+    effects: [stat('martial', 0.5, 0.3), res('wellbeing', 0.5, 0.3)],
+  },
+  {
+    id: 'daily-clerk-slip',
+    title: '서기의 실수',
+    text: '서기가 장부를 넘기다 한 장을 빠뜨렸다. 아무도 눈치채지 못했고, 아이만 보았다.',
+    condition: { minAge: 12 }, once: false, category: 'story',
+    effects: [stat('finance', 0.5, 0.3)],
+  },
 ]
 
 export const DAILY_EVENT_IDS = DAILY_EVENTS.map((e) => e.id)

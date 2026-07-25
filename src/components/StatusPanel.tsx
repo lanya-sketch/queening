@@ -40,6 +40,9 @@ export function StatusPanel() {
   ].filter((n): n is [string, string] => Boolean(n[1]))
   const ap = game.actionPoints
   const apMax = GAME_CONFIG.actionPointsPerTurn
+  // ★ 관계 버튼 노출 게이트. 대화는 "신뢰가 쌓였거나 첫 캐릭터를 만난 뒤"(명세).
+  const showBond = game.age >= 13
+  const showTalk = aiEnabled && (game.tutorTrust >= 40 || game.age >= 13)
 
   // ★ 데스크톱: 열 하나가 뷰포트 높이를 통째로 갖고 안에서 스크롤한다(페이지 스크롤 아님).
   return (
@@ -154,6 +157,45 @@ export function StatusPanel() {
           </div>
         )}
 
+        {/*
+          ★ 관계 — 인연·대화 버튼 (실플레이 피드백: 묻힌 기능을 꺼낸다).
+            예전엔 상세 접이식 안에 있어 존재를 몰랐다. 이제 상시 노출 자리로 올리되,
+            **의미가 생긴 시점부터만** 보인다:
+              인연 → 13세(첫 캐릭터 등장). 그전엔 전원 잠김뿐이라 눌러야 실망만 한다.
+              대화 → AI 가 켜지고 신뢰가 쌓인 뒤(신뢰 40+).
+            나타나는 것 자체가 "이제 이게 쓸모 있다"는 신호이고, 코치마크가 함께 뜬다.
+        */}
+        {(showBond || showTalk) && (
+          <div className="flex gap-2 px-4 pb-3 lg:px-5">
+            {showBond && (
+              <Button
+                data-onboard="bond"
+                className="flex-1"
+                onClick={() => setRomanceOpen(true)}
+              >
+                인연
+              </Button>
+            )}
+            {showTalk && (
+              <Button
+                data-onboard="talk"
+                data-talk-button
+                variant="primary"
+                className="flex-1"
+                disabled={locked}
+                onClick={() => openTalk({ kind: 'monarch' })}
+              >
+                {resolveText('{왕}', game)}과 대화
+              </Button>
+            )}
+          </div>
+        )}
+        {showTalk && locked && (
+          <p className="px-4 pb-2 text-[11px] text-faint lg:px-5">
+            지금은 다른 일이 벌어지는 중입니다.
+          </p>
+        )}
+
         {/* 상세: 폰에선 접힘, PC(lg)에선 항상 펼침 */}
         <div
           className={`${open ? 'block' : 'hidden'} kg-noscrollbar max-h-[60vh] overflow-y-auto px-4 pb-5 lg:block lg:max-h-none lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-5`}
@@ -244,27 +286,8 @@ export function StatusPanel() {
             <Button variant="danger" className="col-span-2" onClick={reset}>
               처음부터
             </Button>
-            <Button className="col-span-2" onClick={() => setRomanceOpen(true)}>
-              인연
-            </Button>
           </div>
 
-          {/* 군주와의 대화 — 키가 있고 이벤트 씬이 아닐 때만 */}
-          {aiEnabled && (
-            <>
-              <Button
-                variant="primary"
-                className="mt-2 w-full"
-                disabled={locked}
-                onClick={() => openTalk({ kind: 'monarch' })}
-              >
-                {resolveText('{왕}', game)}과 대화하기
-              </Button>
-              {locked && (
-                <p className="mt-1 text-[11px] text-faint">지금은 다른 일이 벌어지는 중입니다.</p>
-              )}
-            </>
-          )}
           <p className="mt-3 flex items-center gap-1.5 text-[11px] text-faint">
             <Lozenge size={4} dim />
             {savedAt

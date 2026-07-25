@@ -12,6 +12,32 @@ import { create } from 'zustand'
  */
 export type AppScreen = 'title' | 'game'
 
+/**
+ * ★ 시점별 안내(코치마크) — 온보딩과 별개.
+ *
+ *   온보딩에 다 넣으면 첫 화면이 설명 폭탄이 된다. 대신 그 기능이 **처음 의미를 갖는
+ *   시점**에 짧게 한 번 안내한다(인연은 13세 첫 등장, 착장은 연회복이 필요할 때 등).
+ *   각 1회, 건너뛰기 가능. 본 것은 localStorage 에 남겨 다시 뜨지 않는다.
+ */
+export type CoachKey = 'bond' | 'outfit' | 'talk'
+
+const COACH_STORE_KEY = 'queening.coachSeen'
+
+function loadCoachSeen(): Record<string, true> {
+  try {
+    return JSON.parse(localStorage.getItem(COACH_STORE_KEY) ?? '{}')
+  } catch {
+    return {}
+  }
+}
+function saveCoachSeen(seen: Record<string, true>): void {
+  try {
+    localStorage.setItem(COACH_STORE_KEY, JSON.stringify(seen))
+  } catch {
+    /* 저장 불가 환경은 이번 세션만 기억 */
+  }
+}
+
 interface AppStore {
   screen: AppScreen
   /** 인트로 시퀀스(선왕 배경 → 성별 선택) 표시 중인지 — 온보딩보다 앞선다. */
@@ -26,6 +52,15 @@ interface AppStore {
   gallery: boolean
   /** AI 설정 모달(D-3: 게임 화면에서 설정 오버레이로 이동). */
   aiSettings: boolean
+
+  /** 지금 떠 있는 코치마크(없으면 null). */
+  coach: CoachKey | null
+  /** 이미 본 코치마크. */
+  coachSeen: Record<string, true>
+  /** 조건이 되면 아직 안 본 코치마크를 띄운다(한 번에 하나). 이미 봤으면 무시. */
+  maybeCoach: (key: CoachKey) => void
+  /** 현재 코치마크를 닫고 본 것으로 기록한다. */
+  dismissCoach: () => void
 
   goTitle: () => void
   /** 새 게임 — 인트로(선왕 배경 → 성별)부터 시작한다. */
@@ -67,6 +102,22 @@ export const useApp = create<AppStore>()((set) => ({
   help: false,
   gallery: false,
   aiSettings: false,
+  coach: null,
+  coachSeen: loadCoachSeen(),
+
+  maybeCoach: (key) =>
+    set((s) => {
+      // 이미 봤거나, 다른 코치마크·오버레이가 떠 있으면 지금은 띄우지 않는다.
+      if (s.coachSeen[key] || s.coach || s.intro || s.onboarding) return s
+      return { coach: key }
+    }),
+  dismissCoach: () =>
+    set((s) => {
+      if (!s.coach) return s
+      const coachSeen = { ...s.coachSeen, [s.coach]: true as const }
+      saveCoachSeen(coachSeen)
+      return { coach: null, coachSeen }
+    }),
 
   goTitle: () =>
     set({ screen: 'title', intro: false, onboarding: false, settingsOpen: false, help: false, gallery: false, aiSettings: false }),

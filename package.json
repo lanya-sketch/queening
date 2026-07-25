@@ -39,7 +39,8 @@
     "gen:characters": "node tools/verify/gen-characters.mjs",
     "verify:insights": "node tools/verify/insights.mjs",
     "analyze:stats": "node tools/verify/analyze-stat-use.mjs",
-    "sweep": "node tools/verify/sweep.mjs"
+    "sweep": "node tools/verify/sweep.mjs",
+    "verify:childhood": "node tools/verify/childhood.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",
