@@ -4,6 +4,8 @@ import { monthLabel } from '../data/config'
 import { EVENT_BY_ID } from '../data/events'
 import { deltaView } from '../systems/display'
 import { resolveText } from '../systems/text'
+import { resolveCharacterPortrait } from '../systems/outfits'
+import { CHARACTER_BY_ID } from '../data/characters'
 import { useGame } from '../store/gameStore'
 import { useIncidents } from '../store/incidentStore'
 import type { Delta } from '../types/game'
@@ -34,6 +36,7 @@ function DeltaList({ deltas }: { deltas: Delta[] }) {
 
 export function TurnResultScreen() {
   const game = useGame((s) => s.game)
+  const manifest = useGame((s) => s.outfitManifest)
   const report = useGame((s) => s.game.lastTurnReport)
   const pendingEventIds = useGame((s) => s.game.pendingEventIds)
   const continueFromResult = useGame((s) => s.continueFromResult)
@@ -117,15 +120,36 @@ export function TurnResultScreen() {
             {report.triggeredEventIds.map((id) => {
               const ev = EVENT_BY_ID[id]
               const inline = report.inlineEventIds.includes(id)
+              // ★ 노귀족처럼 portrait 를 둔 소소는 대화 크롭(얼굴)을 작게 얹는다.
+              //   VN 전신은 없지만 "누구"인지는 얼굴로 잇는다. 모브는 portrait 가 없어 텍스트만.
+              const face =
+                inline && ev?.portrait && manifest.characterPortraits
+                  ? resolveCharacterPortrait(
+                      manifest.characterPortraits,
+                      ev.portrait,
+                      CHARACTER_BY_ID[ev.portrait]?.gender ?? 'male',
+                      game.age,
+                    )?.thumbSrc ?? null
+                  : null
               return (
                 <li key={id} data-report-event={id}>
                   <p className="font-title text-[13.5px] text-parchment/90">
                     · {ev?.title ?? id}
                   </p>
                   {inline && ev?.text && (
-                    <p className="mt-1 pl-3 text-[12.5px] leading-relaxed text-parchment/60">
-                      {resolveText(ev.text, game)}
-                    </p>
+                    <div className="mt-1 flex items-start gap-2.5 pl-3">
+                      {face && (
+                        <img
+                          src={face}
+                          alt=""
+                          data-report-face={ev.portrait}
+                          className="h-11 w-9 shrink-0 rounded border border-line-gold/40 object-cover object-top"
+                        />
+                      )}
+                      <p className="text-[12.5px] leading-relaxed text-parchment/60">
+                        {resolveText(ev.text, game)}
+                      </p>
+                    </div>
                   )}
                 </li>
               )

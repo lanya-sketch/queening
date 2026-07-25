@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { ONBOARDING } from '../data/onboarding'
 import { resolveText } from '../systems/text'
+import { resolveCharacterPortrait } from '../systems/outfits'
 import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
 import { Button } from './ui/Button'
@@ -32,8 +33,15 @@ const MARGIN = 12
 
 export function OnboardingOverlay() {
   const game = useGame((s) => s.game)
+  const manifest = useGame((s) => s.outfitManifest)
   const dismiss = useApp((s) => s.dismissOnboarding)
   const [index, setIndex] = useState(0)
+
+  // ★ 화자 노귀족의 얼굴(대화 크롭). 전신 VN 은 없고 크롭만 쓴다(스프라이트 정책).
+  //   성별은 매니페스트가 고정(남)하므로 인자 성별은 무시된다.
+  const nobleFace = manifest.characterPortraits
+    ? resolveCharacterPortrait(manifest.characterPortraits, 'old_noble', 'male', game.age)?.thumbSrc ?? null
+    : null
 
   const line = ONBOARDING[index]
   const atEnd = index >= ONBOARDING.length - 1
@@ -110,7 +118,19 @@ export function OnboardingOverlay() {
   const body = (
     <>
       <div className="flex items-start justify-between gap-3">
-        {line.speaker && <p className="text-xs font-medium text-gold-400">{line.speaker}</p>}
+        {line.speaker && (
+          <div className="flex items-center gap-2">
+            {nobleFace && (
+              <img
+                src={nobleFace}
+                alt=""
+                data-onboard-face="old_noble"
+                className="h-8 w-7 shrink-0 rounded border border-line-gold/40 object-cover object-top"
+              />
+            )}
+            <p className="text-xs font-medium text-gold-400">{line.speaker}</p>
+          </div>
+        )}
         <button
           onClick={dismiss}
           className="ml-auto text-[11px] text-muted active:text-parchment"

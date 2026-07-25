@@ -1,6 +1,7 @@
 import type { Scene } from '../../types/game'
 import { HARD_EXCLUSIVE_SCENES } from './hardExclusive'
 import { CHILDHOOD_SCENES } from './childhood'
+import { TEEN_BOND_SCENES } from './teenBonds'
 
 /**
  * 대사 씬 (M2b-3a~).
@@ -281,11 +282,12 @@ export const SCENES: Scene[] = [
       {
         speaker: 'narration',
         text:
-          '노장은 갑주를 입지 않고 왔다. 아홉 대 만에 처음으로 문 안으로 들어온 자리에,\n' +
-          '무장하지 않은 채로 섰다.',
+          '노장은 예복 갑주를 빈틈없이 갖춰 입고 왔다. 아홉 대 만에 처음으로 문 안으로 든 자리인데도,\n' +
+          '검을 땅에 짚고 두 손을 포갠 채 — 문 밖을 지키던 그 자세 그대로 섰다.',
       },
       {
-        speaker: 'narration',
+        // ★ 친위 지휘관 가문의 수장 — VN 전신 스프라이트(배선 3). 대사 줄에서 얼굴이 뜬다.
+        speaker: 'commander_father',
         text: '"딸아이가 전하 이야기를 한 적이 없습니다."',
       },
       {
@@ -293,7 +295,7 @@ export const SCENES: Scene[] = [
         text: '그것을 흠으로 말하는 어조가 아니었다.',
       },
       {
-        speaker: 'narration',
+        speaker: 'commander_father',
         text:
           '"말하지 않는 것이 저희 가문의 예법입니다. 그런데 말하지 않는 것과\n' +
           '말할 것이 없는 것은 다르지요. 전하께서는 어느 쪽이라 생각하십니까."',
@@ -345,6 +347,7 @@ export const SCENES: Scene[] = [
   },
   ...HARD_EXCLUSIVE_SCENES,
   ...CHILDHOOD_SCENES,
+  ...TEEN_BOND_SCENES,
 ]
 
 export const SCENE_BY_ID: Record<string, Scene> = Object.fromEntries(

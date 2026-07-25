@@ -65,7 +65,12 @@
       "commander": { "path": "commander/{gdir}/commander_{code}_{age}.png", "aged": true },
       "hero": { "path": "hero/{gdir}/hero_{code}.png", "aged": false },
       "queen_mother": { "path": "others/queen_mother_f.png", "aged": false, "gender": "female" },
-      "regent": { "path": "others/regent_m.png", "aged": false, "gender": "male" }
+      "regent": { "path": "others/regent_m.png", "aged": false, "gender": "male" },
+      "old_noble": { "path": "others/old_noble.png", "aged": false, "gender": "male" },
+      "maid_head": { "path": "others/maid_head.png", "aged": false, "gender": "female" },
+      "knight": { "path": "others/knight.png", "aged": false, "gender": "male" },
+      "scribe": { "path": "others/scribe.png", "aged": false, "gender": "male" },
+      "commander_father": { "path": "others/commander_father.png", "aged": false, "gender": "male" }
     }
   }
 }

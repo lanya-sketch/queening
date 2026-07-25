@@ -326,6 +326,12 @@ export interface GameEvent {
    * 엔진은 이 값을 읽지 않고, 화면에서 라벨만 다르게 표시한다.
    */
   category?: 'story' | 'state_affair'
+  /**
+   * 있으면 이 charId 의 **대화 크롭(thumb)** 을 소소 인라인 카드에 작게 얹는다.
+   * VN 전신(sceneId)이 없는 인물에게 얼굴을 주는 가벼운 경로 — 노귀족이 그렇다.
+   * 모브(시녀장·기사·서기)는 이 값을 두지 않아 텍스트로만 남는다(스프라이트 정책).
+   */
+  portrait?: string
 }
 
 /**

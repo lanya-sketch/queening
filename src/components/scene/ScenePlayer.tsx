@@ -75,6 +75,8 @@ export function ScenePlayer({
     // CHARACTERS 밖 인물(섭정공·모후) — 스프라이트만 매니페스트에 있고 데이터엔 없어 라벨을 여기 둔다.
     if (speaker === 'regent') return '섭정공'
     if (speaker === 'queen_mother') return '왕대비'
+    // 주변 인물(배선 3) — 스프라이트만 매니페스트에 있고 CHARACTERS 엔 없어 라벨을 여기 둔다.
+    if (speaker === 'commander_father') return '가문의 수장'
     return CHARACTER_BY_ID[speaker]?.name ?? speaker
   }
 

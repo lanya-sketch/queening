@@ -85,6 +85,13 @@ export const FALLBACK_MANIFEST: OutfitManifest = {
       hero: { path: 'hero/{gdir}/hero_{code}.png', aged: false },
       queen_mother: { path: 'others/queen_mother_f.png', aged: false, gender: 'female' },
       regent: { path: 'others/regent_m.png', aged: false, gender: 'male' },
+      // 주변 인물(배선 3) — 나이축 없음, 성별 고정. 노귀족·모브는 대화 크롭(thumb)만 쓰고
+      // full 스프라이트(VN)는 쓰지 않는다. knight 는 익명성 의도로 투구를 유지한다.
+      old_noble: { path: 'others/old_noble.png', aged: false, gender: 'male' },
+      maid_head: { path: 'others/maid_head.png', aged: false, gender: 'female' },
+      knight: { path: 'others/knight.png', aged: false, gender: 'male' },
+      scribe: { path: 'others/scribe.png', aged: false, gender: 'male' },
+      commander_father: { path: 'others/commander_father.png', aged: false, gender: 'male' },
     },
   },
 }

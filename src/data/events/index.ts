@@ -16,6 +16,7 @@ import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
 import { ROMANCE_EVENTS } from './romance'
 import { TEEN_EVENTS } from './teen'
+import { TEEN_BOND_EVENTS } from './teenBonds'
 import { TRUTH_EVENTS } from './truth'
 import { YOUTH_EVENTS } from './youth'
 
@@ -29,6 +30,7 @@ import { YOUTH_EVENTS } from './youth'
 const RAW_EVENTS: GameEvent[] = [
   ...M1_EVENTS,
   ...CHILDHOOD_EVENTS,
+  ...TEEN_BOND_EVENTS,
   ...YOUTH_EVENTS,
   ...TEEN_EVENTS,
   ...ADULT_EVENTS,

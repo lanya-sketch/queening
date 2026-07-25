@@ -59,6 +59,22 @@ export const PRIORITY: Record<string, number> = {
   'decisive-hero': 61,
   'prince-arrival': 60,
 
+  // ── 60.x  13~15세 관계 이벤트 (teenBonds) — 로맨스 아님, 첫인상의 결이 바뀌는 구간.
+  //   캐릭터 대역 안(현안보다 위)에 둬야 month 게이트가 걸린 그달에 어김없이 뜬다 —
+  //   현안(30–49)에 밀려 다음 턴으로 넘어가면 달이 바뀌어 조건이 영영 안 맞는다.
+  //   전부 once + met_<id> 게이트 + 서로 다른 달이라 실제 경쟁은 거의 없고,
+  //   소수 슬롯은 정렬 순서만 정한다(값 자체엔 의미 없음). 등장(60)과 결정적 씬(61) 사이.
+  'bond-loyalist-beside': 60.95,
+  'bond-commander-outside': 60.9,
+  'bond-heir-appraise': 60.8,
+  'bond-loyalist-caution': 60.7,
+  'bond-commander-threshold': 60.6,
+  'bond-prince-revisit': 60.5,
+  'bond-heir-shadow': 60.4,
+  'bond-loyalist-father': 60.3,
+  'bond-commander-restraint': 60.2,
+  'bond-prince-spar': 60.1,
+
   // ── 50–59 미스터리 파생(혈서). 진실 회수(90+)보다 반드시 아래 —
   //    확증은 앎의 뒤에 오는 것이지 앎을 앞지를 수 없다.
   'blood-oath-complete': 59,
@@ -136,6 +152,12 @@ export const PRIORITY: Record<string, number> = {
   //   (측실 후일담이 늘면서 8/7 로 더 내렸다. 바닥 불변식 유지.)
   'ai-incident-choice': 8,
   'ai-incident-notice': 7,
+
+  // ④ 변경 소문 — 입궁 전 인물화. 순수 플레이버라 배경 대역이되, 돌발(7/8)보다는
+  //   위에 둔다(조용한 달에 걸려 경쟁이 없으나 표 규칙상 유일값). 바닥 불변식(7/8) 유지.
+  'rumor-frontier-1': 9.3,
+  'rumor-frontier-2': 9.2,
+  'rumor-frontier-3': 9.1,
 }
 
 /**

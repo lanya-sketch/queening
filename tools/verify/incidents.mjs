@@ -127,7 +127,13 @@ const beatsOverEmptyMonths = () =>
     window.__queeningAi.setMinorEnabled(true)
     window.__queeningAi.setDeterministic(true)
     window.__queeningAi.setIncidentRate(0.9) // 빈 달마다 소소 강제(있으면 AI 우선)
-    window.__queeningAi.setGame({ age: 15, date: { year: 4, month: 6 }, counters: {}, flags: {}, wellbeing: 80 })
+    // ★ 이 절이 보는 것은 **소소 채널의 키 게이팅**이지 메인 대본이 아니다.
+    //   소소는 빈 달에만 굴러가므로, flags:{} 로 시작하면 11~15세 대본이 한꺼번에 밀려
+    //   모든 달을 채워 스케줄러가 굴 자리를 잃는다(관계 이벤트가 늘며 실제로 그렇게 됐다).
+    //   그래서 메인 루프 대본을 전부 '이미 본 것'으로 표시해 빈 달을 만든 뒤 소소만 본다.
+    const seen = {}
+    for (const e of window.__queeningAi.events()) seen['event:' + e.id] = true
+    window.__queeningAi.setGame({ age: 15, date: { year: 4, month: 6 }, counters: {}, flags: seen, wellbeing: 80 })
     const ids = []
     for (let i = 0; i < 10; i++) ids.push(...(window.__queeningAi.stepTurn([]).triggeredEventIds ?? []))
     return ids
@@ -135,6 +141,9 @@ const beatsOverEmptyMonths = () =>
 const noKeyBeats = await beatsOverEmptyMonths()
 log('A1 ★ 키 없으면 돌발이 안 뜸(손 풀 소소만):',
   ok(!noKeyBeats.some((id) => id.startsWith('ai-incident')) && noKeyBeats.some((id) => id.startsWith('daily-'))))
+// ★ A2 는 "메인 대본이 정상 발동하는가"를 본다 — 소소 격리(위)와 별개의 관심사이므로
+//   대본이 살아 있는 신선한 상태에서 후보를 센다(위에서 전부 seen 처리한 상태가 아니라).
+await setGame({ age: 13, date: { year: 2, month: 1 }, counters: {}, flags: {}, wellbeing: 80 })
 const coreCandidates = await triggerable()
 log('A2 다른 이벤트는 정상 동작 (코어 완전):', `후보 ${coreCandidates.length}건`, ok(coreCandidates.length > 0))
 
