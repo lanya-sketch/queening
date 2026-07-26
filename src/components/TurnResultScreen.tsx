@@ -1,7 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ACTIVITY_BY_ID } from '../data/activities'
 import { monthLabel } from '../data/config'
 import { EVENT_BY_ID } from '../data/events'
+import { useOptions } from '../store/optionsStore'
+import { CutsceneScreen } from './scene/CutsceneScreen'
 import { deltaView } from '../systems/display'
 import { resolveText } from '../systems/text'
 import { resolveCharacterPortrait } from '../systems/outfits'
@@ -43,6 +45,15 @@ export function TurnResultScreen() {
   const generateIncident = useIncidents((s) => s.generate)
   const byEvent = useIncidents((s) => s.byEvent)
 
+  // ★ 날짜별 컷신 — 요약 앞에 한 달을 날짜별로 흘려 보낸다. '즉시'/끄기/일기 없음이면 건너뛴다.
+  //   phase='result' 진입마다 이 컴포넌트가 리마운트되므로 매 턴 새로 재생된다.
+  const speed = useOptions((s) => s.textSpeed)
+  const cutsceneEnabled = useOptions((s) => s.cutsceneEnabled)
+  const diaryLen = report?.diary?.length ?? 0
+  const [showCutscene, setShowCutscene] = useState(
+    diaryLen > 0 && cutsceneEnabled && speed !== '즉시',
+  )
+
   // ★ AI 돌발은 여기서 **미리** 생성한다 (#7). 플레이어가 결과를 읽는 동안 만들어 두고,
   //   실패하면 generate 가 큐에서 빼므로 "사건이 있었다"는 알림도 함께 사라진다.
   //   내용이 나올 때만 사건으로 남는다.
@@ -58,6 +69,7 @@ export function TurnResultScreen() {
   )
 
   if (!report) return null
+  if (showCutscene) return <CutsceneScreen onDone={() => setShowCutscene(false)} />
 
   return (
     <div data-screen="result" className="pb-28 lg:pb-6">

@@ -45,7 +45,8 @@
     "verify:wiring3": "node tools/verify/wiring3.mjs",
     "verify:ux-bundle": "node tools/verify/uxBundle.mjs",
     "verify:late-affairs": "node tools/verify/lateAffairs.mjs",
-    "verify:temperament": "node tools/verify/temperament.mjs"
+    "verify:temperament": "node tools/verify/temperament.mjs",
+    "verify:cutscene": "node tools/verify/cutscene.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

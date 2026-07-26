@@ -195,6 +195,10 @@ export function installDevBridge(): void {
     setTextSpeed(speed: '느리게' | '보통' | '빠르게' | '즉시') {
       useOptions.getState().setTextSpeed(speed)
     },
+    /** 날짜별 컷신 on/off — 검증 스위트가 컷신을 켜서 보거나 꺼서 요약으로 바로 가기 위해. */
+    setCutsceneEnabled(on: boolean) {
+      useOptions.getState().setCutsceneEnabled(on)
+    },
     /** 초상 경로 해석 — 성별×나이×착장 + 폴백 체인 검증용. */
     portraitSrc(gender: 'male' | 'female', age: number, outfit: string) {
       const m = useGame.getState().outfitManifest

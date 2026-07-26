@@ -410,10 +410,31 @@ export interface OutfitManifest {
 }
 
 /** 결과 화면이 그대로 렌더할 수 있도록, 실제 적용된 변화량만 담는다. */
+/**
+ * 날짜별 컷신 한 장 — "그달의 며칠, 무슨 활동, 어떤 하루였나".
+ * ★ 표현 층 전용이다. 밸런스·수학은 activityDeltas 가 그대로 쥔다(이건 서술 근거만 나른다).
+ */
+export interface DiaryEntry {
+  /** 이달의 며칠(1~28). 초·중·하순으로 분산. */
+  day: number
+  activityId: string
+  /** 수업 등급 라벨(초급/중급/고급). 등급 없는 활동은 null. */
+  tier: string | null
+  /** 이 활동을 한 시점의 심신 — 그달의 피로 arc(몰아서 하면 뒤로 갈수록 지침). */
+  wellbeing: number
+  /** 주 스탯 델타가 기대값 대비 어땠나 — 잘/보통/안 풀린 날. */
+  luck: 'good' | 'normal' | 'bad'
+}
+
 export interface TurnReport {
   /** 방금 소화한 턴의 날짜(진행 전). */
   date: GameDate
   activityIds: string[]
+  /** ★ 날짜별 컷신용 — 고른 활동 수만큼. 표현 전용(수학 불변). */
+  diary: DiaryEntry[]
+  /** 컷신 서술 근거(턴 시작 시점): 나이·내구도(숨은 값). */
+  startAge: number
+  startDurability: number
   /** 활동으로 인한 변화. clamp 후 실제 변화량. */
   activityDeltas: Delta[]
   /** 이벤트로 인한 변화. */

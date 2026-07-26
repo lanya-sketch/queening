@@ -4,7 +4,7 @@ import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import { durabilityGain, growthFactor, wellbeingCostFactor } from './durability'
 import { initialAffection } from './romance'
-import type { Delta, Effect, GameDate, GameEvent, GameState } from '../types/game'
+import type { Delta, DiaryEntry, Effect, GameDate, GameEvent, GameState } from '../types/game'
 
 /**
  * 한 턴에 처리할 이벤트 상한.
@@ -17,10 +17,10 @@ import type { Delta, Effect, GameDate, GameEvent, GameState } from '../types/gam
  * 같은 턴에 연쇄할 여지는 남기되, 그 이상은 한 달에 몰지 않기 위해.
  */
 const MAX_EVENTS_PER_TURN = 2
-import { applyEffects, type Rng } from './effects'
+import { applyEffects, targetLabel, type Rng } from './effects'
 import { rollChance, tickCounters } from './chance'
 import { findTriggeredEvents, seenFlagId } from './eventEngine'
-import { activityEffects } from './activityTier'
+import { activityEffects, activityTierLabel } from './activityTier'
 import { scheduleMinor } from './minorEvents'
 import { updateRisk } from './risk'
 import { deadEndReason } from './deadend'
@@ -99,6 +99,33 @@ export function advanceDate(date: GameDate, age: number): { date: GameDate; age:
   }
 }
 
+/**
+ * 활동에 이달의 날짜를 매긴다 — 초·중·하순으로 분산. ★ rng 를 쓰지 않는다(수학 안전).
+ *   달마다 살짝 흔들되(결정론적 offset) 같은 달은 항상 같은 날 → 재현 가능.
+ *   1개 → 14일 / 2개 → 9·19 / 3개 → 7·14·21 근처.
+ */
+function diaryDay(index: number, count: number, date: GameDate): number {
+  const jitter = ((date.year * 12 + date.month) % 5) - 2 // -2..2, 결정론적
+  const base = Math.round(((index + 1) * 28) / (count + 1))
+  return Math.max(1, Math.min(28, base + jitter))
+}
+
+/**
+ * 그날의 운 — 주 스탯 델타가 기대값 대비 위/아래였나(variance 롤의 결과).
+ *   결정론 모드(rng=0.5)에서는 롤이 정확히 기대값이라 항상 'normal' 이다.
+ */
+function luckOf(scaled: Effect[], deltas: Delta[]): DiaryEntry['luck'] {
+  const primary = scaled
+    .filter((e) => e.target.kind === 'stat' && e.amount > 0)
+    .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))[0]
+  if (!primary || !primary.variance) return 'normal'
+  const got = deltas.find((d) => d.label === targetLabel(primary.target))?.amount
+  if (got == null) return 'normal'
+  if (got >= primary.amount + primary.variance * 0.4) return 'good'
+  if (got <= primary.amount - primary.variance * 0.4) return 'bad'
+  return 'normal'
+}
+
 function mergeDeltas(into: Delta[], from: Delta[]): void {
   for (const delta of from) {
     const existing = into.find((d) => d.label === delta.label)
@@ -119,12 +146,32 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   // 1. 활동 효과 — ★ 내구도 계수는 **활동에만** 적용한다(서사/이벤트 효과는 그대로).
   //   낮은 내구도 → 심신 소모 증가, 높은 내구도 → 성장 증가.
   // ★ 수업은 현재 스탯에 따라 등급이 자동 전환된다(초·중·고) — 효과를 여기서 해석한다.
-  const scaled = scaleByDurability(
-    activities.flatMap((a) => activityEffects(a, state)),
-    state.durability,
-  )
-  const applied = applyEffects(state, scaled, rng)
-  let next = applied.state
+  //
+  // ★★ 활동별로 나눠 적용해 **날짜별 컷신용 일기(diary)**를 만든다. 수학은 배치 적용과
+  //    완전히 동일하다: activityEffects 는 전부 **턴 시작 state** 로 해석해 등급을 고정하고
+  //    (배치와 같게), 순차 적용은 배치가 효과를 하나씩 적용하던 것과 rng draw 순서가 같다.
+  //    diary 는 표현 근거(날짜·등급·심신·롤 운)만 나른다 — activityDeltas 가 밸런스를 그대로 쥔다.
+  const prepared = activities.map((a) => ({
+    activity: a,
+    scaled: scaleByDurability(activityEffects(a, state), state.durability),
+    tier: activityTierLabel(a, state),
+  }))
+  let next = state
+  const activityDeltas: Delta[] = []
+  const diary: DiaryEntry[] = []
+  prepared.forEach(({ activity, scaled, tier }, i) => {
+    const wellbeingAt = next.wellbeing // 이 활동 시점의 심신(그달 피로 arc)
+    const r = applyEffects(next, scaled, rng)
+    next = r.state
+    mergeDeltas(activityDeltas, r.deltas)
+    diary.push({
+      day: diaryDay(i, activities.length, state.date),
+      activityId: activity.id,
+      tier,
+      wellbeing: wellbeingAt,
+      luck: luckOf(scaled, r.deltas),
+    })
+  })
   for (const activity of activities) {
     if (activity.setFlags) next.flags = { ...next.flags, ...activity.setFlags }
   }
@@ -214,7 +261,10 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   next.lastTurnReport = {
     date: state.date,
     activityIds: state.plannedActivityIds,
-    activityDeltas: applied.deltas,
+    diary,
+    startAge: state.age,
+    startDurability: state.durability,
+    activityDeltas,
     eventDeltas,
     // 인라인 것까지 포함해 "이번 달에 일어난 일" 전체를 결과 화면이 안다.
     triggeredEventIds: triggered.map((e) => e.id),
