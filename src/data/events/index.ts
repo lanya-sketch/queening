@@ -15,6 +15,7 @@ import { SURPRISE_EVENTS } from './surprises'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
 import { OUTING_EVENTS } from './outings'
+import { RELATIONS16_EVENTS } from './relations16'
 import { ROMANCE_EVENTS } from './romance'
 import { TEEN_EVENTS } from './teen'
 import { TEEN_BOND_EVENTS } from './teenBonds'
@@ -32,6 +33,7 @@ const RAW_EVENTS: GameEvent[] = [
   ...M1_EVENTS,
   ...CHILDHOOD_EVENTS,
   ...TEEN_BOND_EVENTS,
+  ...RELATIONS16_EVENTS,
   ...YOUTH_EVENTS,
   ...TEEN_EVENTS,
   ...ADULT_EVENTS,

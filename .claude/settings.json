@@ -129,7 +129,10 @@
       "Bash(grep -c \"age: 13, flags: {}, affection: UNLOCKED\" tools/verify/character-talk.mjs)",
       "Bash(QUEENING_DETERMINISTIC=1 node tools/verify/simulate.mjs A)",
       "Bash(awk '{print $5, $9}')",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(tasklist)",
+      "Bash(netstat -ano)",
+      "Bash(wmic process *)"
     ],
     "additionalDirectories": [
       "C:\\queening\\tools\\verify",

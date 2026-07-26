@@ -80,6 +80,21 @@ export const PRIORITY: Record<string, number> = {
   'bond-commander-restraint': 60.2,
   'bond-prince-spar': 60.1,
 
+  // ── 60.0x  16~19세 관계 심화 (relations16) — 데뷔탕트~결정적 씬 사이, 로맨스로 기울되 확정 안 함.
+  //   호감도+달 게이트라 실경쟁은 거의 없다. 캐릭터 대역 안(현안 위), teenBonds(60.1~) 아래.
+  'relation-heir-1': 60.09,
+  'relation-heir-2': 60.085,
+  'relation-heir-3': 60.08,
+  'relation-commander-1': 60.07,
+  'relation-commander-2': 60.065,
+  'relation-commander-3': 60.06,
+  'relation-loyalist-1': 60.05,
+  'relation-loyalist-2': 60.045,
+  'relation-prince-1': 60.04,
+  'relation-prince-2': 60.035,
+  'relation-hero-1': 60.03,
+  'relation-hero-2': 60.025,
+
   // ── 50–59 미스터리 파생(혈서). 진실 회수(90+)보다 반드시 아래 —
   //    확증은 앎의 뒤에 오는 것이지 앎을 앞지를 수 없다.
   'blood-oath-complete': 59,

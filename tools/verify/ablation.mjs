@@ -282,21 +282,23 @@ for (const key of buildKeys) {
     : JUDGED_WITH_CAUSE(normal[key])
       ? '혈서 명분 심판 사슬'
       : '없음'
-  // ★ 돌발 모드의 예외: 늦서리는 영향도 효과가 **없다**(deltas 에 courtInfluence 없음).
-  //   그런데도 궤적이 갈리는 건 돌발이 턴을 점유해 그 턴에 뜰 다른 영향도 이벤트를
-  //   한 칸 밀기 때문이다 — 클루 월 이동과 **같은 현상**이고, 사용자가 "양념으로 수용"
-  //   한 그 갈래다. 최종 영향도가 같으면(수렴하면) 훼손이 아니라 전이적 산출물이므로
-  //   판정이 아니라 관측으로 남긴다. 최종이 갈리면(수렴 안 하면) 여전히 실패다.
+  // ★ 전이 영향도차 예외: 제거된 콘텐츠가 턴 예산을 점유하던 것을 걷어내면, 그 턴에 뜰
+  //   다른 영향도 이벤트가 한 칸 밀린다 — 클루 월 이동과 **같은 현상**이고 사용자가 "양념으로
+  //   수용"한 갈래다. **보상을 안 받는 빌드(!expected)가 중간에 갈렸다가 최종에 수렴**하면,
+  //   그건 리워드 차이가 아니라 전이적 산출물이므로 관측으로 남긴다. 최종이 갈리면 여전히 실패다.
+  //   ★ 처음엔 돌발 모드에서만 봤으나(늦서리 턴 점유), 관계 심화(16~19세) 등 콘텐츠가 늘며
+  //     기본 모드에서도 같은 전이차가 난다(밀도가 성년식·현안 타이밍을 한 칸 민다). 그래서
+  //     모드와 무관하게 "안 받는데 갈렸다가 수렴"을 예외로 둔다 — 판정은 최종 영향도가 한다.
   const converged = finalInf(normal[key]) === finalInf(ablated[key])
-  const transientIncidentBlip = INCIDENT_MODE && !expected && !same && converged
+  const transientBlip = !expected && !same && converged
   // ★ 상한 흡수 — 보상을 받는 빌드가 이미 영향도 상한에 닿아 있으면, 제거된 +18 을 도로 빼도
   //   최종이 안 바뀐다(roadmap: "영향도 상한이 보상을 자동으로 흡수해 밸런스를 지킨다").
   //   후반 정치 현안(3-h)이 늘며 두루마리 수령 빌드가 상한에 닿게 됐다. **상한값에서** 같음은
   //   흡수(관측)이고, 보상이 아예 적용 안 된 것(최종이 상한 미만인데 같음)과는 구분된다 — 그건 여전히 실패.
   const capAbsorbed = expected && same && finalInf(normal[key]) >= capOf(normal[key])
-  if (transientIncidentBlip) {
+  if (transientBlip) {
     log('')
-    log(`   ${normal[key].name}  ⓘ 중간 영향도 전이차 (최종 ${finalInf(normal[key])} 로 수렴, 돌발 턴 점유)`)
+    log(`   ${normal[key].name}  ⓘ 중간 영향도 전이차 (최종 ${finalInf(normal[key])} 로 수렴 — 턴 예산 이동, 리워드 차이 아님)`)
     log(`     정상: ${influenceOf(normal[key])}`)
     log(`     제거: ${influenceOf(ablated[key])}`)
   } else if (capAbsorbed) {
