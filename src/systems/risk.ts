@@ -17,6 +17,12 @@ import type { GameState } from '../types/game'
 
 export const RISK_STRAIN = '__risk:strain'
 export const RISK_EXPOSURE = '__risk:exposure'
+/**
+ * ★ 튜터 해고 위험 — "섭정공이 이 가정교사를 얼마나 위험하게 보는가". 숨은 누적기.
+ *   strain·exposure 와 달리 **상태 조건이 아니라 사건이 값을 넣는다**(외출 발각·흔적).
+ *   여러 경로가 여기에 붙을 수 있게 열어 두되, 이번 라운드는 외출만 실제로 쌓는다.
+ */
+export const RISK_TUTOR = '__risk:tutor'
 
 const flag = (state: GameState, name: string): boolean => state.flags?.[name] === true
 
@@ -56,6 +62,13 @@ export function updateRisk(state: GameState): Record<string, number> {
   } else if (exposure !== 0) {
     patch[RISK_EXPOSURE] = 0
   }
+
+  // ── 튜터 해고 (__risk:tutor)
+  // ★ 이 라운드의 누적원은 **외출 발각**뿐이고, 그건 이벤트(effects 의 counter)가 직접 넣는다.
+  //   여기(상태 기반 누적)에는 **나머지 경로의 자리만** 열어 둔다 — 값은 0(아직 안 켠다):
+  //     · 밀서 등 위험 활동 반복    · 섭정 의심이 장기간 높게 유지
+  //     · 왕에게 급진적인 것을 가르침 · 진실 추적이 들킴
+  //   좁게 만든 걸 넓히는 것보다, 붙일 자리를 먼저 두는 편이 싸다. 켤 때 여기 한 줄씩 더한다.
 
   return patch
 }

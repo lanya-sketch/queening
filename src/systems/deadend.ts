@@ -12,10 +12,12 @@ import type { GameState } from '../types/game'
  */
 export const DEAD_END_PREFIX = 'dead_end:'
 
-/** 대표 2종 — surprises.ts 의 데드 이벤트가 이 flag 를 세운다. */
+/** surprises.ts 의 데드 이벤트가 이 flag 를 세운다. */
 export const DEAD_END = {
   strain: `${DEAD_END_PREFIX}심신파탄`,
   exposure: `${DEAD_END_PREFIX}의심무방비`,
+  // ★ 세 번째 축 — 왕이 아니라 튜터(플레이어)가 쫓겨난다. 외출 발각 등으로 tutorRisk 누적.
+  tutor: `${DEAD_END_PREFIX}해고`,
 } as const
 
 /** dead_end:* flag 가 서 있으면 그 이유를, 없으면 null. */

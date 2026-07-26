@@ -14,6 +14,7 @@ import { DAILY_EVENTS } from './daily'
 import { SURPRISE_EVENTS } from './surprises'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
+import { OUTING_EVENTS } from './outings'
 import { ROMANCE_EVENTS } from './romance'
 import { TEEN_EVENTS } from './teen'
 import { TEEN_BOND_EVENTS } from './teenBonds'
@@ -46,6 +47,7 @@ const RAW_EVENTS: GameEvent[] = [
   ...RECKONING_EVENTS,
   ...RECKONING_AFTERMATH,
   ...SURPRISE_EVENTS,
+  ...OUTING_EVENTS,
 ]
 
 /** 스케줄러가 굴리는 소소 채널(메인 루프 밖). 렌더 등록용으로만 모은다. */

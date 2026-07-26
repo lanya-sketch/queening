@@ -96,7 +96,8 @@ await page.waitForTimeout(300)
 log('C1 ★ 타이틀 엔딩 기록 → 갤러리 열림:',
   ok(await page.getByRole('heading', { name: '엔딩 기록' }).isVisible()))
 const total = await page.evaluate(() => document.body.innerText.match(/(\d+)\s*\/\s*(\d+)\s*달성/)?.[0])
-log('C2 ★ 달성률 표시:', total, ok(/\/\s*12\s*달성/.test(total ?? '')))
+// ★ 총 항목 13(조기 파국에 「해고」 추가). 총계는 GALLERY_TOTAL 이 단일 출처다.
+log('C2 ★ 달성률 표시:', total, ok(/\/\s*13\s*달성/.test(total ?? '')))
 log('C3 ★ 달성 항목(친정) 제목+대표 장면:',
   ok((await page.getByText('친정', { exact: true }).isVisible()) &&
      (await page.getByText(/서명하지 않는다/).isVisible())))

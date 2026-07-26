@@ -139,6 +139,15 @@ export const GALLERY: GalleryItem[] = [
     scene: '섭정은 기다려 주지 않았다. 무방비한 밤을 골라 먼저 손을 썼다.',
     summary: '의심을 끝까지 키우고도 지킬 것을 마련하지 못했다. 섭정이 먼저 움직였다.',
   },
+  {
+    // ★ 셋 중 유일하게 왕이 아니라 튜터가 끝나는 파국.
+    id: 'dead-tutor',
+    title: '남겨진 아이',
+    group: '파국',
+    match: (_r, dead) => dead === '해고',
+    scene: '궁문이 닫혔다. 안에서는 아무 소리도 나지 않았다.',
+    summary: '섭정공의 눈 밖에 나 가정교사의 소임을 빼앗겼다. 왕은 멀쩡한데, 남겨두고 떠났다.',
+  },
 ]
 
 export const GALLERY_TOTAL = GALLERY.length

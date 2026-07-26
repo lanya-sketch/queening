@@ -37,7 +37,7 @@ export function EndedScreen() {
     if (reason) {
       const { scene, title } = buildDeadEndScene(reason)
       SCENE_BY_ID[scene.id] = scene
-      return { sceneId: scene.id, summary: null, dead: { title } }
+      return { sceneId: scene.id, summary: null, dead: { title, reason } }
     }
     const result = judgeEnding(game)
     const scene = buildEndingScene(result)
@@ -81,7 +81,10 @@ export function EndedScreen() {
         <header className="mb-4">
           <h1 className="font-title text-xl font-semibold text-peril-soft">{dead.title}</h1>
           <p className="mt-2 text-xs text-peril-soft/60">
-            {monarchName(game)} {resolveText('{왕}', game)}의 치세는 {game.age}세에, 스무 살에 이르지 못하고 끝났다.
+            {/* ★ 해고는 왕이 아니라 튜터가 끝난다 — 왕의 치세는 이어진다. */}
+            {dead.reason === '해고'
+              ? `${monarchName(game)} ${resolveText('{왕}', game)}은 아직 저 담 안에 있다. 먼저 끝난 것은 가정교사의 소임이었다.`
+              : `${monarchName(game)} ${resolveText('{왕}', game)}의 치세는 ${game.age}세에, 스무 살에 이르지 못하고 끝났다.`}
           </p>
         </header>
         <div className="grid grid-cols-2 gap-2">

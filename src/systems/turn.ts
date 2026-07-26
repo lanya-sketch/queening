@@ -217,6 +217,10 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
     triggered.push(event)
   }
 
+  // 3-a-2. 외출 신호 소거 — `went_out` 은 **그 턴에만** 유효한 신호다(활동이 세우고, 이 턴의
+  //   발각 이벤트가 조건으로 읽은 뒤 여기서 끈다). 안 끄면 다음 턴에도 남아 발각이 오발한다.
+  if (next.flags.went_out) next.flags = { ...next.flags, went_out: false }
+
   // 3-b. 위험 누적 — 조기 데드엔딩 씨앗(심신 파탄 / 의심 무방비).
   //   숨은 카운터라 UI 에 없고, surprises.ts 의 경고·데드 이벤트가 조건으로 읽는다.
   next.counters = { ...next.counters, ...updateRisk(next) }

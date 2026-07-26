@@ -37,6 +37,11 @@ export const PRIORITY: Record<string, number> = {
   'adult-regent-rupture': 86,
   'adult-regent-accord': 84,
   'adult-coming-of-age': 82,
+  // 튜터 해고 — 위기·경고(심신·의심 데드와 같은 대역). 굶으면 안 된다.
+  'tutor-dismissal': 81,
+  'tutor-warning': 79,
+  // 외출 발각 — 잠행 그 턴의 직접 결과라 현안에 밀리면 안 된다(마일스톤 대역 아래끝).
+  'outing-caught': 77,
   'debut-ball': 80,
   'hero-at-court': 78,
   'adult-inner-court': 76,

@@ -1,7 +1,7 @@
 import type { Effect, GameEvent, ResourceKey } from '../../types/game'
 import { RISK } from '../config'
 import { DEAD_END } from '../../systems/deadend'
-import { RISK_STRAIN, RISK_EXPOSURE } from '../../systems/risk'
+import { RISK_STRAIN, RISK_EXPOSURE, RISK_TUTOR } from '../../systems/risk'
 
 /**
  * 깜짝 이벤트 + 조기 데드엔딩 (월 단위 전환 2단계).
@@ -133,6 +133,62 @@ export const SURPRISE_EVENTS: GameEvent[] = [
         label: '아무도 오지 않는다',
         setFlags: { [DEAD_END.exposure]: true },
         resultText: '왕은 소리쳤으나 복도는 비어 있었다. 발소리가 가까워졌다.',
+      },
+    ],
+  },
+
+  // ────────────────────────────────────────────────
+  // 튜터 해고 — 경고 → 데드 (★ 왕이 아니라 내가 쫓겨난다)
+  // ────────────────────────────────────────────────
+  {
+    id: 'tutor-warning',
+    title: '지켜보는 눈',
+    text:
+      '늙은 왕당파 귀족이 조용히 스승을 따로 불렀다.\n' +
+      '"섭정공이 요즘 당신을 자주 입에 올리오. 어디에 다녀오는지, 무엇을 아이 귀에 넣는지." ' +
+      '그가 목소리를 낮췄다. "…조심하시오. 이 궁에서 쫓겨난 스승이 당신이 처음은 아니오."\n' +
+      '경고는 분명했다. 무릅쓸지 말지는 이제 당신의 몫이다.',
+    condition: { maxAge: 19, counters: { [RISK_TUTOR]: { min: RISK.tutorWarn } } },
+    once: true,
+    category: 'story',
+    setFlags: { tutor_warned: true },
+  },
+  {
+    id: 'tutor-dismissal',
+    title: '닫히는 문',
+    text:
+      '섭정공이 스승을 불렀다. 왕은 그 자리에 없었다 — 그것부터가 답이었다.\n' +
+      '"수고 많으셨소. 다만 전하께는 이제 다른 스승이 필요할 듯하오." 문서 한 장이 놓였다. ' +
+      '가정교사의 소임을 거둔다는, 이미 서명된 문서.\n' +
+      '여기서 갈린다.',
+    condition: {
+      maxAge: 19,
+      counters: { [RISK_TUTOR]: { min: RISK.tutorDead } },
+      flags: { tutor_averted: false },
+    },
+    once: true,
+    category: 'story',
+    choices: [
+      {
+        id: 'king-vouches',
+        label: '왕이 문을 막아선다',
+        // ★ 회피 1회: 잘 돌본 관계(신뢰 50+)일 때만 왕이 직접 스승을 감싼다.
+        //   심신파탄의 신뢰 회피와 같은 계열 — 관계가 사람을 붙든다.
+        requires: { resources: { tutorTrust: { min: 50 } } },
+        effects: [{ target: { kind: 'counter', key: RISK_TUTOR }, amount: -99 }],
+        setFlags: { tutor_averted: true },
+        hint: '위기를 넘긴다',
+        resultText:
+          '문이 열리고 왕이 들어섰다. 아직 어린 왕이, 숙부 앞에 서서 고개를 젓는다.\n' +
+          '"이 사람은 과인의 스승입니다. 과인이 놓지 않겠습니다."\n' +
+          '섭정공은 문서를 거두었다. 오늘은. 그 아이가 스승을 놓지 않았다.',
+      },
+      {
+        id: 'dismissed',
+        label: '문서를 받아 든다',
+        setFlags: { [DEAD_END.tutor]: true },
+        resultText:
+          '스승은 문서를 받았다. 달리 할 수 있는 것이 없었다.',
       },
     ],
   },

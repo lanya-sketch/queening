@@ -19,6 +19,16 @@ function currentTemperament(flags: FlagSet): string | null {
   return t?.id ?? null
 }
 
+/** 민심 — people_relieved_ / people_burdened_ flag 의 균형. 외출 서술이 "장부가 아니라 얼굴"을 읽는다. */
+function peopleMoodOf(flags: FlagSet): 'relieved' | 'burdened' | 'mixed' {
+  const n = (prefix: string) => Object.keys(flags).filter((k) => k.startsWith(prefix) && flags[k]).length
+  const relieved = n('people_relieved_')
+  const burdened = n('people_burdened_')
+  if (relieved > burdened) return 'relieved'
+  if (burdened > relieved) return 'burdened'
+  return 'mixed'
+}
+
 export function CutsceneScreen({ onDone }: { onDone: () => void }) {
   const game = useGame((s) => s.game)
   const manifest = useGame((s) => s.outfitManifest)
@@ -48,6 +58,7 @@ export function CutsceneScreen({ onDone }: { onDone: () => void }) {
     age: report.startAge,
     luck: entry.luck,
     temperamentId: tempId,
+    peopleMood: peopleMoodOf(game.flags),
   })
   const portrait = manifest.portraits
     ? resolveMonarchPortrait(manifest.portraits, game.monarchGender, report.startAge, game.currentOutfitId).fullSrc

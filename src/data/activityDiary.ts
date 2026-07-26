@@ -18,6 +18,8 @@ export interface DiaryContext {
   age: number
   luck: DiaryEntry['luck']
   temperamentId: string | null
+  /** 민심 — people_relieved_ / people_burdened_ flag 의 균형. 외출 서술이 읽는다("장부가 아니라 얼굴"). */
+  peopleMood: 'relieved' | 'burdened' | 'mixed'
 }
 
 interface Line {
@@ -28,6 +30,7 @@ interface Line {
   luck?: 'good' | 'bad'
   ageMin?: number
   temperament?: string
+  mood?: 'relieved' | 'burdened' // 민심 조건(외출 서술용)
   text: string
 }
 
@@ -87,6 +90,19 @@ const LINES: Record<string, Line[]> = {
   play: [
     { text: '오랜만에 아이답게 놀았다. 이런 시간이 아이를 지킨다.' },
   ],
+  // ── 궁 밖 — 합법(꾸민 얼굴) vs 몰래(맨얼굴). 민심 flag 를 읽어 "장부가 아니라 얼굴"을 본다.
+  'patrol-town': [
+    { text: '길은 미리 쓸려 있었다. 사람들이 왕을 알아보고 고개를 숙였다. 잘 차려진 겉이었다.' },
+  ],
+  'sneak-town': [
+    { mood: 'relieved', text: '왕인 줄 모르는 얼굴들이 편안했다. 저잣거리의 웃음이 장부의 숫자와 어긋나지 않았다.' },
+    { mood: 'burdened', text: '왕인 줄 모르고 하는 말들이 무거웠다. 장부의 숫자와 저잣거리의 얼굴이 달랐다.' },
+    { text: '남루한 옷으로 저잣거리에 섞였다. 웃는 이도, 한숨짓는 이도 있었다 — 장부에는 없는 얼굴들.' },
+  ],
+  'sneak-slum': [
+    { mood: 'burdened', text: '장부에 안 적히는 얼굴들이 거기 있었다. 보고 나니 그날 밤 잠이 얕았다.' },
+    { text: '성 그늘의 뒷골목. 그래도 사람들은 살아가고 있었다. 아는 것과 모르는 것은 다르다.' },
+  ],
   rest: [
     { wLow: true, text: '오랜만에 푹 잤다. 그동안 무리했던 모양이다.' },
     { durLow: true, text: '하루를 온전히 쉬게 했다. 어린 몸에는 이런 날이 약이다.' },
@@ -102,6 +118,7 @@ function matches(l: Line, c: DiaryContext): boolean {
   if (l.luck && l.luck !== c.luck) return false
   if (l.ageMin !== undefined && c.age < l.ageMin) return false
   if (l.temperament && l.temperament !== c.temperamentId) return false
+  if (l.mood && l.mood !== c.peopleMood) return false
   return true
 }
 

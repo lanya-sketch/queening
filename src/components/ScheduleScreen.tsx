@@ -30,6 +30,7 @@ const GROUPS: { label: string; hint: string; ids: string[] }[] = [
     hint: '권력의 소재를 건드린다',
     ids: ['attend-council', 'secret-correspondence', 'cede-affairs', 'direct-decree'],
   },
+  { label: '궁 밖', hint: '담을 넘는다 — 겉을 볼까, 속을 볼까', ids: ['patrol-town', 'sneak-town', 'sneak-slum'] },
   { label: '쉼', hint: '아무것도 하지 않는다', ids: ['rest', 'play'] },
 ]
 
