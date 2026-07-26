@@ -6,9 +6,8 @@ import type { EndingResult, EndingSkeleton } from '../../types/game'
  * 골격은 tier 로 갈린다. 단 **폭군만 예외** — disposal:폭군 은 tier 가 무엇이든
  * 왕의 성격 전체를 바꾸므로, tier 골격보다 높은 priority 로 가로챈다.
  *
- * ★ 이번 라운드는 셋만 실제 텍스트다: 친정 / 허수아비 / 폭군.
- *   나머지 다섯 tier 는 플레이스홀더 골격이고, 조립은 catch-all 이 아니라
- *   각자의 골격이 받는다(조립 완전성은 유지되고, 텍스트만 후속 라운드에서 채운다).
+ * ★ 여덟 골격 전부 실제 텍스트다(M3-2b 에서 남은 넷 — 공존·배드 3종 — 을 채웠다).
+ *   catch-all 은 조립 완전성의 안전망일 뿐, 1만 세이브 시행에서 0 건이라 실제로는 안 쓰인다.
  *
  * anchor 순서가 곧 엔딩의 서술 순서다:
  *   opening → truth → disposal → special → romance → nation → closing

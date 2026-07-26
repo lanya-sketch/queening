@@ -332,4 +332,352 @@ export const AFFAIR_EVENTS: GameEvent[] = [
       },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // 후반 현안 (17~19세) — "배우는 자리"에서 "결정하는 자리"로.
+  //
+  // ★ 전반 현안(변경·제국·하원)은 섭정공이 답을 정해두고 왕의 입을 보는 시험이었다.
+  //   후반은 **실권(국정 영향도) 게이트**가 핵심이다 — 가장 대담한 "왕으로서의 결정"은
+  //   영향도가 문턱을 넘어야 열리고(친정 45 / 정점 70), 못 넘으면 그 선택지가 잠긴 채로
+  //   "친정에 닿아야 이걸 할 수 있다"가 보인다. 실권을 쌓는 목적이 후반에 생긴다.
+  //
+  // ★ 위임은 여전히 조건 없이 열지만(막다른 길 금지) 후반다운 무게를 얹는다:
+  //   의심 감소 −4→−2(전반보다 적게), tutorTrust −4, burden flag. 열여덟에도 숨는 왕은
+  //   통치를 양보하는 것이라는 대가로.
+  //
+  // ★ 결과는 nation flag 로 엔딩에 이어진다(empire/crown·lords/late_king).
+  // ═══════════════════════════════════════════════════════════════
+
+  {
+    id: 'issue-empire-investiture',
+    title: '제국의 책봉',
+    category: 'state_affair',
+    text:
+      '제국의 사절이 다시 왔다. 이번에 가져온 것은 청구서가 아니라 문서 한 장 — 책봉장이다.\n' +
+      '황제가 {왕}을 제후로 봉한다는 것. 받으면 이 나라는 제국의 신하가 되고, {왕}은 ' +
+      '황제의 이름 아래 다스리게 된다. 형식일 뿐이라고 사절은 웃으며 말했다. ' +
+      '형식이 곧 전부라는 것을 이 방의 모두가 안다.\n' +
+      '3년 전 청구서 때와 다른 점이 하나 있다. 그때는 섭정공이 답을 정해 두었다. ' +
+      '오늘 그는 아무 말이 없다 — {왕}이 이제 스스로 설 수 있는지를 본다.',
+    /**
+     * ★ 통치학 통찰 — 책봉이 무엇을 묶는지 읽는다.
+     */
+    insights: [
+      {
+        requires: { stats: { statecraft: { min: 40 } } },
+        text:
+          '책봉은 군대를 요구하지 않는다. 다만 다음 대의 왕을 황제가 승인하게 만든다 — ' +
+          '한 번 무릎을 꿇으면 그 무릎은 후대에 상속된다. 사절이 "형식"이라 부르는 것의 값이 그것이다.',
+      },
+    ],
+    condition: { minAge: 17, minYear: 6, month: 6 },
+    priority: 43,
+    choices: [
+      {
+        id: 'defy',
+        label: '대등을 선포하고 책봉을 거부한다',
+        // ★ 실권 게이트 — 친정(45)에 닿아야 열린다. 못 넘으면 잠긴 채 사유가 보인다.
+        //   열린 뒤에도 그 말이 서는지는 변론(tierStat)에 달렸다(4-C).
+        requires: { resources: { courtInfluence: { min: 45 } } },
+        tierStat: 'rhetoric',
+        setFlags: { empire_defied: true },
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 6 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 8 },
+              { target: { kind: 'resource', key: 'wellbeing' }, amount: -8 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 },
+            ],
+            hint: '말은 섰으나 손끝이 떨렸다',
+            resultText:
+              '"이 나라는… 누구의 신하도 아닙니다."\n' +
+              '{왕}의 목소리가 조금 흔들렸지만 문장은 끝까지 갔다. 사절은 웃음을 거두고 책봉장을 ' +
+              '도로 말았다. 거절은 관철됐다 — 다만 제국은 이 어린 왕을 이제 기억해 두었을 것이다.',
+          },
+          {
+            min: 30,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 14 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 8 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 10 },
+            ],
+            setFlags: { people_relieved_empire: true },
+            resultText:
+              '"황제께 전하시오. 과인은 제국의 벗이 될 수는 있으나, 신하는 될 수 없다고."\n' +
+              '사절이 잠시 {왕}을 다시 보았다. 어린 왕이 아니라 왕을 본 눈이었다.\n' +
+              '그날의 말이 국경 너머까지 흘렀고, 백성들은 제 왕이 누구 앞에서도 무릎 꿇지 않았다는 것을 알았다.',
+          },
+        ],
+      },
+      {
+        id: 'trade',
+        label: '책봉을 받되 실리를 챙긴다',
+        requires: { stats: { courtcraft: { min: 30 } } },
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 6 },
+          { target: { kind: 'stat', key: 'finance' }, amount: 5 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 4 },
+        ],
+        setFlags: { empire_submitted: true, people_relieved_empire: true },
+        resultText:
+          '{왕}은 책봉장에 서명하는 대신 조건을 걸었다 — 국경 관세의 절반, 곡물 교역의 우선권.\n' +
+          '형식으로는 무릎을 꿇었고, 실질로는 곳간을 채웠다. 사절은 남는 장사가 아니라고 여겼지만, ' +
+          '이미 도장은 찍힌 뒤였다.\n' +
+          '아무도 이겼다 하지 않았고, {왕}은 굳이 이겼다 말하지 않았다.',
+      },
+      {
+        id: 'submit',
+        label: '책봉을 받는다',
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: -4 },
+          { target: { kind: 'resource', key: 'regentRapport' }, amount: 6 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -6 },
+          { target: { kind: 'resource', key: 'tutorTrust' }, amount: -6 },
+        ],
+        setFlags: { empire_submitted: true, people_burdened_empire: true },
+        resultText:
+          '{왕}은 책봉장에 이름을 올렸다. 사절은 만족했고, 섭정공도 만족했다 — 안전한 선택은 ' +
+          '언제나 그를 안심시킨다.\n' +
+          '그날 밤 당신은 아이가 오래 창밖을 보는 것을 보았다. 국경 너머 어딘가, 이제 그 위에 ' +
+          '다른 왕관이 있었다.',
+      },
+      {
+        id: 'delegate',
+        label: '섭정공에게 맡긴다',
+        // ★ 후반 무게 — 의심 −2(전반 −4보다 적게) + tutorTrust −4.
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: -6 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -2 },
+          { target: { kind: 'resource', key: 'regentRapport' }, amount: 5 },
+          { target: { kind: 'resource', key: 'tutorTrust' }, amount: -4 },
+        ],
+        setFlags: { empire_submitted: true, people_burdened_empire: true },
+        hint: '섭정공이 붓을 든다',
+        resultText:
+          '"숙부께서 정하십시오."\n' +
+          '섭정공은 책봉장을 받았다. 절차는 매끄러웠다.\n' +
+          '열일곱의 왕이 여전히 숙부의 등 뒤에 선다는 것을, 사절은 문서보다 정확히 읽어 갔다.',
+      },
+    ],
+  },
+
+  {
+    id: 'issue-lords-season',
+    title: '영주들의 계절',
+    category: 'state_affair',
+    text:
+      '하원이 선 뒤로 영주들이 조용할 리 없었다. 이번 회기에 그들이 들고 온 것은 청원이 아니라 ' +
+      '경고다 — 왕관이 조세와 징병을 직접 거두려 하니, 봉토의 오랜 권리가 위태롭다는 것.\n' +
+      '영주 연합의 이름으로 열두 개의 인장이 찍힌 문서가 어전에 올랐다. 물러서면 왕은 ' +
+      '영주들 위의 영주로 남고, 밀어붙이면 왕관이 나라를 직접 쥔다.\n' +
+      '봉건과 중앙집권 — 선왕도 끝내 넘지 못한 선이다. 그 선 앞에 이제 {왕}이 섰다.',
+    insights: [
+      {
+        requires: { stats: { statecraft: { min: 45 } } },
+        text:
+          '조세권과 징병권은 나라의 두 기둥이다. 그것이 영주의 손에 있는 한 왕은 언제나 ' +
+          '열둘의 허락 위에 앉아 있다. 왕관이 그 둘을 거두는 날, 이 나라는 비로소 하나가 된다 — ' +
+          '그 하나됨을 열두 영주가 순순히 볼 리 없다는 것이 문제일 뿐.',
+      },
+    ],
+    condition: { minAge: 18, minYear: 7, month: 4 },
+    priority: 41,
+    choices: [
+      {
+        id: 'reclaim',
+        label: '조세·징병권을 왕관으로 회수한다',
+        // ★ 실권 정점 게이트(70) — 가장 유능한 왕만 여는 결정.
+        requires: { resources: { courtInfluence: { min: 70 } } },
+        tierStat: 'statecraft',
+        setFlags: { crown_centralized: true },
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 8 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -12 },
+              { target: { kind: 'resource', key: 'wellbeing' }, amount: -8 },
+            ],
+            hint: '영주들이 물러섰으나 이를 갈았다',
+            resultText:
+              '{왕}은 회수를 명했다. 영주들은 인장을 거두고 물러났지만, 그 물러섬은 승복이 아니라 ' +
+              '계산이었다. 왕관은 두 기둥을 쥐었고, 그 무게에 아직 손이 익지 않았다.',
+          },
+          {
+            min: 40,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 18 },
+              { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },
+              { target: { kind: 'resource', key: 'regentRapport' }, amount: -14 },
+              { target: { kind: 'stat', key: 'statecraft' }, amount: 5 },
+            ],
+            setFlags: { people_relieved_lords: true },
+            resultText:
+              '{왕}은 열두 영주를 하나씩 이름으로 불러, 각자의 봉토가 왕관 아래 무엇을 얻고 무엇을 ' +
+              '내놓는지를 셈해 보였다. 반박할 자가 없었다.\n' +
+              '그날 이 나라는 열두 조각에서 하나가 되었다. 왕관이 처음으로 나라 전체의 무게를 ' +
+              '제 손에 느꼈다.',
+          },
+        ],
+      },
+      {
+        id: 'via-commons',
+        label: '하원을 통해 영주를 견제한다',
+        // ★ 서사 연쇄 — 16세에 하원을 지켰을 때만 열린다. 없앴으면 이 길이 막혀 있다.
+        requires: { flags: { house_commons_defended: true } },
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 10 },
+          { target: { kind: 'stat', key: 'courtcraft' }, amount: 4 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 6 },
+        ],
+        setFlags: { crown_centralized: true, people_relieved_lords: true },
+        resultText:
+          '{왕}은 영주들과 직접 부딪지 않았다. 대신 하원의 평민 대표들에게 조세 장부를 열었다.\n' +
+          '영주가 얼마를 거두고 얼마를 숨기는지 백성이 알게 되자, 열두 인장의 힘이 소리 없이 빠졌다.\n' +
+          '아버지가 남긴 방이, 아버지가 넘지 못한 선을 아들에게 넘겨 주었다.',
+      },
+      {
+        id: 'appease',
+        label: '영주들에게 양보한다',
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: -4 },
+          { target: { kind: 'resource', key: 'regentRapport' }, amount: 8 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -6 },
+        ],
+        setFlags: { lords_restored: true, people_burdened_lords: true },
+        resultText:
+          '{왕}은 봉토의 권리를 확인하는 칙서에 서명했다. 열두 영주는 만족했고, 궁정은 조용해졌다.\n' +
+          '나라는 여전히 열두 조각이다. 다만 그 조각들이 오늘은 왕에게 웃어 보였다.',
+      },
+      {
+        id: 'delegate',
+        label: '섭정공에게 맡긴다',
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: -6 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -2 },
+          { target: { kind: 'resource', key: 'regentRapport' }, amount: 5 },
+          { target: { kind: 'resource', key: 'tutorTrust' }, amount: -4 },
+        ],
+        setFlags: { lords_restored: true, people_burdened_lords: true },
+        hint: '영주들이 안도한다',
+        resultText:
+          '"숙부께서 정하십시오."\n' +
+          '섭정공은 영주들과 오래 이야기했다. 그는 그들의 언어를 안다 — 자신도 그중 하나였으니까.\n' +
+          '봉토는 지켜졌고, 왕관은 열둘 위에 앉은 채로 남았다.',
+      },
+    ],
+  },
+
+  {
+    id: 'issue-late-king',
+    title: '선왕의 미완',
+    category: 'state_affair',
+    text:
+      '문서고 깊은 곳에서 선왕의 미완의 칙령 초안이 나왔다. 변경 수비대를 줄여 그 비용으로 ' +
+      '하원을 세운 그 정책 — 절반만 완성된 채 선왕이 떠났다.\n' +
+      '변경은 그만큼 얇아졌고, 3년 전 국경 마을 셋이 탄 것도 그 얇음의 대가였다. 그러나 ' +
+      '하원은 그 대가로 섰고, 백성이 처음으로 왕과 직접 이어졌다.\n' +
+      '{왕}은 이제 열아홉, 아버지가 손대다 만 것을 완성할 수도, 되돌릴 수도, 덮어 둘 수도 있다.\n' +
+      '아버지가 왜 그 위험을 감수했는지 — 그 답을 아는 사람은 이제 {왕}뿐이다.',
+    insights: [
+      {
+        requires: { stats: { statecraft: { min: 50 } } },
+        text:
+          '선왕의 도박은 이것이었다: 영주의 군대에 기대는 나라를, 백성에 기대는 나라로 바꾼다. ' +
+          '변경을 얇게 한 것은 실수가 아니라 지불이었다. 그 지불을 완성하면 나라의 축이 영영 바뀌고, ' +
+          '되돌리면 아버지의 도박은 미완의 실패로 역사에 적힌다.',
+      },
+    ],
+    condition: { minAge: 19, minYear: 8, month: 5 },
+    priority: 39,
+    choices: [
+      {
+        id: 'complete',
+        label: '선왕의 개혁을 완성한다',
+        // ★ 실권 정점 게이트(70). 완성은 정통성(친정 엔딩 재료)으로 남는다.
+        requires: { resources: { courtInfluence: { min: 70 } } },
+        tierStat: 'statecraft',
+        setFlags: { late_king_reform: true },
+        resultText: '',
+        tiers: [
+          {
+            min: 0,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 6 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 8 },
+              { target: { kind: 'resource', key: 'wellbeing' }, amount: -6 },
+            ],
+            hint: '길은 이었으나 아직 거칠다',
+            resultText:
+              '{왕}은 아버지의 초안을 마저 그렸다. 완성된 개혁은 거칠었지만, 방향만은 아버지가 ' +
+              '가리킨 그대로였다. 미완의 유산이 비로소 한 문장으로 끝맺음을 얻었다.',
+          },
+          {
+            min: 40,
+            effects: [
+              { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
+              { target: { kind: 'resource', key: 'tutorTrust' }, amount: 10 },
+              { target: { kind: 'stat', key: 'statecraft' }, amount: 5 },
+            ],
+            setFlags: { people_relieved_reform: true },
+            resultText:
+              '{왕}은 변경의 얇음을 백성의 두터움으로 메웠다 — 상비군 대신 향병을, 영주의 징집 대신 ' +
+              '하원의 동의를. 아버지가 시작한 나라가, 아들의 손에서 형태를 갖췄다.\n' +
+              '그날 당신은 선왕의 초상 앞에 오래 선 아이를 보았다. 이제 그 눈이 아버지를 원망하지 않았다.',
+          },
+        ],
+      },
+      {
+        id: 'restore-frontier',
+        label: '되돌려 변경을 다시 세운다',
+        requires: { stats: { martial: { min: 30 } } },
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 6 },
+          { target: { kind: 'stat', key: 'martial' }, amount: 5 },
+          { target: { kind: 'resource', key: 'wellbeing' }, amount: 4 },
+        ],
+        setFlags: { late_king_frontier: true, people_relieved_frontier: true },
+        resultText:
+          '{왕}은 변경 수비대를 다시 채웠다. 국경 마을은 다시 병사의 그림자 아래 잠들었고, ' +
+          '아버지가 얇게 만든 선이 두꺼워졌다.\n' +
+          '하원의 재정은 그만큼 줄었다. 아버지의 도박을 접는 대신, {왕}은 나라를 다시 단단한 ' +
+          '옛 모양으로 되돌렸다. 안전한 모양이었다.',
+      },
+      {
+        id: 'leave',
+        label: '덮어 둔다',
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: -2 },
+          { target: { kind: 'resource', key: 'wellbeing' }, amount: -2 },
+        ],
+        resultText:
+          '{왕}은 초안을 도로 문서고에 넣었다. 완성할 만큼 확신이 서지 않았고, 되돌릴 만큼 ' +
+          '단념하지도 못했다.\n' +
+          '미완은 미완인 채로 남았다. 언젠가 다른 손이 이것을 다시 꺼낼 것이다 — 그것이 ' +
+          '{왕}의 손이 아닐 수도 있다는 것을, 아이도 어렴풋이 알았다.',
+      },
+      {
+        id: 'delegate',
+        label: '섭정공에게 맡긴다',
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: -6 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -2 },
+          { target: { kind: 'resource', key: 'regentRapport' }, amount: 5 },
+          { target: { kind: 'resource', key: 'tutorTrust' }, amount: -4 },
+        ],
+        setFlags: { late_king_frontier: true },
+        hint: '섭정공이 초안을 덮는다',
+        resultText:
+          '"숙부께서 정하십시오."\n' +
+          '섭정공은 초안을 잠깐 들여다보더니 변경 쪽으로 손을 들었다. 그에게 백성의 방보다 ' +
+          '영주의 군대가 익숙했다.\n' +
+          '선왕의 미완은 선왕의 실패로 정리되었다. 아들의 이름으로.',
+      },
+    ],
+  },
 ]

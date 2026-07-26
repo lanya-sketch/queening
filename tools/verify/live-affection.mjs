@@ -113,8 +113,9 @@ for (let i = 0; i < ROUNDS; i++) {
   gains.push(gain)
 
   // 마지막 대사 일부도 남긴다 — 수치만 보면 왜 안 올랐는지 알 수 없다.
+  // ★ 리디자인 후 상대 대사 버블 클래스가 border-line-gold/50 로 바뀌었다(옛 border-amber-900/50).
   const last = await dialog
-    .locator('div.border-amber-900\\/50')
+    .locator('div.border-line-gold\\/50')
     .last()
     .innerText()
     .catch(() => '')

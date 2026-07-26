@@ -102,8 +102,12 @@ export const PRIORITY: Record<string, number> = {
   'commander-reckoning': 45,
   'issue-house-of-commons': 46,
   'issue-frontier-raid': 44,
+  // 후반 현안(17~19세) — 전반 현안과 같은 정치 대역, 서로 다른 달·나이라 실경쟁은 없다.
+  'issue-empire-investiture': 43,
   'issue-empire-tribute': 42,
+  'issue-lords-season': 41,
   'teen-noble-check': 40,
+  'issue-late-king': 39,
 
   // ── 1–9 유년기 인물 (배경보다도 먼저 양보) ─────────────────
   // 위화감 씨앗(11~12세)과 첫 등장(13세). 전부 once 이고 서로 다른 달에 걸려 있어

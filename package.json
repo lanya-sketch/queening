@@ -43,7 +43,8 @@
     "verify:childhood": "node tools/verify/childhood.mjs",
     "verify:teen-bonds": "node tools/verify/teenBonds.mjs",
     "verify:wiring3": "node tools/verify/wiring3.mjs",
-    "verify:ux-bundle": "node tools/verify/uxBundle.mjs"
+    "verify:ux-bundle": "node tools/verify/uxBundle.mjs",
+    "verify:late-affairs": "node tools/verify/lateAffairs.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

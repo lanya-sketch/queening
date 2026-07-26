@@ -16,8 +16,10 @@ export const ADULT_EVENTS: GameEvent[] = [
       '남매가 편지를 주고받는 것은 죄가 아니다. 다만 묶음이 시작되는 날짜가 ' +
       '선왕이 승하하기 두 달 전이고, 그 이전 것은 한 통도 없다는 게 마음에 걸린다.\n' +
       '발소리가 들려 당신은 문갑을 닫았다.',
+    // ★ 달 분산(후반 클러스터 해소) — 늦가을 추도식.
     condition: {
       minAge: 16,
+      month: 10,
       flags: { clue_mother_calm: true },
       stats: { courtcraft: { min: 48 } },
     },
@@ -35,7 +37,9 @@ export const ADULT_EVENTS: GameEvent[] = [
       '관을 씌우는 손이 섭정공의 것이다. 그가 {왕}의 귀에만 들리게 말한다.\n' +
       '"이제 무엇을 하시겠습니까, 전하."\n' +
       '9년을 준비한 대답을 해야 할 때다.',
-    condition: { minAge: 17 },
+    // ★ 달 분산 — 성년식은 봄(성년의 시작). 1월 클러스터를 피해 3월에 못박는다.
+    //   우선순위가 높아(마일스톤 대역) 그달의 슬롯을 확보한다.
+    condition: { minAge: 17, month: 3 },
     priority: 40,
     choices: [
       {
@@ -81,8 +85,10 @@ export const ADULT_EVENTS: GameEvent[] = [
       '들어오지 않는다. 왕실 의관의 처방이 아니라 왕대비궁의 재고에서만 나온다.\n' +
       '왕대비궁은 궁정의 관할 밖이다. 섭정공의 손이 닿는 곳이 아니라는 뜻이다.\n' +
       '그 안쪽을 관장하는 사람은 단 하나다.',
+    // ★ 달 분산 — 한여름.
     condition: {
       minAge: 17,
+      month: 8,
       flags: { truth_regent_involved: true },
       stats: { courtcraft: { min: 50 } },
     },
@@ -101,9 +107,10 @@ export const ADULT_EVENTS: GameEvent[] = [
       '그가 잔을 밀어 놓는다.\n' +
       '"신은 전하께서 애송이가 아니라는 것을 압니다. 그것이 신이 전하께 ' +
       '드릴 수 있는 전부입니다."',
-    // 이미 갈라섰다면 담판의 자리가 없다.
+    // 이미 갈라섰다면 담판의 자리가 없다. ★ 달 분산 — 겨울 문턱의 결판(결렬과 배타).
     condition: {
       minAge: 18,
+      month: 11,
       resources: { regentRapport: { min: 50 }, regentSuspicion: { max: 45 } },
       flags: { regent_hostile: false },
     },
@@ -148,9 +155,10 @@ export const ADULT_EVENTS: GameEvent[] = [
       '오늘 아침에는 당신의 이름이 목록에 올랐다는 말이 돌았다.\n' +
       '{왕}이 처음으로 당신 앞에서 목소리를 높였다. "과인이 지킵니다."',
     // 회유가 이미 성사됐다면 이 장면(처음 갈라서는 순간)은 성립하지 않는다.
-    // 동맹이 깨지는 서사는 별도 이벤트로 다룰 자리다.
+    // 동맹이 깨지는 서사는 별도 이벤트로 다룰 자리다. ★ 달 분산 — 담판과 같은 달(배타).
     condition: {
       minAge: 18,
+      month: 11,
       resources: { regentSuspicion: { min: 70 } },
       flags: { regent_won_over: false },
     },

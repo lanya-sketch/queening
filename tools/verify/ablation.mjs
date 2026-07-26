@@ -138,6 +138,13 @@ const finalInf = (build) => {
   return ms.length ? Number(ms[ms.length - 1][2]) : null
 }
 
+/** 그 빌드 최종 나이의 영향도 상한 = courtInfluenceCap(age) = min(100, 25+(age-11)*8). */
+const capOf = (build) => {
+  const ms = [...influenceOf(build).matchAll(/(\d+)세:\d+/g)]
+  const age = ms.length ? Number(ms[ms.length - 1][1]) : 20
+  return Math.min(100, 25 + (age - 11) * 8)
+}
+
 /**
  * 제거된 콘텐츠 중 **영향도를 건드리는 것**은 둘이다.
  *   1) 두루마리(④ 장치) — 영향도 +18 을 직접 준다.
@@ -282,11 +289,20 @@ for (const key of buildKeys) {
   //   판정이 아니라 관측으로 남긴다. 최종이 갈리면(수렴 안 하면) 여전히 실패다.
   const converged = finalInf(normal[key]) === finalInf(ablated[key])
   const transientIncidentBlip = INCIDENT_MODE && !expected && !same && converged
+  // ★ 상한 흡수 — 보상을 받는 빌드가 이미 영향도 상한에 닿아 있으면, 제거된 +18 을 도로 빼도
+  //   최종이 안 바뀐다(roadmap: "영향도 상한이 보상을 자동으로 흡수해 밸런스를 지킨다").
+  //   후반 정치 현안(3-h)이 늘며 두루마리 수령 빌드가 상한에 닿게 됐다. **상한값에서** 같음은
+  //   흡수(관측)이고, 보상이 아예 적용 안 된 것(최종이 상한 미만인데 같음)과는 구분된다 — 그건 여전히 실패.
+  const capAbsorbed = expected && same && finalInf(normal[key]) >= capOf(normal[key])
   if (transientIncidentBlip) {
     log('')
     log(`   ${normal[key].name}  ⓘ 중간 영향도 전이차 (최종 ${finalInf(normal[key])} 로 수렴, 돌발 턴 점유)`)
     log(`     정상: ${influenceOf(normal[key])}`)
     log(`     제거: ${influenceOf(ablated[key])}`)
+  } else if (capAbsorbed) {
+    log('')
+    log(`   ${normal[key].name}  ⓘ 상한 흡수 (제거 보상이 상한 ${capOf(normal[key])} 에 닿아 최종 불변 ${finalInf(normal[key])})`)
+    log(`     → 미스터리 결론은 B1 에서 이미 완전 일치. 영향도 무변화는 상한 탓이지 ablation 미작동이 아니다.`)
   } else if (same === expected) {
     // 보상을 받는데 같거나, 안 받는데 다르면 문제다
     influenceOk = false

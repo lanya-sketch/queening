@@ -188,6 +188,43 @@ export const ENDING_INSERTS: EndingInsert[] = [
     priority: 20,
     lines: [line('하원은 해산되었다. 질서는 돌아왔지만, 돌아오지 못한 목소리도 있었다.')],
   },
+  // ── 후반 현안(17~19세)의 결말 서술. 각 쌍은 배타적이라 한 회차엔 최대 하나씩만 뜬다.
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'empire_defied'),
+    priority: 34,
+    lines: [line('제국 앞에서 {왕}은 무릎을 꿇지 않았다. 작은 나라가 큰 나라의 눈을 마주 본 것을, 국경 너머까지 오래 이야기했다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'empire_submitted'),
+    priority: 19,
+    lines: [line('책봉장에는 {왕}의 이름이 있었다. 나라는 지켜졌으나, 그 위에는 이제 다른 왕관이 있었다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'crown_centralized'),
+    priority: 25,
+    lines: [line('열두 조각이던 나라가 하나가 되었다. 왕관이 처음으로 나라 전체를 제 손에 쥐었고, 그 무게는 온전히 {왕}의 것이었다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'lords_restored'),
+    priority: 14,
+    lines: [line('봉토의 권리는 지켜졌다. {왕}은 영주들 위의 영주로 남았고, 나라는 여전히 열둘의 허락 위에 앉아 있었다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'late_king_reform'),
+    priority: 28,
+    lines: [line('선왕이 손대다 만 개혁을, 아들이 마저 그렸다. 백성에 기댄 나라 — 아버지가 가리키기만 했던 그 나라가, 비로소 형태를 얻었다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'late_king_frontier'),
+    priority: 13,
+    lines: [line('{왕}은 변경을 다시 세우고 아버지의 도박을 접었다. 나라는 단단한 옛 모양으로 돌아갔다 — 안전한, 그러나 아무것도 바꾸지 않은 모양으로.')],
+  },
   {
     anchor: 'nation',
     match: (r) => mod(r, '불신의 공치'),

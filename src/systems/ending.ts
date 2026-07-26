@@ -203,6 +203,13 @@ export function judgeEnding(state: GameState): EndingResult {
   for (const name of [
     'house_commons_defended',
     'house_commons_dissolved',
+    // 후반 현안(17~19세)의 결과 — 대외(제국)·국내 구조(봉건/중앙집권)·선왕 유산.
+    'empire_defied',
+    'empire_submitted',
+    'crown_centralized',
+    'lords_restored',
+    'late_king_reform',
+    'late_king_frontier',
     'scroll_offered',
     'legitimacy_sacred',
     'church_support',
