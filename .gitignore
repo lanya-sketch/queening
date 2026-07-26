@@ -3,3 +3,4 @@
 /tools/verify/screenshots
 *.local
 .claude/settings.json
+.claude/settings.json
