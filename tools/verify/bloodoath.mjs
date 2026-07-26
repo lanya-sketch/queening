@@ -4,7 +4,7 @@
 //   "기존 미스터리를 안 건드렸습니다"는 말로 할 주장이 아니라 코드로 대조할 명제다.
 //   의존이 단방향(진실 → 혈서)이면 혈서를 통째로 들어내도 진실 도달이 그대로다.
 //   A 절은 그 단방향성을 이벤트 정의에서 직접 읽어 확인한다.
-import { APP_URL, advanceScene, launch, log, ok, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import { APP_URL, advanceScene, launch, log, ok, shotsDir, SAVE_VERSION, saveToSlot, readSlot } from './helpers.mjs'
 
 const OUT = shotsDir('bloodoath')
 
@@ -429,9 +429,8 @@ await page.screenshot({ path: `${OUT}/03-complete.png` })
 // ─────────────────────────────────────────────────────────────
 log('')
 log('=== G. 세이브 ===')
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const saved = await readSlot(page, 0)
 log('G1 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('G2 혈서 flag 보존:',
   ok(saved.state.flags.blood_oath_complete === true))

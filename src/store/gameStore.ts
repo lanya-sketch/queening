@@ -10,7 +10,7 @@ import { resolvedChoice } from '../systems/activityTier'
 import { matchesCondition } from '../systems/eventEngine'
 import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/outfits'
 import { rng } from '../systems/rng'
-import { clearSave, getSavedAt, loadGame, saveGame } from '../systems/save'
+import { getSlotSummary, loadGame, saveGame } from '../systems/save'
 import { createInitialState, endTurn, hasReachedEnd } from '../systems/turn'
 
 /** 이벤트 큐를 다 비운 뒤 돌아갈 화면. 20세를 넘겼으면 스케줄 대신 종료 화면. */
@@ -21,6 +21,8 @@ function idlePhase(game: GameState): Phase {
 interface GameStore {
   game: GameState
   savedAt: string | null
+  /** 현재 게임이 걸려 있는 슬롯(저장/로드로 정해진다). 없으면 아직 어느 슬롯에도 안 묶임. */
+  activeSlot: number | null
   /** 세이브/로드 결과를 알리는 짧은 안내문. */
   notice: string | null
   /** 방금 고른 선택지의 결과. 이벤트 화면이 후일담을 보여주는 데 쓴다. */
@@ -60,15 +62,19 @@ interface GameStore {
    */
   dropPendingEvent: (eventId: string) => void
 
-  save: () => void
-  load: () => void
+  /** 현재 게임을 지정 슬롯에 저장한다. */
+  save: (slot: number) => void
+  /** 지정 슬롯을 불러온다. */
+  load: (slot: number) => void
+  /** 진행 중인 게임만 새로 시작한다 — ★ 저장된 슬롯 기록은 건드리지 않는다. */
   reset: () => void
   clearNotice: () => void
 }
 
 export const useGame = create<GameStore>()((set, get) => ({
   game: createInitialState(),
-  savedAt: getSavedAt(),
+  savedAt: null,
+  activeSlot: null,
   notice: null,
   lastChoiceOutcome: null,
 
@@ -224,16 +230,17 @@ export const useGame = create<GameStore>()((set, get) => ({
     })
   },
 
-  save: () => {
-    const ok = saveGame(get().game)
+  save: (slot) => {
+    const ok = saveGame(get().game, slot)
     set({
-      savedAt: ok ? getSavedAt() : get().savedAt,
-      notice: ok ? '저장했습니다.' : '저장에 실패했습니다.',
+      savedAt: ok ? (getSlotSummary(slot).savedAt ?? get().savedAt) : get().savedAt,
+      activeSlot: ok ? slot : get().activeSlot,
+      notice: ok ? `${slot + 1}번 슬롯에 저장했습니다.` : '저장에 실패했습니다.',
     })
   },
 
-  load: () => {
-    const loaded = loadGame()
+  load: (slot) => {
+    const loaded = loadGame(slot)
     if (!loaded) {
       set({ notice: '불러올 기록이 없습니다.' })
       return
@@ -242,16 +249,20 @@ export const useGame = create<GameStore>()((set, get) => ({
     const resolved = resolveOutfit(get().outfitManifest, loaded.currentOutfitId)
     set({
       game: { ...loaded, currentOutfitId: resolved.id },
+      savedAt: getSlotSummary(slot).savedAt ?? null,
+      activeSlot: slot,
       lastChoiceOutcome: null,
-      notice: '기록을 불러왔습니다.',
+      notice: `${slot + 1}번 슬롯을 불러왔습니다.`,
     })
   },
 
+  // ★ 슬롯 보존 — 저장된 기록은 지우지 않고, 진행 중인 게임만 새로 시작한다.
+  //   갤러리·읽음기록·옵션도 그대로다(애초에 세이브 키와 분리돼 있다).
   reset: () => {
-    clearSave()
     set({
       game: createInitialState(),
       savedAt: null,
+      activeSlot: null,
       portraitOpen: false,
       lastChoiceOutcome: null,
       notice: '처음부터 다시 시작합니다.',

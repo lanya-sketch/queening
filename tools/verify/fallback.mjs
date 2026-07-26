@@ -1,6 +1,6 @@
 // 착장 매니페스트 안전장치 검사.
 // 유저가 손으로 고치는 파일이므로, 깨졌을 때 게임이 죽지 않는지 확인한다.
-import { APP_URL, enterGame, launch, log, ok, portrait } from './helpers.mjs'
+import { APP_URL, enterGame, launch, log, ok, portrait, loadFromSlot } from './helpers.mjs'
 
 const browser = await launch()
 
@@ -60,7 +60,7 @@ const c4 = await browser.newContext({ viewport: { width: 375, height: 812 } })
 const p4 = await c4.newPage()
 await p4.goto(APP_URL, { waitUntil: 'networkidle' })
 await p4.evaluate(() => {
-  localStorage.setItem('queening.save', JSON.stringify({
+  localStorage.setItem('queening.save.slot0', JSON.stringify({
     version: 4, savedAt: '2026-01-01T00:00:00.000Z', state: {
       date: { year: 1, season: 'spring' }, age: 12,
       stats: { statecraft: 20, finance: 10, rhetoric: 10, martial: 10, courtcraft: 10 },
@@ -74,8 +74,7 @@ await p4.reload({ waitUntil: 'networkidle' })
 await enterGame(p4)
 await p4.waitForTimeout(400)
 await p4.getByRole('button', { name: '상세' }).click()
-await p4.getByRole('button', { name: '불러오기' }).click()
-await p4.waitForTimeout(300)
+await loadFromSlot(p4, 0)
 const src4 = await portrait(p4).locator('img').getAttribute('src')
 // ★ 세이브의 유령 착장은 load 시 resolveOutfit 이 DEFAULT_OUTFIT_ID 로 되돌린다.
 //   기본 착장이 실플레이 피드백 #22 로 정무복(office)이 됐다(예전 casual).

@@ -52,6 +52,8 @@ interface AppStore {
   gallery: boolean
   /** AI 설정 모달(D-3: 게임 화면에서 설정 오버레이로 이동). */
   aiSettings: boolean
+  /** 세이브 슬롯 화면 — 'save'(저장) / 'load'(불러오기) / null(닫힘). */
+  slotScreen: 'save' | 'load' | null
 
   /** 지금 떠 있는 코치마크(없으면 null). */
   coach: CoachKey | null
@@ -77,6 +79,8 @@ interface AppStore {
   closeGallery: () => void
   openAiSettings: () => void
   closeAiSettings: () => void
+  openSlotScreen: (mode: 'save' | 'load') => void
+  closeSlotScreen: () => void
 }
 
 /**
@@ -102,6 +106,7 @@ export const useApp = create<AppStore>()((set) => ({
   help: false,
   gallery: false,
   aiSettings: false,
+  slotScreen: null,
   coach: null,
   coachSeen: loadCoachSeen(),
 
@@ -120,7 +125,7 @@ export const useApp = create<AppStore>()((set) => ({
     }),
 
   goTitle: () =>
-    set({ screen: 'title', intro: false, onboarding: false, settingsOpen: false, help: false, gallery: false, aiSettings: false }),
+    set({ screen: 'title', intro: false, onboarding: false, settingsOpen: false, help: false, gallery: false, aiSettings: false, slotScreen: null }),
   // 새 게임: 게임 화면으로 들어가되 먼저 인트로 오버레이를 띄운다(온보딩은 그 다음).
   startNewGame: () => set({ screen: 'game', intro: true, onboarding: false }),
   dismissIntro: () => set({ intro: false, onboarding: true }),
@@ -136,4 +141,7 @@ export const useApp = create<AppStore>()((set) => ({
   // AI 설정을 열면 설정 메뉴는 접는다(중첩 방지 — 앱 최상위 모달로 뜬다).
   openAiSettings: () => set({ aiSettings: true, settingsOpen: false }),
   closeAiSettings: () => set({ aiSettings: false }),
+  // 슬롯 화면은 앱 최상위 오버레이 — 설정을 접고 위에 띄운다.
+  openSlotScreen: (mode) => set({ slotScreen: mode, settingsOpen: false }),
+  closeSlotScreen: () => set({ slotScreen: null }),
 }))

@@ -6,7 +6,7 @@
 //   node tools/verify/simulate.mjs D      머리글자가 D 인 빌드만
 import {
   APP_URL, advanceScene, choiceButtons, clickCard, enterGame, launch, ok, phaseOf, readPanel,
-  shotsDir,
+  shotsDir, saveToSlot, readSlot,
 } from './helpers.mjs'
 
 const OUT = shotsDir('simulate')
@@ -431,9 +431,8 @@ async function runSimulation(browser, run) {
   if (endedReached) {
     // 엔딩 씬(M3-2)을 넘겨야 결산 화면의 저장 버튼이 나온다.
     await advanceScene(page)
-    await page.getByRole('button', { name: '이 기록 저장' }).click()
-    await page.waitForTimeout(200)
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+    await saveToSlot(page, 0, '이 기록 저장')
+    const saved = await readSlot(page, 0)
     flags = saved.state.flags
     stats = saved.state.stats
     resources = {

@@ -7,7 +7,7 @@
 // 라이브 모드: 실제 키로 진짜 대사를 뽑아 목소리 차이를 눈으로 본다.
 //   QUEENING_LIVE_KEY=sk-ant-... npm run verify:chars
 //   (호출이 실제로 나가고 과금됩니다. 캐릭터당 1회, 총 6회.)
-import { APP_URL, launch, log, ok, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import { APP_URL, launch, log, ok, shotsDir, SAVE_VERSION, saveToSlot, readSlot } from './helpers.mjs'
 
 const OUT = shotsDir('character-talk')
 const LIVE_KEY = process.env.QUEENING_LIVE_KEY ?? ''
@@ -247,9 +247,8 @@ log('')
 log('=== G. 세이브 v5 유지 ===')
 await page.keyboard.press('Escape')
 await page.waitForTimeout(200)
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const saved = await readSlot(page, 0)
 log('G1 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('G2 ① 호감도가 세이브에 반영:', saved.state.affection.heir,
   ok(LIVE ? true : saved.state.affection.heir === 13))

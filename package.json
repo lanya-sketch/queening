@@ -48,7 +48,8 @@
     "verify:temperament": "node tools/verify/temperament.mjs",
     "verify:cutscene": "node tools/verify/cutscene.mjs",
     "verify:outing": "node tools/verify/outing.mjs",
-    "verify:relations16": "node tools/verify/relations16.mjs"
+    "verify:relations16": "node tools/verify/relations16.mjs",
+    "verify:slots": "node tools/verify/slots.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

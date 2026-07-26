@@ -8,6 +8,7 @@ import { buildDeadEndScene } from '../data/endings/deadends'
 import { endingSummaryRows, isBadEnding } from '../data/endings/summary'
 import { recordEnding } from '../systems/gallery'
 import { SCENE_BY_ID } from '../data/scenes'
+import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
 import { monarchName, resolveText } from '../systems/text'
 import { ScenePlayer } from './scene/ScenePlayer'
@@ -27,7 +28,7 @@ import { resourceGauge, statGauge } from '../systems/display'
 export function EndedScreen() {
   const game = useGame((s) => s.game)
   const reset = useGame((s) => s.reset)
-  const save = useGame((s) => s.save)
+  const openSlotScreen = useApp((s) => s.openSlotScreen)
   const [sceneDone, setSceneDone] = useState(false)
 
   // 판정과 씬 조립은 상태에 의존하지만 게임 진행 중에 바뀌지 않는다.
@@ -88,7 +89,7 @@ export function EndedScreen() {
           </p>
         </header>
         <div className="grid grid-cols-2 gap-2">
-          <Button onClick={save}>이 기록 저장</Button>
+          <Button onClick={() => openSlotScreen('save')}>이 기록 저장</Button>
           <Button variant="danger" onClick={reset}>
             처음부터
           </Button>
@@ -176,7 +177,7 @@ export function EndedScreen() {
       </section>
 
       <div className="grid grid-cols-2 gap-2">
-        <Button onClick={save}>이 기록 저장</Button>
+        <Button onClick={() => openSlotScreen('save')}>이 기록 저장</Button>
         <Button variant="danger" onClick={reset}>
           처음부터
         </Button>

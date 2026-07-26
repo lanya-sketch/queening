@@ -7,6 +7,7 @@
 //      이벤트 정의를 정적으로 대조한다. 읽는 곳이 생기면 판정이 앞당겨진 것이다.
 import {
   APP_URL, advanceScene, blockAiNetwork, launch, log, ok, shotsDir, SAVE_VERSION,
+  saveToSlot, readSlot,
 } from './helpers.mjs'
 
 const OUT = shotsDir('devices')
@@ -217,10 +218,8 @@ await page.waitForTimeout(200)
 // ★ 화제 사용 기록의 영속성은 **여기서** 확인한다 —
 //   뒤 절들이 setGame 으로 flags 를 통째로 갈아끼우므로, 실제 플레이로 세워진
 //   지금 이 시점이 아니면 검사가 무의미해진다.
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const topicSave = await page.evaluate(() =>
-  JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const topicSave = await readSlot(page, 0)
 log('C13 ★ 화제 사용 기록이 세이브에 남음:',
   ok(topicSave.state.flags['topic:keyword_commander_house_history'] === true))
 log('C14 화제 보상 호감도도 저장됨:',
@@ -329,9 +328,8 @@ log('F5 ★ 결국 셋 다 발동 (하나도 유실되지 않음):',
 // ─────────────────────────────────────────────────────────────
 log('')
 log('=== G. 세이브 ===')
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const saved = await readSlot(page, 0)
 log('G1 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('G2 장치 flag 보존:',
   ok(saved.state.flags.union_possible && saved.state.flags.military_route_open))

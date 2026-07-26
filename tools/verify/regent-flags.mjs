@@ -3,6 +3,7 @@
 // M3 엔딩 분기가 판정 불가가 되므로, 한 플레이에서 공존하지 않아야 한다.
 import {
   advanceScene, APP_URL, choiceButtons, clickCard, enterGame, launch, log, ok, phaseOf, readPanel,
+  saveToSlot, readSlot,
 } from './helpers.mjs'
 
 const CEDE = '정무를 섭정공께 맡긴다'
@@ -72,9 +73,8 @@ for (let t = 0; t < 400; t++) {
 
 // ★ 엔딩도 먼저 씬("아홉 해의 끝")을 재생한다 — 다 넘겨야 결산의 저장 버튼이 나온다.
 await advanceScene(page)
-await page.getByRole('button', { name: '이 기록 저장' }).click()
-await page.waitForTimeout(200)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0, '이 기록 저장')
+const saved = await readSlot(page, 0)
 const f = saved.state.flags
 
 log('이벤트 순서:', order.join(' → '))

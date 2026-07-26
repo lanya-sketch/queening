@@ -28,9 +28,9 @@ export function StatusPanel() {
   const [romanceOpen, setRomanceOpen] = useState(false)
   const game = useGame((s) => s.game)
   const savedAt = useGame((s) => s.savedAt)
-  const save = useGame((s) => s.save)
-  const load = useGame((s) => s.load)
+  const activeSlot = useGame((s) => s.activeSlot)
   const reset = useGame((s) => s.reset)
+  const openSlotScreen = useApp((s) => s.openSlotScreen)
 
   const locked = talkLocked(game.phase)
   // ★ 경고는 게이지 구간에서 나온다 — 칩과 게이지가 같은 어휘·같은 문턱을 쓰도록.
@@ -283,8 +283,8 @@ export function StatusPanel() {
 
           <SectionHead className="mb-3 mt-6">Quick Actions</SectionHead>
           <div className="grid grid-cols-2 gap-2">
-            <Button onClick={save}>저장</Button>
-            <Button onClick={load}>불러오기</Button>
+            <Button onClick={() => openSlotScreen('save')}>저장</Button>
+            <Button onClick={() => openSlotScreen('load')}>불러오기</Button>
             <Button variant="danger" className="col-span-2" onClick={reset}>
               처음부터
             </Button>
@@ -293,7 +293,7 @@ export function StatusPanel() {
           <p className="mt-3 flex items-center gap-1.5 text-[11px] text-faint">
             <Lozenge size={4} dim />
             {savedAt
-              ? `마지막 저장: ${new Date(savedAt).toLocaleString('ko-KR')}`
+              ? `슬롯 ${(activeSlot ?? 0) + 1} · ${new Date(savedAt).toLocaleString('ko-KR')}`
               : '저장된 기록 없음'}
           </p>
         </div>

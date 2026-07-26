@@ -96,8 +96,12 @@ await page.evaluate(() => {
 })
 await page.goto(APP_URL, { waitUntil: 'networkidle' })
 await page.waitForTimeout(300)
+// ★ 이어하기 = 불러오기 모드 슬롯 화면. 옛 단일 세이브는 부팅 때 slot0 으로 이관된다.
 await page.getByRole('button', { name: '이어하기' }).click()
-await page.waitForTimeout(400)
+await page.locator('[data-screen="slots"]').waitFor()
+await page.locator('[data-slot="0"]').click()
+await page.locator('[data-screen="slots"]').waitFor({ state: 'detached' })
+await page.waitForTimeout(300)
 const loaded = await stateOf()
 log('A8 ★ v7 세이브(이름 없음) → 성별 기본값으로 마이그레이션:', loaded.monarchName,
   ok(loaded.monarchName === '아일라'))

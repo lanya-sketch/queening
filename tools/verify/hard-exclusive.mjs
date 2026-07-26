@@ -5,7 +5,7 @@
 //   B 청산 게이팅 — 로맨스 안 함 + 정치 조건일 때만
 //   C 엔딩 판정 단순화(romance 최대 하나) 후에도 완전성 유지 (1만 세이브)
 //   D 숙청이 엔딩 삽입·수식으로 뜨는지, 호감도 구간 변주
-import { APP_URL, advanceScene, blockAiNetwork, launch, log, ok, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import { APP_URL, advanceScene, blockAiNetwork, launch, log, ok, shotsDir, SAVE_VERSION, saveToSlot, readSlot } from './helpers.mjs'
 
 const OUT = shotsDir('hard-exclusive')
 const browser = await launch()
@@ -275,9 +275,8 @@ log('E4 ★ ①②④는 높은 구간만 (중간은 후일담 없음 — 후속
 log('')
 log('=== F. 세이브 ===')
 await setGame(base({ flags: { ...SEEN_OTHERS, romance_unlocked: true, 'romance_confirmed:heir': true, romance_settled: true, commander_purged: true } }))
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const saved = await readSlot(page, 0)
 log('F1 세이브 버전 유지:', saved.version, ok(saved.version === SAVE_VERSION))
 log('F2 확정·숙청 flag 보존:',
   ok(saved.state.flags['romance_confirmed:heir'] === true && saved.state.flags.commander_purged === true))

@@ -4,7 +4,7 @@
 //   프롬프트는 부탁이라 뚫릴 수 있다. 그러니 "모델이 규칙을 완전히 무시했을 때"를
 //   실제로 만들어 넣고, 코드가 정말로 막는지 출력으로 확인한다.
 //   막힌다고 말하는 것과 막히는 걸 보는 것은 다르다.
-import { APP_URL, launch, log, ok, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import { APP_URL, launch, log, ok, shotsDir, SAVE_VERSION, saveToSlot, readSlot } from './helpers.mjs'
 
 const OUT = shotsDir('incidents')
 
@@ -347,9 +347,8 @@ await page.evaluate(() => window.__queeningAi.setIncidentTimer(true))
 // ─────────────────────────────────────────────────────────────
 log('')
 log('=== E. 세이브 ===')
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const saved = await readSlot(page, 0)
 log('E1 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('E2 돌발 결과는 flag/수치로만 남음 (생성물 자체는 저장 안 함):',
   ok(!JSON.stringify(saved.state).includes('늦서리')))

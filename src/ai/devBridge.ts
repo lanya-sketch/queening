@@ -25,6 +25,11 @@ import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { resolveCharacterPortrait, resolveMonarchPortrait, validateManifest } from '../systems/outfits'
 import { setDeterministic, rng } from '../systems/rng'
+import {
+  clearAllSlots, exportSlot, hasAnySave, importCode, listSlots, migrateLegacySave,
+} from '../systems/save'
+import { clearGallery, getAchieved } from '../systems/gallery'
+import { clearReadlog, getRead } from '../systems/readlog'
 import { endTurn } from '../systems/turn'
 import { availableTopics } from '../systems/topics'
 import type { TalkTopic } from '../types/game'
@@ -317,6 +322,39 @@ export function installDevBridge(): void {
     /** 지금 상태에서 발동 가능한 이벤트 id — 우선순위 순. */
     triggerable() {
       return findTriggeredEvents(useGame.getState().game).map((e) => e.id)
+    },
+
+    /**
+     * ★ 세이브 슬롯 · Export/Import 검증용 시임.
+     *   슬롯은 세이브 키만 만지고 갤러리·읽음기록·옵션은 별개 키다 —
+     *   「처음부터」/「전체 초기화」가 무엇을 지우고 무엇을 남기는지 실측한다.
+     */
+    save: {
+      /** 5개 슬롯 요약. */
+      slots: () => listSlots(),
+      hasAny: () => hasAnySave(),
+      /** 스토어 액션 그대로 — 현재 게임을 슬롯에 저장/로드(activeSlot·notice 포함). */
+      saveSlot: (slot: number) => useGame.getState().save(slot),
+      loadSlot: (slot: number) => useGame.getState().load(slot),
+      reset: () => useGame.getState().reset(),
+      activeSlot: () => useGame.getState().activeSlot,
+      /** 텍스트 코드 왕복. */
+      exportSlot: (slot: number) => exportSlot(slot),
+      importCode: (code: string) => importCode(code),
+      /** 옛 단일 세이브 → slot0 이관(부팅 로직 직접 호출). */
+      migrateLegacy: () => migrateLegacySave(),
+      /** 「전체 초기화」와 같은 삭제(슬롯+갤러리+읽음기록, 옵션 보존). */
+      wipeAll: () => {
+        clearAllSlots()
+        clearGallery()
+        clearReadlog()
+      },
+      /** 전역 키 스냅샷 — 슬롯 조작 뒤에도 남아 있는지 대조용. */
+      globals: () => ({
+        gallery: [...getAchieved()],
+        readlog: [...getRead()],
+        options: JSON.parse(localStorage.getItem('queening.options') ?? 'null'),
+      }),
     },
 
     /**

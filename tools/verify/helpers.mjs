@@ -165,6 +165,49 @@ export const ok = (b) => (b ? 'PASS' : '*** FAIL ***')
 export const log = (...a) => console.log(...a)
 
 /**
+ * ★ 다중 슬롯 세이브 (세이브 시스템 라운드).
+ *
+ *   세이브는 이제 단일 키가 아니라 슬롯별 키(queening.save.slotN)다. 「저장」/「불러오기」
+ *   버튼은 즉시 쓰지 않고 슬롯 화면을 연다. 스위트는 아래 헬퍼로 슬롯 하나를 골라
+ *   저장/로드한다. 세이브 내용을 직접 읽을 땐 SLOT_KEY(0) 을 쓴다.
+ */
+export const SLOT_KEY = (slot = 0) => `queening.save.slot${slot}`
+
+/** 「저장」 → 슬롯 화면 → 슬롯 선택(찬 칸이면 덮어쓰기 확인까지). */
+export async function saveToSlot(page, slot = 0, buttonName = '저장') {
+  await page.getByRole('button', { name: buttonName, exact: true }).click()
+  await page.locator('[data-screen="slots"]').waitFor()
+  await page.locator(`[data-slot="${slot}"]`).click()
+  await page.waitForTimeout(60)
+  const overwrite = page.locator('[data-slot-overwrite]')
+  if (await overwrite.count()) await overwrite.click()
+  await page.locator('[data-screen="slots"]').waitFor({ state: 'detached' })
+  await page.waitForTimeout(80)
+}
+
+/** 「불러오기」 → 슬롯 화면 → 슬롯 선택. */
+export async function loadFromSlot(page, slot = 0, buttonName = '불러오기') {
+  await page.getByRole('button', { name: buttonName, exact: true }).click()
+  await page.locator('[data-screen="slots"]').waitFor()
+  await page.locator(`[data-slot="${slot}"]`).click()
+  await page.locator('[data-screen="slots"]').waitFor({ state: 'detached' })
+  await page.waitForTimeout(120)
+}
+
+/** 슬롯 세이브 파일을 직접 읽는다(state·version 단언용). */
+export function readSlot(page, slot = 0) {
+  return page.evaluate((k) => JSON.parse(localStorage.getItem(k)), SLOT_KEY(slot))
+}
+
+/** 마이그레이션 등 시드 세이브를 슬롯에 직접 심는다(옛 단일 키가 아니라 슬롯 키로). */
+export function seedSlot(page, file, slot = 0) {
+  return page.evaluate(
+    ({ k, f }) => localStorage.setItem(k, JSON.stringify(f)),
+    { k: SLOT_KEY(slot), f: file },
+  )
+}
+
+/**
  * AI 설정 접근 (D-3): 게임 화면의 AI 버튼이 설정 오버레이로 옮겨졌다.
  * 게임 중 ⚙(설정) → 'AI 설정' 을 눌러 모달을 연다.
  */

@@ -113,7 +113,7 @@ await page.screenshot({ path: `${OUT}/gallery.png`, fullPage: true })
 log('')
 log('=== D. 회차 누적 — 세이브 지워도 갤러리 유지 ===')
 const before = await galleryIds()
-await page.evaluate(() => localStorage.removeItem('queening.save'))
+await page.evaluate(() => localStorage.removeItem('queening.save.slot0'))
 const after = await galleryIds()
 log('D1 ★ 게임 세이브 삭제 후에도 갤러리 기록 유지:',
   `${before.length}개 → ${after.length}개`, ok(after.length === before.length && after.length > 0))

@@ -130,9 +130,12 @@ await c.evaluate(() => {
 })
 await c.reload({ waitUntil: 'networkidle' })
 await c.waitForTimeout(400)
+// ★ 이어하기 = 불러오기 모드 슬롯 화면. 옛 단일 세이브는 부팅 때 slot0 으로 이관됐다.
 await c.getByRole('button', { name: '이어하기' }).click()
+await c.locator('[data-screen="slots"]').waitFor()
+await c.locator('[data-slot="0"]').click()
 await c.waitForTimeout(400)
-log('D1 ★ 이어하기 → 온보딩 없이 플레이:',
+log('D1 ★ 이어하기 → 슬롯 선택 → 온보딩 없이 플레이:',
   ok(!(await c.getByText('노귀족').isVisible().catch(() => false)) &&
      (await c.locator('[data-screen="schedule"]').isVisible())))
 log('D2 세이브 상태로 이어짐(14세):',

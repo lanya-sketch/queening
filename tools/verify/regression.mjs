@@ -4,6 +4,7 @@ import {
   card, choiceButtons, clearEvent, dateText, enterGame, launch, log, ok, overflow, phaseOf,
   readBand,
   portrait, readGauge, readPanel, shotsDir, APP_URL, SAVE_VERSION,
+  saveToSlot, loadFromSlot, readSlot, seedSlot,
 } from './helpers.mjs'
 
 const OUT = shotsDir('regression')
@@ -103,11 +104,10 @@ await page.waitForTimeout(200)
 log('B4 결과 → 스케줄 복귀:', await dateText(page), ok((await phaseOf(page)) === 'schedule'))
 
 await page.getByRole('button', { name: '상세' }).click()
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(200)
+await saveToSlot(page, 0) // 「저장」 → 슬롯 0
 const savedDate = await dateText(page)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
-log('B5 저장:', savedDate, '| 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
+const saved = await readSlot(page, 0)
+log('B5 저장(슬롯 0):', savedDate, '| 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('B6 착장이 세이브에 포함됨:', saved.state.currentOutfitId,
   ok(saved.state.currentOutfitId === 'office'))
 await page.getByRole('button', { name: '닫기' }).click()
@@ -118,8 +118,7 @@ await page.getByRole('button', { name: /다음 달로|무슨 일이/ }).click()
 await page.waitForTimeout(200)
 log('B7 한 턴 더 →', await dateText(page))
 await page.getByRole('button', { name: '상세' }).click()
-await page.getByRole('button', { name: '불러오기' }).click()
-await page.waitForTimeout(250)
+await loadFromSlot(page, 0) // 「불러오기」 → 슬롯 0
 log('B8 불러오기 → 저장 시점 복원:', await dateText(page), ok((await dateText(page)) === savedDate))
 await page.getByRole('button', { name: '닫기' }).click()
 
@@ -164,25 +163,23 @@ log('B10 샘플 이벤트 발동:', ok(fired === '첫 어전 회의'))
 
 log('')
 log('=== C. v1 세이브 마이그레이션 (v1 → v4 연쇄) ===')
-await page.evaluate(() => {
-  localStorage.setItem('queening.save', JSON.stringify({
-    version: 1,
-    savedAt: '2026-01-01T00:00:00.000Z',
-    state: {
-      date: { year: 3, season: 'autumn' }, age: 14,
-      stats: { statecraft: 40, finance: 20, rhetoric: 25, martial: 35, courtcraft: 30 },
-      wellbeing: 60, tutorTrust: 45, regentSuspicion: 20, actionPoints: 3,
-      plannedActivityIds: [], flags: {}, phase: 'schedule',
-      lastTurnReport: null, pendingEventIds: [],
-      // currentOutfitId / regentRapport / courtInfluence 없음 — M1 시절 세이브
-    },
-  }))
-})
+// ★ 마이그레이션은 슬롯 0 에 직접 심어 검사한다(옛 단일 키 이관은 별도로 verify:slots 가 본다).
+await seedSlot(page, {
+  version: 1,
+  savedAt: '2026-01-01T00:00:00.000Z',
+  state: {
+    date: { year: 3, season: 'autumn' }, age: 14,
+    stats: { statecraft: 40, finance: 20, rhetoric: 25, martial: 35, courtcraft: 30 },
+    wellbeing: 60, tutorTrust: 45, regentSuspicion: 20, actionPoints: 3,
+    plannedActivityIds: [], flags: {}, phase: 'schedule',
+    lastTurnReport: null, pendingEventIds: [],
+    // currentOutfitId / regentRapport / courtInfluence 없음 — M1 시절 세이브
+  },
+}, 0)
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(300)
 await page.getByRole('button', { name: '상세' }).click()
-await page.getByRole('button', { name: '불러오기' }).click()
-await page.waitForTimeout(300)
+await loadFromSlot(page, 0)
 log('C1 v1 세이브 로드됨:', await dateText(page), ok((await dateText(page)) === '즉위 3년 9월'))
 log('C2 나이 보존:', ok((await page.locator('aside p.text-xs').first().innerText()).includes('14세')))
 const migratedOutfit = await page.evaluate(() =>
@@ -220,23 +217,21 @@ await page.keyboard.press('Escape')
 
 log('')
 log('=== C-2. v2 세이브 마이그레이션 (착장은 있고 신망·영향도는 없음) ===')
-await page.evaluate(() => {
-  localStorage.setItem('queening.save', JSON.stringify({
-    version: 2,
-    savedAt: '2026-02-02T00:00:00.000Z',
-    state: {
-      date: { year: 2, season: 'summer' }, age: 13,
-      stats: { statecraft: 30, finance: 15, rhetoric: 20, martial: 12, courtcraft: 18 },
-      wellbeing: 55, tutorTrust: 35, regentSuspicion: 25, actionPoints: 3,
-      plannedActivityIds: [], flags: { clue_radical_edict: true }, phase: 'schedule',
-      lastTurnReport: null, pendingEventIds: [], currentOutfitId: 'office',
-    },
-  }))
-})
+await seedSlot(page, {
+  version: 2,
+  savedAt: '2026-02-02T00:00:00.000Z',
+  state: {
+    date: { year: 2, season: 'summer' }, age: 13,
+    stats: { statecraft: 30, finance: 15, rhetoric: 20, martial: 12, courtcraft: 18 },
+    wellbeing: 55, tutorTrust: 35, regentSuspicion: 25, actionPoints: 3,
+    plannedActivityIds: [], flags: { clue_radical_edict: true }, phase: 'schedule',
+    lastTurnReport: null, pendingEventIds: [], currentOutfitId: 'office',
+  },
+}, 0)
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(300)
 await page.getByRole('button', { name: '상세' }).click()
-await page.getByRole('button', { name: '불러오기' }).click()
+await loadFromSlot(page, 0)
 await page.waitForTimeout(300)
 log('C8 v2 세이브 로드됨:', await dateText(page), ok((await dateText(page)) === '즉위 2년 6월'))
 // ★ 초기값이 20→0 으로 바뀌었다(C4·C13 과 같은 이유). 숫자 대신 구간 라벨로 확인한다.
@@ -244,9 +239,8 @@ log('C9 신망 기본값 주입:', await readBand(page, '섭정 신망'),
   ok((await readBand(page, '섭정 신망')) === '아이로만 봄'))
 log('C10 기존 착장 보존:',
   ok((await portrait(page).locator('img').getAttribute('src')).includes('_office_')))
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(200)
-const resaved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const resaved = await readSlot(page, 0)
 log('C11 재저장 버전:', resaved.version, ok(resaved.version === SAVE_VERSION))
 log('C12 기존 flag 보존 (clue_radical_edict):', ok(resaved.state.flags.clue_radical_edict === true))
 /*
@@ -274,11 +268,12 @@ const apage = await actx.newPage()
 //   한 턴 넘긴다. when.month 는 "이 달에서 한 턴 넘기면 이벤트가 뜨는" 달이다.
 async function seedAffairSave(p, stats, when = { year: 2, month: 6, age: 13 }, seen = []) {
   await p.goto(APP_URL, { waitUntil: 'networkidle' })
-  await p.evaluate(({ s, w, seenIds }) => {
+  await p.evaluate(({ s, w, seenIds, key }) => {
     // 이미 지나간 이벤트는 seen flag 를 심어 재발동을 막는다(실제 플레이와 동일한 상태).
     const flags = {}
     for (const id of seenIds) flags[`event:${id}`] = true
-    localStorage.setItem('queening.save', JSON.stringify({
+    // ★ 슬롯 0 에 직접 심는다 — 매 시드마다 덮어써 이전 시드가 남지 않게.
+    localStorage.setItem(key, JSON.stringify({
       version: 7, savedAt: '2026-03-03T00:00:00.000Z', state: {
         date: { year: w.year, month: w.month }, age: w.age,
         stats: s, durability: (w.age - 11) * 6,
@@ -288,12 +283,12 @@ async function seedAffairSave(p, stats, when = { year: 2, month: 6, age: 13 }, s
         currentOutfitId: 'casual', monarchGender: 'male', affection: {}, counters: {},
       },
     }))
-  }, { s: stats, w: when, seenIds: seen })
+  }, { s: stats, w: when, seenIds: seen, key: 'queening.save.slot0' })
   await p.reload({ waitUntil: 'networkidle' })
   await enterGame(p)
   await p.waitForTimeout(300)
-  await p.getByRole('button', { name: '불러오기' }).click()
-  await p.waitForTimeout(250)
+  await loadFromSlot(p, 0)
+  await p.waitForTimeout(150)
   // 한 턴 넘겨 현안 발동
   await card(p, '휴식').click()
   await p.getByRole('button', { name: /턴 종료/ }).click()
@@ -328,9 +323,8 @@ log(`E6 위임 → 영향도 ${inflBefore}→${inflAfter} (-5 기대):`, ok(infl
 log(`E7 위임 → 의심 ${suspBefore}→${suspAfter} (-4 기대):`, ok(suspAfter === suspBefore - 4))
 await apage.getByRole('button', { name: /다음 달로|계속/ }).click()
 await apage.waitForTimeout(200)
-await apage.getByRole('button', { name: '저장', exact: true }).click()
-await apage.waitForTimeout(250)
-const affairSave = await apage.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(apage, 0)
+const affairSave = await readSlot(apage, 0)
 log('E8 people_burdened_frontier flag 기록:',
   ok(affairSave.state.flags.people_burdened_frontier === true))
 log('E9 세이브 버전 그대로 (구조 변경 없음):', affairSave.version,
@@ -413,9 +407,8 @@ log(`E19 선포 → 영향도 ${hInflBefore}→${await readGauge(apage, '국정 
   ok((await readGauge(apage, '국정 영향도')) === hInflBefore + 15))
 await apage.getByRole('button', { name: /다음 달로|계속/ }).click()
 await apage.waitForTimeout(250)
-await apage.getByRole('button', { name: '저장', exact: true }).click()
-await apage.waitForTimeout(250)
-const hSave = await apage.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(apage, 0)
+const hSave = await readSlot(apage, 0)
 log('E20 house_commons_defended + people_relieved_commons 기록:',
   ok(hSave.state.flags.house_commons_defended === true &&
      hSave.state.flags.people_relieved_commons === true))

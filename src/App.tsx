@@ -9,6 +9,7 @@ import { IntroSequence } from './components/IntroSequence'
 import { HelpScreen } from './components/HelpScreen'
 import { GalleryScreen } from './components/GalleryScreen'
 import { SettingsMenu } from './components/SettingsMenu'
+import { SlotScreen } from './components/SlotScreen'
 import { AiSettingsModal } from './components/ai/AiSettingsModal'
 import { TalkModal } from './components/talk/TalkModal'
 import { TitleScreen } from './components/TitleScreen'
@@ -75,6 +76,7 @@ export default function App() {
   const closeGallery = useApp((s) => s.closeGallery)
   const aiSettings = useApp((s) => s.aiSettings)
   const closeAiSettings = useApp((s) => s.closeAiSettings)
+  const slotScreen = useApp((s) => s.slotScreen)
   const phase = useGame((s) => s.game.phase)
   const initOutfits = useGame((s) => s.initOutfits)
 
@@ -135,6 +137,7 @@ export default function App() {
       {help && <HelpScreen onClose={closeHelp} />}
       {gallery && <GalleryScreen onClose={closeGallery} />}
       {aiSettings && <AiSettingsModal onClose={closeAiSettings} />}
+      {slotScreen && <SlotScreen />}
     </>
   )
 }

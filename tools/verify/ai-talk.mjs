@@ -7,6 +7,7 @@
 // 네트워크는 전부 가로챈다 — 실제 키도 과금도 없다.
 import {
   APP_URL, launch, log, ok, openAiSettings, overflow, readGauge, shotsDir, SAVE_VERSION,
+  saveToSlot, readSlot,
 } from './helpers.mjs'
 
 const OUT = shotsDir('ai-talk')
@@ -301,9 +302,8 @@ await page.screenshot({ path: `${OUT}/03-advanced.png`, fullPage: false })
 log('')
 log('=== G. 세이브 영향 없음 ===')
 await page.keyboard.press('Escape')
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const saved = await readSlot(page, 0)
 log('G1 세이브 버전 유지 (대화는 세이브 구조를 바꾸지 않는다):', saved.version,
   ok(saved.version === SAVE_VERSION))
 log('G2 대화 로그가 세이브에 없음:',

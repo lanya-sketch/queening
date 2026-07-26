@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Lozenge } from './ui/Chrome'
 import { TITLE, TITLE_BACKGROUND } from '../data/title'
-import { getSavedAt } from '../systems/save'
+import { hasAnySave } from '../systems/save'
 import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
 
@@ -12,23 +12,22 @@ import { useGame } from '../store/gameStore'
  * 진입 흐름: 타이틀 → [새 게임 → 온보딩 → 플레이] / [이어하기 → 이어서].
  */
 export function TitleScreen() {
-  const startGame = useApp((s) => s.startGame)
   const startNewGame = useApp((s) => s.startNewGame)
   const openSettings = useApp((s) => s.openSettings)
   const openGallery = useApp((s) => s.openGallery)
+  const openSlotScreen = useApp((s) => s.openSlotScreen)
   const reset = useGame((s) => s.reset)
-  const load = useGame((s) => s.load)
-  // 세이브는 현재 단일 슬롯이다(queening.save). 다중 슬롯은 별도 라운드.
-  const [hasSave] = useState(() => getSavedAt() !== null)
+  // 슬롯이 하나라도 차 있으면 「이어하기」가 열린다.
+  const [hasSave] = useState(() => hasAnySave())
 
   const onNew = () => {
     reset()
     startNewGame() // 새 게임은 인트로(선왕 배경 → 성별) → 온보딩 순.
   }
+  // 「이어하기」 = 불러오기 모드 슬롯 화면. 슬롯을 고르면 그 자리에서 게임으로 진입한다.
   const onContinue = () => {
     if (!hasSave) return
-    load()
-    startGame(false) // 이어하기는 온보딩 없이
+    openSlotScreen('load')
   }
 
   return (

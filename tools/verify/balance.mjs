@@ -210,7 +210,7 @@ async function run(browser, build) {
   const final = await page.evaluate(() => {
     // 데드엔딩/엔딩 화면에서 브릿지가 사라져 있을 수 있다 — 저장본으로 대체한다.
     const g = window.__queeningAi?.state
-      ?? JSON.parse(localStorage.getItem('queening.save') ?? '{"state":{}}').state
+      ?? JSON.parse(localStorage.getItem('queening.save.slot0') ?? '{"state":{}}').state
     return { stats: g.stats, age: g.age, wellbeing: g.wellbeing, tutorTrust: g.tutorTrust,
       regentSuspicion: g.regentSuspicion, regentRapport: g.regentRapport,
       courtInfluence: g.courtInfluence, durability: g.durability,

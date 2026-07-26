@@ -4,7 +4,7 @@
 //   B ③ 정복 — 능동 발동, 로맨스 중 정복 시 호감도 급락, union 가로챔
 //   C 엔딩 네 갈래 + 조합 수식
 //   D 완전성 유지(1만 세이브)
-import { APP_URL, blockAiNetwork, launch, log, ok, shotsDir, SAVE_VERSION } from './helpers.mjs'
+import { APP_URL, blockAiNetwork, launch, log, ok, shotsDir, SAVE_VERSION, saveToSlot, readSlot } from './helpers.mjs'
 
 const OUT = shotsDir('concubine')
 const browser = await launch()
@@ -207,9 +207,8 @@ log('=== E. 세이브 ===')
 await page.evaluate(() => window.__queeningAi.setGame({
   flags: { commander_concubine: true, prince_conquered: true },
 }))
-await page.getByRole('button', { name: '저장', exact: true }).click()
-await page.waitForTimeout(300)
-const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('queening.save')))
+await saveToSlot(page, 0)
+const saved = await readSlot(page, 0)
 log('E1 세이브 버전 유지:', saved.version, ok(saved.version === SAVE_VERSION))
 log('E2 측실·정복 flag 보존:',
   ok(saved.state.flags.commander_concubine === true && saved.state.flags.prince_conquered === true))
