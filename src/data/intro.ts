@@ -27,3 +27,9 @@ export const INTRO_GENDER = {
   namePrompt: '이 아이의 이름은 —',
   start: '시작한다',
 } as const
+
+/** 기질 선택 화면 문구. "난이도"가 아니라 "어떤 아이였는가". */
+export const INTRO_TEMPERAMENT = {
+  prompt: '어린 군주는 어떤 아이였는가 —',
+  note: '약간 유리한 출발일 뿐, 운명은 아닙니다. 어떤 기질로도 다른 길을 갈 수 있습니다.',
+} as const

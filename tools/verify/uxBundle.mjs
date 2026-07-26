@@ -53,7 +53,9 @@ await page.waitForTimeout(120)
 const keptCustom = await nameInput.inputValue()
 log('A3 ★ 직접 입력한 이름은 성별 바꿔도 유지:', keptCustom, ok(keptCustom === '세라피나'))
 await page.screenshot({ path: `${OUT}/intro-name-gender.png` })
-// 시작 → 온보딩 → 게임. 이름이 상태에 반영.
+// 정체성 → 기질(기본 균형) → 온보딩 → 게임. 이름이 상태에 반영.
+await page.getByRole('button', { name: '다음' }).click()
+await page.waitForTimeout(120)
 await page.getByRole('button', { name: '시작한다' }).click()
 await page.waitForTimeout(250)
 await page.getByRole('button', { name: '건너뛰기' }).click().catch(() => {})

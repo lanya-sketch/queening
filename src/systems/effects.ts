@@ -53,7 +53,13 @@ function clamp(target: EffectTarget, value: number, state: GameState): number {
     : target.key === 'tutorTrust' ? tutorTrustCap(state.age)
     : target.key === 'regentRapport' ? regentRapportCap(state.age)
     : GAME_CONFIG.resourceMax
-  return Math.min(max, Math.max(GAME_CONFIG.resourceMin, value))
+  // ★ 상한은 **성장을 막을 뿐, 타고난 것을 빼앗지 않는다.** 시작값이 상한 위에 있으면
+  //   (기질 '여린'의 신뢰 +10 — 11세 상한 20 위) 그 초과분은 유지하되 더 키우진 못한다.
+  //   before(이 효과 직전 값)가 상한 이하면 ceil=상한이라 기존과 완전히 동일하다 —
+  //   상한 초과는 오직 시작값에서만 생기고(상한은 나이와 함께 오르기만 하므로), 그건 '여린'뿐.
+  const before = read(state, target)
+  const ceil = Math.max(before, max)
+  return Math.min(ceil, Math.max(GAME_CONFIG.resourceMin, value))
 }
 
 function write(state: GameState, target: EffectTarget, value: number): void {

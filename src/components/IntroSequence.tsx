@@ -1,6 +1,10 @@
 import { useState } from 'react'
-import { INTRO_GENDER, INTRO_LINES } from '../data/intro'
+import { INTRO_GENDER, INTRO_LINES, INTRO_TEMPERAMENT } from '../data/intro'
 import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
+import {
+  DEFAULT_TEMPERAMENT_ID, TEMPERAMENTS, TEMPERAMENT_BY_ID, type Temperament,
+} from '../data/temperaments'
+import { STAT_META } from '../data/stats'
 import { SPEED_MS, useOptions } from '../store/optionsStore'
 import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
@@ -22,6 +26,7 @@ export function IntroSequence() {
   const setGender = useGame((s) => s.setMonarchGender)
   const name = useGame((s) => s.game.monarchName)
   const setName = useGame((s) => s.setMonarchName)
+  const setTemperament = useGame((s) => s.setTemperament)
   const manifest = useGame((s) => s.outfitManifest)
 
   // 11세 사복 초상(성별 선택용). portraits 섹션이 있어야 해석되고, 없으면 초상 없이 라벨만.
@@ -31,7 +36,10 @@ export function IntroSequence() {
       : null
 
   const [step, setStep] = useState(0)
+  const [temp, setTemp] = useState(DEFAULT_TEMPERAMENT_ID)
+  // 단계: 서사(INTRO_LINES) → 정체성(성별+이름) → 기질 → 온보딩.
   const onGender = step >= INTRO_LINES.length
+  const onTemperament = step >= INTRO_LINES.length + 1
   const cur = INTRO_LINES[step] ?? ''
   const tw = useTypewriter(cur, onGender ? 0 : SPEED_MS[textSpeed])
 
@@ -44,6 +52,9 @@ export function IntroSequence() {
   }
   // 스킵 → 성별 선택으로 바로. 성별은 여전히 고르게 한다(표기가 갈리므로).
   const skipToGender = () => setStep(INTRO_LINES.length)
+  const pickTemp = (id: string) => { setTemp(id); setTemperament(id) }
+  // 시작 — 기질(기본 균형이라도)을 확정 적용하고 온보딩으로.
+  const begin = () => { setTemperament(temp); dismissIntro() }
 
   return (
     <div data-screen="intro" className="fixed inset-0 z-40 flex flex-col justify-center bg-ink-950/97 px-6 backdrop-blur">
@@ -69,7 +80,7 @@ export function IntroSequence() {
               </Button>
             </div>
           </>
-        ) : (
+        ) : !onTemperament ? (
           <>
             <p className="text-sm text-muted">{INTRO_GENDER.prompt}</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
@@ -102,7 +113,48 @@ export function IntroSequence() {
               />
             </label>
 
-            <Button variant="primary" className="mt-8 w-full" onClick={dismissIntro}>
+            <Button variant="primary" className="mt-8 w-full" onClick={advance}>
+              다음
+            </Button>
+          </>
+        ) : (
+          <>
+            {/* ★ 기질 — "어떤 아이였는가". 수치가 아니라 서사로 제시하고, ▲▼ 로 성향만 암시. */}
+            <p className="text-sm text-muted">{INTRO_TEMPERAMENT.prompt}</p>
+            <ul className="mt-4 space-y-2">
+              {TEMPERAMENTS.map((t) => {
+                const sel = t.id === temp
+                return (
+                  <li key={t.id}>
+                    <button
+                      data-temperament={t.id}
+                      aria-pressed={sel}
+                      onClick={() => pickTemp(t.id)}
+                      className={`w-full rounded-xl border p-3 text-left transition-colors ${
+                        sel ? 'border-line-gold/70 bg-ink-700/30' : 'border-line bg-ink-900/50 active:bg-ink-800/60'
+                      }`}
+                    >
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className={`font-title text-sm font-bold ${sel ? 'text-gold-300' : 'text-parchment'}`}>
+                          {t.name} <span className="text-[11px] font-normal text-muted">· {t.epithet}</span>
+                        </span>
+                        <TemperamentHints t={t} />
+                      </div>
+                      {sel && <p className="mt-1.5 text-[12.5px] leading-relaxed text-parchment/70">{t.line}</p>}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+            <p className="mt-3 text-[11px] leading-relaxed text-muted">{INTRO_TEMPERAMENT.note}</p>
+
+            {/* 정확값은 상세에만(표시 규칙). */}
+            <details data-temperament-detail className="mt-3 rounded-lg border border-line/70 bg-black/25 p-2.5">
+              <summary className="cursor-pointer select-none text-[11px] text-muted">상세 (시작 수치)</summary>
+              <TemperamentDetail t={TEMPERAMENT_BY_ID[temp]} />
+            </details>
+
+            <Button variant="primary" className="mt-6 w-full" onClick={begin}>
               {INTRO_GENDER.start}
             </Button>
           </>
@@ -151,5 +203,41 @@ function GenderChoice({
         {label}
       </span>
     </button>
+  )
+}
+
+/** 기질 성향 암시 — ▲(오름)·▼(내림)만. 수치는 없다(상세에만). */
+function TemperamentHints({ t }: { t: Temperament }) {
+  if (!t.up.length && !t.down.length && !t.trustUp) {
+    return <span className="text-[11px] text-faint">고루</span>
+  }
+  return (
+    <span className="flex shrink-0 flex-wrap items-center justify-end gap-x-1.5 gap-y-0.5 text-[11px]">
+      {t.up.map((k) => (
+        <span key={`u${k}`} className="text-gain">▲{STAT_META[k].label}</span>
+      ))}
+      {t.trustUp && <span className="text-gain">▲신뢰</span>}
+      {t.down.map((k) => (
+        <span key={`d${k}`} className="text-peril-soft">▼{STAT_META[k].label}</span>
+      ))}
+    </span>
+  )
+}
+
+/** 정확 시작 수치 — 상세(접이식)에만. 표시 규칙: 화면은 질적, 정확값은 내부값 섹션. */
+function TemperamentDetail({ t }: { t: Temperament }) {
+  return (
+    <div className="mt-2 space-y-1">
+      {(Object.keys(t.stats) as (keyof typeof t.stats)[]).map((k) => (
+        <div key={k} className="flex justify-between text-[11px]">
+          <span className="text-muted">{STAT_META[k].label}</span>
+          <span className="font-display tabular-nums text-parchment/80">{t.stats[k]}</span>
+        </div>
+      ))}
+      <div className="flex justify-between border-t border-line pt-1 text-[11px]">
+        <span className="text-muted">튜터 신뢰(시작)</span>
+        <span className="font-display tabular-nums text-parchment/80">{t.tutorTrust}</span>
+      </div>
+    </div>
   )
 }

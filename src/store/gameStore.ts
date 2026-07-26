@@ -3,6 +3,7 @@ import { ACTIVITY_BY_ID } from '../data/activities'
 import { EVENT_BY_ID } from '../data/events'
 import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { FALLBACK_MANIFEST } from '../data/outfits'
+import { TEMPERAMENTS, TEMPERAMENT_BY_ID, temperamentFlag } from '../data/temperaments'
 import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '../types/game'
 import { applyEffects } from '../systems/effects'
 import { resolvedChoice } from '../systems/activityTier'
@@ -46,6 +47,8 @@ interface GameStore {
   setMonarchGender: (gender: Gender) => void
   /** 군주 이름. 인트로에서 정한다(빈칸이면 성별 기본값이 표시됨). */
   setMonarchName: (name: string) => void
+  /** 시작 기질. 인트로에서 정한다 — 시작 스탯·신뢰를 심고 flag 로 기록. */
+  setTemperament: (id: string) => void
   /** 이벤트 선택지를 고른다. 효과는 이 시점에 적용된다. */
   chooseOption: (eventId: string, choiceId: string) => void
   /** 이벤트 하나를 소화한다. */
@@ -156,6 +159,16 @@ export const useGame = create<GameStore>()((set, get) => ({
     set({ game: { ...game, monarchGender, monarchName } })
   },
   setMonarchName: (name) => set({ game: { ...get().game, monarchName: name } }),
+  setTemperament: (id) => {
+    const t = TEMPERAMENT_BY_ID[id]
+    if (!t) return
+    const game = get().game
+    // 이전 기질 flag 를 걷어내고(재선택 대비) 새 것만 남긴다. 시작 스탯·신뢰를 심는다.
+    const flags = { ...game.flags }
+    for (const other of TEMPERAMENTS) delete flags[temperamentFlag(other.id)]
+    flags[temperamentFlag(id)] = true
+    set({ game: { ...game, stats: { ...t.stats }, tutorTrust: t.tutorTrust, flags } })
+  },
 
   chooseOption: (eventId, choiceId) => {
     const { game } = get()

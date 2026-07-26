@@ -3,6 +3,7 @@ import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
 import { CONQUEST_EVENTS } from '../data/events/conquest'
 import { DECISIVE_EVENTS } from '../data/events/decisive'
 import { DAILY_EVENTS } from '../data/events/daily'
+import { TEMPERAMENTS } from '../data/temperaments'
 import { DEVICE_EVENTS } from '../data/events/devices'
 import { INCIDENT_EVENTS } from '../data/events/incidents'
 import { RECKONING_AFTERMATH, RECKONING_EVENTS } from '../data/events/reckoning'
@@ -222,6 +223,14 @@ export function installDevBridge(): void {
     dailyEvents() {
       return DAILY_EVENTS.map((e) => ({
         id: e.id, title: e.title, month: e.condition?.month ?? null, text: e.text,
+      }))
+    },
+    /** 시작 기질 데이터(검증용) — 스탯 총합·신뢰·성향. */
+    temperaments() {
+      return TEMPERAMENTS.map((t) => ({
+        id: t.id, name: t.name,
+        stats: t.stats, statSum: Object.values(t.stats).reduce((a, b) => a + b, 0),
+        tutorTrust: t.tutorTrust, up: t.up, down: t.down, trustUp: !!t.trustUp,
       }))
     },
     /** 결정적 씬 이벤트 id. */

@@ -197,8 +197,9 @@ export async function readAiSettingLabel(page) {
 }
 
 /**
- * 인트로 시퀀스(D-3)를 통과해 온보딩까지 간다. '새 게임' 클릭 뒤에 호출한다.
- * 선왕 배경 narration 을 건너뛰고 성별을 고른 뒤 '시작한다'.
+ * 인트로 시퀀스를 통과해 온보딩까지 간다. '새 게임' 클릭 뒤에 호출한다.
+ * 흐름: 선왕 배경 건너뛰기 → 성별 고르기 → (정체성)'다음' → (기질 기본 균형)'시작한다'.
+ * ★ 기질 선택 단계가 추가돼 정체성 화면 버튼이 '다음'으로 바뀌었다 — '다음' 뒤 '시작한다'.
  */
 export async function passIntro(page, gender = 'male') {
   const skip = page.getByRole('button', { name: '건너뛰기' })
@@ -207,6 +208,10 @@ export async function passIntro(page, gender = 'male') {
   const label = gender === 'female' ? /여왕이 될 소녀/ : /왕이 될 소년/
   const pick = page.getByRole('button', { name: label })
   if (await pick.isVisible().catch(() => false)) await pick.click()
+  await page.waitForTimeout(150)
+  // 정체성 → 기질: '다음'(있으면), 그다음 기질 화면의 '시작한다'.
+  const next = page.getByRole('button', { name: '다음' })
+  if (await next.isVisible().catch(() => false)) await next.click()
   await page.waitForTimeout(150)
   const start = page.getByRole('button', { name: '시작한다' })
   if (await start.isVisible().catch(() => false)) await start.click()

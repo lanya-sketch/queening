@@ -41,6 +41,9 @@ log('A2 ★ 성별 선택 화면:',
 await page.screenshot({ path: `${OUT}/intro-gender.png` })
 await page.getByRole('button', { name: /여왕이 될 소녀/ }).click()
 await page.waitForTimeout(150)
+// 정체성 → 기질(기본 균형) → 온보딩.
+await page.getByRole('button', { name: '다음' }).click()
+await page.waitForTimeout(150)
 await page.getByRole('button', { name: '시작한다' }).click()
 await page.waitForTimeout(300)
 log('A3 ★ 성별 선택 → 온보딩 진입:', ok(await page.getByText('노귀족').isVisible()))
