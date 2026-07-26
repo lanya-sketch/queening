@@ -2,3 +2,4 @@
 /dist
 /tools/verify/screenshots
 *.local
+.claude/settings.json
