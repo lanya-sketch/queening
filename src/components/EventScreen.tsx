@@ -10,7 +10,7 @@ import { resolveText } from '../systems/text'
 import { useGame } from '../store/gameStore'
 import { IncidentView } from './IncidentView'
 import { ScenePlayer } from './scene/ScenePlayer'
-import type { Choice, Delta, Effect } from '../types/game'
+import type { Choice, Delta, Effect, GameState } from '../types/game'
 
 /**
  * 선택지 미리보기에서는 히든 게이지(의심·신망)를 가린다.
@@ -18,17 +18,20 @@ import type { Choice, Delta, Effect } from '../types/game'
  */
 function visibleEffects(effects: Effect[] | undefined): Effect[] {
   return (effects ?? []).filter(
-    (e) => !(e.target.kind === 'resource' && HIDDEN_GAUGES.includes(e.target.key)),
+    (e) =>
+      // ★ 카운터(__risk:*·prince_stay 등)는 숨은 내부 타이머 — 화면에서 완전히 뺀다.
+      e.target.kind !== 'counter' &&
+      !(e.target.kind === 'resource' && HIDDEN_GAUGES.includes(e.target.key)),
   )
 }
 
 /** ★ 선택지 미리보기도 수치 없이 ▲▼ + 정도. 활동 카드와 같은 어법. */
-function EffectList({ effects }: { effects: Effect[] }) {
+function EffectList({ effects, game }: { effects: Effect[]; game: GameState }) {
   if (effects.length === 0) return null
   return (
     <span className="mt-3 flex flex-col gap-1.5">
       {effects.map((effect, i) => (
-        <EffectPill key={i} {...effectView(effect)} />
+        <EffectPill key={i} {...effectView(effect, 1, game)} />
       ))}
     </span>
   )
@@ -101,7 +104,7 @@ function ChoiceButton({ eventId, choice }: { eventId: string; choice: Choice }) 
         <>
           {/* ★ 4-C: 결과 차등 선택지는 **지금 스탯의 등급**을 미리 보여준다.
               공통분만 보여주면 "무엇이 달라지는지"가 화면에서 사라진다(수업 카드와 같은 규칙). */}
-          <EffectList effects={visibleEffects(preview.effects)} />
+          <EffectList effects={visibleEffects(preview.effects)} game={game} />
           {preview.hint && (
             <span className="mt-2.5 block text-[11px] italic text-faint">{preview.hint}</span>
           )}
@@ -211,7 +214,9 @@ export function EventScreen() {
 
         {!playingScene && event.effects && event.effects.length > 0 && (
           <DeltaChips
-            deltas={event.effects.map((e) => ({ label: targetLabel(e.target), amount: e.amount }))}
+            deltas={event.effects
+              .filter((e) => e.target.kind !== 'counter')
+              .map((e) => ({ label: targetLabel(e.target, game), amount: e.amount }))}
           />
         )}
 

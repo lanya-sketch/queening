@@ -3,7 +3,8 @@
  *
  * A. 11~12세에 인물 씬이 실제로 뜨는가(24턴이 조용하지 않은가).
  * B. 13세에 ①②③⑤ 가 등장하고 met_<id> 를 세우는가. ③ 은 romance_unlocked 없이 뜨는가.
- * C. 인연 창 — 만난 사람은 보이고(로맨스 잠김), 못 만난 사람은 안 보이고, ④ 는 ???.
+ * C. 인연 창 — 만난 사람만 보이고(로맨스 잠김), 못 만난 사람은 안 보인다. ④ 도 예외 없이
+ *    등장 전까지 완전히 숨는다(A-6: ??? 슬롯 제거 — 5번째 인연 예고가 스포일러였다).
  * D. 턴 결과 — 조용한 소소는 결과 화면에 인라인, 선택지·씬은 별도.
  */
 import { APP_URL, enterGame, launch, log, ok } from './helpers.mjs'
@@ -108,16 +109,16 @@ await page.waitForTimeout(300)
 log('C0 ★ 13세에 인연 코치마크가 뜸:',
   ok(await page.locator('[data-coach="bond"]').isVisible().catch(() => false)))
 
-// 아무도 안 만난: hero 만 ??? 로, 나머지는 안 보임.
+// ★ A-6: ④ ??? 슬롯 제거 — 아무도 안 만나면 명부는 완전히 빈다(④ 도 안 뜬다).
 const c11 = await bondPanel({ flags: {}, courtInfluence: 10 })
 log('C1 아무도 안 만남: 카드', c11.cards, JSON.stringify(c11.names),
-  ok(c11.cards === 1 && c11.names[0] === '???'))
-// 13세 ①②만 만남: 두 명 + hero ??? = 3장.
+  ok(c11.cards === 0))
+// 13세 ①②만 만남: 두 명만(④ 숨음) = 2장.
 const c13 = await bondPanel({ flags: { met_heir: true, met_loyalist: true } })
 log('C2 13세(①②만 만남): 카드', c13.cards, JSON.stringify(c13.names),
-  ok(c13.cards === 3))
+  ok(c13.cards === 2))
 log('C3 ★ 만난 둘은 "아는 사이"(로맨스 잠김):', c13.locked, ok(c13.locked === 2))
-log('C4 ★ ④ 평민 영웅은 ??? 로 숨음:', ok(c13.names.includes('???')))
+log('C4 ★ ④ 평민 영웅은 명부에서 완전히 빠짐(??? 슬롯 없음):', ok(!c13.names.includes('???')))
 
 // ── D. 턴 결과 인라인 ─────────────────────────────────────
 log('')

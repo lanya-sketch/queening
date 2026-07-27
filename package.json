@@ -53,7 +53,8 @@
     "verify:gender": "node tools/verify/gender.mjs",
     "verify:gender-lint": "node tools/verify/gender-lint.mjs",
     "verify:relations": "node tools/verify/relations.mjs",
-    "verify:poison": "node tools/verify/poison.mjs"
+    "verify:poison": "node tools/verify/poison.mjs",
+    "verify:playfeedback": "node tools/verify/playfeedback.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

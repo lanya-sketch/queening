@@ -399,6 +399,38 @@ log('G2 ★ 결과 화면 알림 목록에서도 빠짐:', JSON.stringify(droppe
 log('G3 ★ "별다른 일 없이…" 빈 화면이 안 뜸:', ok(!dropped.hollow))
 log('G4 ★ 이벤트 화면에 갇히지 않음:', dropped.phase, ok(dropped.phase !== 'event'))
 
+// ── G-2. ★ 세 번째 경로: 실패한 placeholder id 가 재예고돼도 멈추지 않는가 (실플레이 1차 A-1) ──
+//   위 G 에서 ai-incident-choice 생성이 실패해 byEvent[id]=null 이 **남아 있다**. placeholder id 는
+//   재사용되므로, 같은 id 가 다시 예고되면 예전엔 generate 가드가 재생성을 막고, 버튼은
+//   "무슨 일이 있었는지 본다"를 띄우는데 내용이 null 이라 눌러도 빈 화면이었다.
+await gpage.evaluate(() => {
+  window.__queeningAi.setGame({
+    phase: 'result', pendingEventIds: ['ai-incident-choice'],
+    lastTurnReport: {
+      date: { year: 2, month: 6 }, activityIds: [], activityDeltas: [], eventDeltas: [],
+      triggeredEventIds: ['ai-incident-choice'],
+    },
+  })
+})
+// ★ 재시도를 직접 호출한다 — 결과 화면 effect 는 StrictMode 이중 실행 등으로 테스트에서
+//   타이밍이 불안정하다. 근본(generate 가 stale null 을 재생성·재드롭하는가)을 직접 본다.
+await gpage.evaluate(() => window.__queeningAi.genIncident('ai-incident-choice'))
+await gpage.waitForTimeout(3500) // 재시도(null 이면 재생성) → 실패 → 재드롭
+const recur = await gpage.evaluate(() => ({
+  pending: window.__queeningAi.state.pendingEventIds,
+  phase: window.__queeningAi.state.phase,
+  source: window.__queeningAi.events?.().find((e) => e.id === 'ai-incident-choice')?.source ?? '?',
+  seeButton: document.body.innerText.includes('무슨 일이 있었는지 본다'),
+  waiting: document.body.innerText.includes('소식을 기다리는 중'),
+}))
+const incState = await gpage.evaluate(() => window.__queeningAi.incidentState())
+console.log('   [진단] phase:', recur.phase, '| pending:', JSON.stringify(recur.pending),
+  '| byEvent:', JSON.stringify(incState.byEvent), '| loading:', incState.loading)
+log('G5 ★ 재예고(stale null)돼도 큐에서 다시 빠짐:', JSON.stringify(recur.pending),
+  ok(!recur.pending.includes('ai-incident-choice')))
+log('G6 ★ 내용 없는 "무슨 일이 있었는지 본다" 버튼이 안 남음:',
+  ok(!recur.seeButton && !recur.waiting))
+
 log('')
 log('런타임 에러:', errors.length === 0 ? 'PASS (없음)' : errors.join('\n  '))
 await browser.close()

@@ -46,6 +46,11 @@ export const PRIORITY: Record<string, number> = {
   'hero-at-court': 78,
   'adult-inner-court': 76,
   'teen-first-policy': 74,
+  // ★ 혈서 확증은 처분보다 **먼저** 와야 한다 — 증거를 맞춘 뒤에 처분해야 "명분 있는 처분"
+  //   선택지가 열린다. 둘째 반쪽을 19세에 얻으면 처분(72)과 같은 턴에 경쟁하는데, 예전엔
+  //   확증이 59(미스터리 파생)라 처분에 밀려 "처분 뒤에 혈서가 완성"되는 역전이 났다.
+  //   그래서 확증만 마일스톤 대역으로 올려 처분 바로 위에 둔다(진실 회수 90+ 보다는 아래).
+  'blood-oath-complete': 73,
   // 엔딩 직전의 갈림길. 마일스톤 대역의 아래쪽 —
   // 진실 회수(90+)보다는 반드시 뒤에 와야 한다(증거를 얻은 뒤에 처분한다).
   'regent-disposal': 72,
@@ -97,7 +102,7 @@ export const PRIORITY: Record<string, number> = {
 
   // ── 50–59 미스터리 파생(혈서). 진실 회수(90+)보다 반드시 아래 —
   //    확증은 앎의 뒤에 오는 것이지 앎을 앞지를 수 없다.
-  'blood-oath-complete': 59,
+  // (blood-oath-complete 는 처분보다 먼저 와야 해서 마일스톤 대역 73 으로 올렸다 — 위 참조.)
   // 탈출 성공 둘이 먼저 검사되고, 아무것도 안 걸리면 chamber-caught 가 받는다.
   // 이 세 줄의 순서가 곧 발각 판정이므로 값을 붙여 둔다.
   'chamber-escape-hide': 58,

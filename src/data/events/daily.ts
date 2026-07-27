@@ -148,7 +148,8 @@ export const DAILY_EVENTS: GameEvent[] = [
     id: 'daily-cold-shoulder',
     title: '외면',
     text: '인사를 건넸으나 대신은 못 본 척 지나쳤다. 어린 왕에게는 그런 날도 있다.',
-    condition: { minAge: 13 }, once: false, category: 'story',
+    // ★ "어린 왕" 전제라 나이 상한을 둔다 — 성년(16 데뷔탕트) 뒤엔 안 뜬다.
+    condition: { minAge: 13, maxAge: 15 }, once: false, category: 'story',
     effects: [res('wellbeing', -0.5, 0.5), res('regentSuspicion', 0.5, 0.5)],
   },
 
@@ -247,7 +248,8 @@ export const DAILY_EVENTS: GameEvent[] = [
     id: 'daily-chamberlain',
     title: '시녀장의 잔소리',
     text: '시녀장이 옷매무새를 고쳐 주며 낮게 잔소리를 했다. 궁이 아이 하나를 키우고 있었다.',
-    condition: {}, once: false, category: 'story',
+    // ★ "아이 하나를 키우고" 전제 — 성년 뒤엔 안 맞는다(20세에 뜨던 버그).
+    condition: { maxAge: 15 }, once: false, category: 'story',
     effects: [res('wellbeing', 1, 0.5)],
   },
   {
@@ -261,7 +263,8 @@ export const DAILY_EVENTS: GameEvent[] = [
     id: 'daily-clerk-slip',
     title: '서기의 실수',
     text: '서기가 장부를 넘기다 한 장을 빠뜨렸다. 아무도 눈치채지 못했고, 아이만 보았다.',
-    condition: { minAge: 12 }, once: false, category: 'story',
+    // ★ "아이만 보았다" 전제 — 성년 뒤엔 안 뜬다.
+    condition: { minAge: 12, maxAge: 15 }, once: false, category: 'story',
     effects: [stat('finance', 0.5, 0.3)],
   },
 ]

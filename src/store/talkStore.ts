@@ -9,7 +9,7 @@ import { CHARACTER_SHEETS } from '../data/persona/characters'
 import { TOPIC_BY_ID } from '../data/topics'
 import { applyEffects } from '../systems/effects'
 import { applyTopic, availableTopics } from '../systems/topics'
-import { resolveText } from '../systems/text'
+import { characterName, resolveText } from '../systems/text'
 import type { Effect } from '../types/game'
 import { useAi } from './aiStore'
 import { useGame } from './gameStore'
@@ -264,7 +264,7 @@ export function targetInfo(target: TalkTarget) {
   const character = CHARACTER_BY_ID[target.charId]
   const sheet = CHARACTER_SHEETS[target.charId]
   return {
-    name: resolveText(character?.name ?? target.charId, game),
+    name: character ? characterName(target.charId, game) : target.charId,
     framing: sheet ? resolveText(sheet.framing, game) : null,
     portrait: character ? `/assets/characters/${character.portraitId}.svg` : null,
   }

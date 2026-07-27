@@ -120,9 +120,11 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
               className="mt-3.5 flex flex-col gap-1.5 border-t pt-3"
               style={{ borderColor: 'rgba(212,176,106,.12)' }}
             >
-              {activityEffects(activity, game).map((effect, i) => (
-                <EffectPill key={i} {...effectView(effect, MONTH_SCALE)} />
-              ))}
+              {activityEffects(activity, game)
+                .filter((effect) => effect.target.kind !== 'counter')
+                .map((effect, i) => (
+                  <EffectPill key={i} {...effectView(effect, MONTH_SCALE, game)} />
+                ))}
             </div>
 
             <div

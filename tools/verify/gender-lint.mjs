@@ -44,9 +44,36 @@ for (const dir of DIRS) {
   }
 }
 
+// ── L2. 코드가 정적 캐릭터 이름(character.name)을 렌더에 쓰는가 (A-3 회귀 가드) ──
+//   실플레이 1차 A-3: effects/talkStore/summary 가 CHARACTER_BY_ID[...].name(기본 배치 이름)을
+//   써서 성별 설정이 반영 안 됐다. gender-lint 가 못 잡은 이유 = 데이터 문자열이 아니라 코드의
+//   .name 필드 접근이라 L1(문자열 스캔) 범위 밖이었다. 여기서 그 클래스를 잡는다.
+//   ★ 성별을 반영하려면 characterName(id, game) 을 써야 한다. 같은 줄에 characterName 이
+//   있으면(성별 인지 폴백) 허용한다.
+const CODE_DIRS = ['src/systems', 'src/store', 'src/components']
+const NAME_ACCESS = /CHARACTER_BY_ID\[[^\]]+\]\??\.name|CHARACTERS\.(?:find|filter)\([^)]*\)\??\.name|(?<![a-zA-Z])character\??\.name/
+const codeHits = []
+function walk(dir) {
+  for (const f of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, f.name)
+    if (f.isDirectory()) walk(p)
+    else if (/\.tsx?$/.test(f.name)) {
+      readFileSync(p, 'utf8').split('\n').forEach((line, i) => {
+        if (NAME_ACCESS.test(line) && !/characterName/.test(line) && !/^\s*(\/\/|\*)/.test(line)) {
+          codeHits.push({ path: p, line: i + 1, text: line.trim() })
+        }
+      })
+    }
+  }
+}
+for (const d of CODE_DIRS) walk(d)
+
 const ok = (b) => (b ? 'PASS' : '*** FAIL ***')
-console.log('=== gender-lint · 5인 지칭 성별 리터럴 회귀 가드 ===')
+console.log('=== gender-lint · 성별 회귀 가드 ===')
 console.log('L1 ★ 5인 지칭 성별 리터럴(그녀/딸/캐릭터-아들) 0건:',
   ok(hits.length === 0), hits.length ? `(${hits.length}건)` : '')
 for (const h of hits) console.log(`   ${h.path}:${h.line} [${h.term}] ${h.text.slice(0, 84)}`)
-process.exit(hits.length ? 1 : 0)
+console.log('L2 ★ 코드가 정적 character.name 을 렌더에 안 씀(characterName 써야 함) 0건:',
+  ok(codeHits.length === 0), codeHits.length ? `(${codeHits.length}건)` : '')
+for (const h of codeHits) console.log(`   ${h.path}:${h.line} ${h.text.slice(0, 84)}`)
+process.exit(hits.length + codeHits.length ? 1 : 0)

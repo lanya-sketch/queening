@@ -161,7 +161,13 @@ await page.evaluate(() =>
   localStorage.setItem('queening.ai.key.anthropic', 'sk-ant-fake-for-route-000000'))
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(400)
-await setGame({ age: 13, flags: {}, affection: UNLOCKED.affection })
+// ★ 만난 사람만 명부에 오른다(A-6: ④ ??? 슬롯 제거). 13세에 ①②③⑤ 를 만난 상태로 둬야
+//   누를 항목이 있다 — 로맨스는 아직 안 열렸으니 눌러도 대화는 안 뜬다(그게 D2 의 뜻).
+await setGame({
+  age: 13,
+  flags: { met_heir: true, met_loyalist: true, met_prince: true, met_commander: true },
+  affection: UNLOCKED.affection,
+})
 await page.getByRole('button', { name: '인연', exact: true }).click()
 await page.waitForTimeout(300)
 const rp = page.getByRole('dialog', { name: '인연' })

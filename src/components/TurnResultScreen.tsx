@@ -44,6 +44,7 @@ export function TurnResultScreen() {
   const continueFromResult = useGame((s) => s.continueFromResult)
   const generateIncident = useIncidents((s) => s.generate)
   const byEvent = useIncidents((s) => s.byEvent)
+  const incidentLoading = useIncidents((s) => s.loading)
 
   // ★ 날짜별 컷신 — 요약 앞에 한 달을 날짜별로 흘려 보낸다. '즉시'/끄기/일기 없음이면 건너뛴다.
   //   phase='result' 진입마다 이 컴포넌트가 리마운트되므로 매 턴 새로 재생된다.
@@ -63,9 +64,19 @@ export function TurnResultScreen() {
     }
   }, [pendingEventIds, generateIncident])
 
-  /** 예고된 AI 돌발 가운데 아직 생성 결과가 정해지지 않은 것이 있는가. */
+  /**
+   * ★ 버튼은 "키가 있나"가 아니라 **실제로 렌더할 내용이 있나**로 정한다 (실플레이 3차 버그).
+   *   - incidentPending: 아직 생성 중이거나 시도 전(loading===id 또는 byEvent 에 키 없음).
+   *   - hasContent: 비-AI 이벤트이거나, 내용이 나온(truthy) AI 돌발. 실패(null)는 내용이 아니다.
+   *   실패한 AI 돌발은 generate 가 dropPendingEvent 로 큐에서 빼므로 "본다"에도 안 잡힌다.
+   */
   const incidentPending = pendingEventIds.some(
-    (id) => EVENT_BY_ID[id]?.source === 'ai_generated' && !(id in byEvent),
+    (id) =>
+      EVENT_BY_ID[id]?.source === 'ai_generated' &&
+      (incidentLoading === id || !(id in byEvent)),
+  )
+  const hasContent = pendingEventIds.some(
+    (id) => EVENT_BY_ID[id]?.source !== 'ai_generated' || byEvent[id] != null,
   )
 
   if (!report) return null
@@ -186,7 +197,7 @@ export function TurnResultScreen() {
           <PrimaryAction onClick={continueFromResult} disabled={incidentPending}>
             {incidentPending
               ? '소식을 기다리는 중…'
-              : pendingEventIds.length > 0
+              : hasContent
                 ? '무슨 일이 있었는지 본다'
                 : '다음 달로'}
           </PrimaryAction>

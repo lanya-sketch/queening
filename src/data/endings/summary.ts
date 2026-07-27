@@ -53,7 +53,8 @@ export function endingSummaryRows(r: EndingResult): SummaryRow[] {
     value:
       r.romance === 'none'
         ? '홀로 — 철인통치'
-        : (CHARACTERS.find((c) => c.id === r.romance)?.name ?? r.romance),
+        // ★ 성별 반영 — {이름:charId} 토큰으로 두면 EndedScreen 의 resolveText 가 성별에 맞춘다.
+        : (CHARACTERS.some((c) => c.id === r.romance) ? `{이름:${r.romance}}` : r.romance),
   })
   const nations = r.nationFlags.map((f) => NATION_LABEL[f]).filter(Boolean)
   if (nations.length) rows.push({ label: '나라의 향방', value: [...new Set(nations)].join(' · ') })

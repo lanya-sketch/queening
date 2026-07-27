@@ -73,7 +73,19 @@ export const useIncidents = create<IncidentStore>()((set, get) => ({
      *   "소식이 올라오고 있습니다" 뒤에 조용히 아무 일도 안 일어났다.
      *   한 턴에 돌발이 둘 이상 예고될 수 있으므로 실제로 밟히는 경로다.
      */
-    if (get().loading === eventId || eventId in get().byEvent) return
+    // ★ 실플레이 3차 버그의 근본: placeholder id(ai-incident-notice/choice)는 재사용되고
+    //   byEvent/chosen 은 턴 사이에 안 지워진다. 지난 회차가 실패해 byEvent[id]=null 이 남으면
+    //   `id in byEvent` 가드가 재생성을 막아, 같은 id 가 다시 예고돼도 내용이 안 나온다
+    //   ("소식…" 뒤 아무 일 없음). → null(실패)이면 다시 시도한다. 내용이 있으면(truthy)만 스킵.
+    if (get().loading === eventId || get().byEvent[eventId] != null) return
+    // 재시도 시 지난 회차의 선택 결과를 지운다 — 안 그러면 옛 결과가 뜬다.
+    if (get().chosen[eventId] !== undefined) {
+      set((s) => {
+        const chosen = { ...s.chosen }
+        delete chosen[eventId]
+        return { chosen }
+      })
+    }
     const withChoices = incidentHasChoices(eventId)
     const game = useGame.getState().game
     set({ loading: eventId })

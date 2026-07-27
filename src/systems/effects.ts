@@ -3,16 +3,19 @@ import {
   GAME_CONFIG, courtInfluenceCap, regentRapportCap, tutorTrustCap,
 } from '../data/config'
 import { RESOURCE_META, STAT_META } from '../data/stats'
+import { characterName } from './text'
 import type { Delta, Effect, EffectTarget, GameState } from '../types/game'
 
 export type Rng = () => number
 
-export function targetLabel(target: EffectTarget): string {
+export function targetLabel(target: EffectTarget, game?: GameState): string {
   if (target.kind === 'stat') return STAT_META[target.key].label
   if (target.kind === 'affection') {
-    return `${CHARACTER_BY_ID[target.charId]?.name ?? target.charId} 호감도`
+    // ★ 성별 반영 — 세이브 성별에 맞는 이름(game 있으면). 없으면 기본 배치 이름.
+    const name = game ? characterName(target.charId, game) : CHARACTER_BY_ID[target.charId]?.name
+    return `${name ?? target.charId} 호감도`
   }
-  // 카운터는 내부 타이머라 결과 화면에 보일 이름이 없다.
+  // 카운터는 내부 타이머라 결과 화면에 보일 이름이 없다(렌더 전에 걸러진다).
   if (target.kind === 'counter') return `__counter:${target.key}`
   return RESOURCE_META[target.key].label
 }
@@ -93,7 +96,7 @@ export function applyEffects(
     const after = clamp(effect.target, before + roll(effect, rng), next)
     write(next, effect.target, after)
 
-    const label = targetLabel(effect.target)
+    const label = targetLabel(effect.target, next)
     totals.set(label, (totals.get(label) ?? 0) + (after - before))
   }
 

@@ -133,8 +133,10 @@ await page.waitForTimeout(250)
 const dialog = page.getByRole('dialog', { name: '인연' })
 const names = (await dialog.locator('ul > li').allInnerTexts()).map((n) => n.split('\n')[0])
 await page.keyboard.press('Escape')
-log('C7 ★ 소문만으론 ④ 가 인연 창에 아직 ??? (얼굴은 입궁 때):',
-  JSON.stringify(names), ok(names.includes('???')))
+// ★ A-6: ④ ??? 슬롯 제거 — 소문(heard_frontier_rumor)만으론 met 이 아니라 명부에서 완전히
+//   빠진다(입궁 hero_at_court 전까지 흔적 없음). 명부엔 만난 ①②③⑤ 넷만.
+log('C7 ★ 소문만으론 ④ 가 아직 명부에 없음(??? 슬롯 없이 완전 숨김):',
+  JSON.stringify(names), ok(!names.includes('???') && names.length === 4))
 
 // ── D. VN 재생 ────────────────────────────────────────────
 log('')

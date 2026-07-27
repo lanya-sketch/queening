@@ -173,6 +173,21 @@ export function installDevBridge(): void {
     setIncidentTimer(on: boolean) {
       useIncidents.getState().setTimerEnabled(on)
     },
+    /** 돌발 생성을 직접 호출한다 — 재시도(stale null) 검증용. */
+    genIncident(eventId: string) {
+      return useIncidents.getState().generate(eventId)
+    },
+    /** 돌발 생성 스토어 상태 — 빈 예고 회귀 진단용. */
+    incidentState() {
+      const s = useIncidents.getState()
+      return {
+        byEvent: Object.fromEntries(
+          Object.entries(s.byEvent).map(([k, v]) => [k, v === null ? null : 'incident']),
+        ),
+        loading: s.loading,
+        chosen: s.chosen,
+      }
+    },
     /**
      * 돌발 발동 확률을 올린다 — ablation 전용.
      *
@@ -231,10 +246,12 @@ export function installDevBridge(): void {
     deviceIds() {
       return DEVICE_EVENTS.map((e) => e.id)
     },
-    /** 일상 소소 풀(계절 조건 검증용) — id·title·조건·본문. */
+    /** 일상 소소 풀(계절·나이 조건 검증용) — id·title·조건·본문. */
     dailyEvents() {
       return DAILY_EVENTS.map((e) => ({
-        id: e.id, title: e.title, month: e.condition?.month ?? null, text: e.text,
+        id: e.id, title: e.title, month: e.condition?.month ?? null,
+        minAge: e.condition?.minAge ?? null, maxAge: e.condition?.maxAge ?? null,
+        text: e.text,
       }))
     },
     /** 시작 기질 데이터(검증용) — 스탯 총합·신뢰·성향. */

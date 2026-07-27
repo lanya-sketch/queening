@@ -1,4 +1,5 @@
 import { ENDING_THRESHOLDS } from './ending'
+import { targetLabel } from './effects'
 import { LESSON_TIER_MIN } from '../data/activities'
 import { GAME_CONFIG, DURABILITY } from '../data/config'
 import { RESOURCE_META, STAT_META } from '../data/stats'
@@ -212,18 +213,15 @@ export interface EffectView {
   good: boolean
 }
 
-export function effectView(effect: Effect, scale = 1): EffectView {
+export function effectView(effect: Effect, scale = 1, game?: GameState): EffectView {
   const up = effect.amount > 0
   const isSuspicion =
     effect.target.kind === 'resource' && effect.target.key === 'regentSuspicion'
   return {
     arrow: up ? '▲' : '▼',
-    label:
-      effect.target.kind === 'stat'
-        ? STAT_META[effect.target.key].label
-        : effect.target.kind === 'resource'
-          ? RESOURCE_META[effect.target.key].label
-          : '',
+    // 카운터(내부 타이머)는 이름이 없다 — 렌더 전에 걸러지므로 여기선 빈 문자열이면 된다.
+    // 그 외(스탯·자원·호감도)는 targetLabel 이 이름을 준다(호감도는 성별 반영).
+    label: effect.target.kind === 'counter' ? '' : targetLabel(effect.target, game),
     magnitude: magnitudeOf(effect, scale),
     good: isSuspicion ? !up : up,
   }

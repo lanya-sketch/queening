@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { LockIcon } from '../ui/Chrome'
 import { CHARACTERS, DEEP_BOND_THRESHOLD } from '../../data/characters'
 import { CHARACTER_TERMS } from '../../data/lexicon'
 import { affectionOf, isDeepBond, isPresent, isRomanceUnlocked } from '../../systems/romance'
@@ -82,27 +81,10 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
             const metFlag = isHero ? 'hero_at_court' : `met_${character.id}`
             const met = unlocked || game.flags[metFlag] === true
 
-            // ④ 는 만나기 전까지 존재를 감춘다(???). 나머지는 만나기 전이면 명부에서 뺀다.
-            if (!met) {
-              if (!isHero) return null
-              return (
-                <li
-                  key={character.id}
-                  className="flex items-center gap-3 rounded-xl border border-line bg-ink-900/40 p-3"
-                >
-                  <div
-                    className="flex h-12 w-9 shrink-0 items-center justify-center rounded text-muted"
-                    style={{ background: 'rgba(255,255,255,.03)' }}
-                  >
-                    <LockIcon size={13} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-muted">???</p>
-                    <p className="text-[11px] text-faint">아직 나타나지 않은 인연입니다.</p>
-                  </div>
-                </li>
-              )
-            }
+            // ★ 만나기 전이면 명부에서 완전히 뺀다 — ④ 평민 영웅도 예외 없이(존재 자체가
+            //   드러나면 안 된다. 예전엔 ④ 를 ??? 슬롯으로 남겨 5번째 인연을 예고했는데,
+            //   그게 스포일러였다). 등장 전까지는 아무 흔적도 없어야 한다.
+            if (!met) return null
 
             const present = isPresent(character, game)
             const away = unlocked && !present
@@ -182,8 +164,8 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
         </ul>
 
         <p className="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-          로맨스는 16세 데뷔탕트 이후에 열립니다(평민 영웅만 18세 입궁 이후). 그 전까지
-          이들은 등장하더라도 다른 관계로만 존재합니다.
+          로맨스는 16세 데뷔탕트 이후에 열립니다. 그 전까지 이들은 등장하더라도
+          다른 관계로만 존재합니다.
         </p>
 
         <Button className="mt-3 w-full" onClick={onClose}>
