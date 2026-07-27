@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { INTRO_GENDER, INTRO_LINES, INTRO_TEMPERAMENT } from '../data/intro'
-import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
+import { INTRO_GENDER, INTRO_LINES, INTRO_RELATIONS, INTRO_TEMPERAMENT } from '../data/intro'
+import { CHARACTERS } from '../data/characters'
+import { CHARACTER_TERMS, DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import {
   DEFAULT_TEMPERAMENT_ID, TEMPERAMENTS, TEMPERAMENT_BY_ID, type Temperament,
 } from '../data/temperaments'
@@ -8,7 +9,8 @@ import { STAT_META } from '../data/stats'
 import { SPEED_MS, useOptions } from '../store/optionsStore'
 import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
-import { resolveMonarchPortrait } from '../systems/outfits'
+import { resolveCharacterPortrait, resolveMonarchPortrait } from '../systems/outfits'
+import { characterGender, characterName } from '../systems/text'
 import type { Gender } from '../types/game'
 import { Button } from './ui/Button'
 import { useTypewriter } from './scene/useTypewriter'
@@ -27,6 +29,8 @@ export function IntroSequence() {
   const name = useGame((s) => s.game.monarchName)
   const setName = useGame((s) => s.setMonarchName)
   const setTemperament = useGame((s) => s.setTemperament)
+  const setCharacterGender = useGame((s) => s.setCharacterGender)
+  const game = useGame((s) => s.game)
   const manifest = useGame((s) => s.outfitManifest)
 
   // 11세 사복 초상(성별 선택용). portraits 섹션이 있어야 해석되고, 없으면 초상 없이 라벨만.
@@ -37,9 +41,11 @@ export function IntroSequence() {
 
   const [step, setStep] = useState(0)
   const [temp, setTemp] = useState(DEFAULT_TEMPERAMENT_ID)
-  // 단계: 서사(INTRO_LINES) → 정체성(성별+이름) → 기질 → 온보딩.
+  const [showRelations, setShowRelations] = useState(false)
+  // 단계: 서사(INTRO_LINES) → 정체성(성별+이름) → 기질 → 인연 → 온보딩.
   const onGender = step >= INTRO_LINES.length
   const onTemperament = step >= INTRO_LINES.length + 1
+  const onRelations = step >= INTRO_LINES.length + 2
   const cur = INTRO_LINES[step] ?? ''
   const tw = useTypewriter(cur, onGender ? 0 : SPEED_MS[textSpeed])
 
@@ -117,7 +123,7 @@ export function IntroSequence() {
               다음
             </Button>
           </>
-        ) : (
+        ) : !onRelations ? (
           <>
             {/* ★ 기질 — "어떤 아이였는가". 수치가 아니라 서사로 제시하고, ▲▼ 로 성향만 암시. */}
             <p className="text-sm text-muted">{INTRO_TEMPERAMENT.prompt}</p>
@@ -154,9 +160,82 @@ export function IntroSequence() {
               <TemperamentDetail t={TEMPERAMENT_BY_ID[temp]} />
             </details>
 
-            <Button variant="primary" className="mt-6 w-full" onClick={begin}>
-              {INTRO_GENDER.start}
+            <Button variant="primary" className="mt-6 w-full" onClick={advance}>
+              {INTRO_TEMPERAMENT.next}
             </Button>
+          </>
+        ) : (
+          <>
+            {/* ★ 인연 — 연애 대상 5인의 성별. 기본은 현행 배치라 원탭으로 지나갈 수 있고,
+                원하는 사람만 '직접 고르기'를 펼친다(성별 개방 2차). */}
+            <p className="text-sm text-muted">{INTRO_RELATIONS.prompt}</p>
+            <p className="mt-2 text-[11px] leading-relaxed text-muted">{INTRO_RELATIONS.note}</p>
+
+            {!showRelations ? (
+              <>
+                <button
+                  data-relations-customize
+                  onClick={() => setShowRelations(true)}
+                  className="mt-5 min-h-[46px] w-full rounded-xl border border-line bg-ink-900/50 text-sm text-parchment active:bg-ink-800/60"
+                >
+                  {INTRO_RELATIONS.customize}
+                </button>
+                <Button variant="primary" className="mt-3 w-full" onClick={begin}>
+                  {INTRO_RELATIONS.keep}
+                </Button>
+              </>
+            ) : (
+              <>
+                <ul className="mt-4 space-y-2">
+                  {CHARACTERS.map((c) => {
+                    const g = characterGender(c.id, game)
+                    const face = manifest.characterPortraits
+                      ? resolveCharacterPortrait(manifest.characterPortraits, c.id, g, 16)?.thumbSrc ?? null
+                      : null
+                    return (
+                      <li
+                        key={c.id}
+                        data-relation-choice={c.id}
+                        className="flex items-center gap-3 rounded-xl border border-line bg-ink-900/50 p-2.5"
+                      >
+                        {face && (
+                          <img
+                            src={face}
+                            alt=""
+                            draggable={false}
+                            className="h-14 w-11 shrink-0 rounded object-cover object-top"
+                          />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] text-parchment">{characterName(c.id, game)}</p>
+                          <p className="truncate text-[11px] text-muted">{CHARACTER_TERMS[g].title}</p>
+                        </div>
+                        <div className="flex shrink-0 overflow-hidden rounded-lg border border-line">
+                          {(['male', 'female'] as Gender[]).map((opt) => (
+                            <button
+                              key={opt}
+                              data-relation-gender={opt}
+                              aria-pressed={g === opt}
+                              onClick={() => setCharacterGender(c.id, opt)}
+                              className={`min-h-[36px] w-10 text-xs transition-colors ${
+                                g === opt
+                                  ? 'bg-ink-700/60 text-gold-300'
+                                  : 'bg-ink-900/40 text-muted active:bg-ink-800'
+                              }`}
+                            >
+                              {opt === 'male' ? INTRO_RELATIONS.male : INTRO_RELATIONS.female}
+                            </button>
+                          ))}
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+                <Button variant="primary" className="mt-6 w-full" onClick={begin}>
+                  {INTRO_RELATIONS.start}
+                </Button>
+              </>
+            )}
           </>
         )}
       </div>

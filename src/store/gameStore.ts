@@ -51,6 +51,8 @@ interface GameStore {
   setMonarchName: (name: string) => void
   /** 시작 기질. 인트로에서 정한다 — 시작 스탯·신뢰를 심고 flag 로 기록. */
   setTemperament: (id: string) => void
+  /** 연애 대상 성별. 인트로 '인연' 스텝에서 정한다(성별 개방 2차). */
+  setCharacterGender: (charId: string, gender: Gender) => void
   /** 이벤트 선택지를 고른다. 효과는 이 시점에 적용된다. */
   chooseOption: (eventId: string, choiceId: string) => void
   /** 이벤트 하나를 소화한다. */
@@ -165,6 +167,10 @@ export const useGame = create<GameStore>()((set, get) => ({
     set({ game: { ...game, monarchGender, monarchName } })
   },
   setMonarchName: (name) => set({ game: { ...get().game, monarchName: name } }),
+  setCharacterGender: (charId, gender) => {
+    const game = get().game
+    set({ game: { ...game, characterGenders: { ...game.characterGenders, [charId]: gender } } })
+  },
   setTemperament: (id) => {
     const t = TEMPERAMENT_BY_ID[id]
     if (!t) return

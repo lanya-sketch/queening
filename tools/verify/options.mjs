@@ -42,9 +42,11 @@ await page.screenshot({ path: `${OUT}/intro-gender.png` })
 await page.getByRole('button', { name: /여왕이 될 소녀/ }).click()
 await page.waitForTimeout(150)
 // 정체성 → 기질(기본 균형) → 온보딩.
-await page.getByRole('button', { name: '다음' }).click()
+await page.getByRole('button', { name: '다음', exact: true }).click() // 정체성 → 기질
 await page.waitForTimeout(150)
-await page.getByRole('button', { name: '시작한다' }).click()
+await page.getByRole('button', { name: '다음', exact: true }).click() // 기질 → 인연
+await page.waitForTimeout(150)
+await page.getByRole('button', { name: '그대로 시작' }).click()
 await page.waitForTimeout(300)
 log('A3 ★ 성별 선택 → 온보딩 진입:', ok(await page.getByText('노귀족').isVisible()))
 // 온보딩 스킵하고 게임으로.

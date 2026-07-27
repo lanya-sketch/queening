@@ -252,12 +252,19 @@ export async function passIntro(page, gender = 'male') {
   const pick = page.getByRole('button', { name: label })
   if (await pick.isVisible().catch(() => false)) await pick.click()
   await page.waitForTimeout(150)
-  // 정체성 → 기질: '다음'(있으면), 그다음 기질 화면의 '시작한다'.
-  const next = page.getByRole('button', { name: '다음' })
-  if (await next.isVisible().catch(() => false)) await next.click()
-  await page.waitForTimeout(150)
+  // 정체성 → 기질 → 인연: '다음'을 (있는 만큼) 두 번 누른다.
+  for (let i = 0; i < 2; i++) {
+    const next = page.getByRole('button', { name: '다음', exact: true })
+    if (await next.isVisible().catch(() => false)) {
+      await next.click()
+      await page.waitForTimeout(150)
+    }
+  }
+  // 인연: 접힌 기본이면 '그대로 시작', 펼쳐져 있으면 '시작한다'.
+  const keep = page.getByRole('button', { name: '그대로 시작' })
   const start = page.getByRole('button', { name: '시작한다' })
-  if (await start.isVisible().catch(() => false)) await start.click()
+  if (await keep.isVisible().catch(() => false)) await keep.click()
+  else if (await start.isVisible().catch(() => false)) await start.click()
   await page.waitForTimeout(250)
 }
 

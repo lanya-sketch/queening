@@ -55,7 +55,9 @@ log('B1 기질 선택 화면 진입:', ok(tempScreen))
 await page.locator('[data-temperament="cunning"]').click() // 영악
 await page.waitForTimeout(150)
 await page.screenshot({ path: `${OUT}/intro-temperament.png` })
-await page.getByRole('button', { name: '시작한다' }).click()
+await page.getByRole('button', { name: '다음', exact: true }).click() // 기질 → 인연
+await page.waitForTimeout(150)
+await page.getByRole('button', { name: '그대로 시작' }).click() // 인연 → 온보딩
 await page.waitForTimeout(200)
 await page.getByRole('button', { name: '건너뛰기' }).click().catch(() => {})
 await page.waitForTimeout(250)

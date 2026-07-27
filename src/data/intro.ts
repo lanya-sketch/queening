@@ -32,4 +32,16 @@ export const INTRO_GENDER = {
 export const INTRO_TEMPERAMENT = {
   prompt: '어린 군주는 어떤 아이였는가 —',
   note: '약간 유리한 출발일 뿐, 운명은 아닙니다. 어떤 기질로도 다른 길을 갈 수 있습니다.',
+  next: '다음',
+} as const
+
+/** '인연' 선택 화면 문구 — 연애 대상 5인의 성별(성별 개방 2차). */
+export const INTRO_RELATIONS = {
+  prompt: '이 조정에서 만날 인연들 —',
+  note: '기본 그대로 두어도 됩니다. 성별은 이야기의 표기만 정하고, 정치적 위치에는 차이가 없습니다.',
+  keep: '그대로 시작',
+  customize: '직접 고르기',
+  male: '남',
+  female: '여',
+  start: '시작한다',
 } as const
