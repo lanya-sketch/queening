@@ -100,7 +100,7 @@ export const CHILDHOOD_SCENES: Scene[] = [
     lines: [
       {
         speaker: 'narration',
-        text: '섭정공이 아들을 데려와 {왕} 앞에 나란히 세웠다. 같은 해에 태어난 아이라고 했다.',
+        text: '섭정공이 {자식:heir}을 데려와 {왕} 앞에 나란히 세웠다. 같은 해에 태어난 아이라고 했다.',
       },
       { speaker: 'regent', text: '"또래가 있어야 하지 않겠습니까. 함께 배우면 좋을 것입니다."' },
       {

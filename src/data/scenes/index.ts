@@ -289,7 +289,7 @@ export const SCENES: Scene[] = [
       {
         // ★ 친위 지휘관 가문의 수장 — VN 전신 스프라이트(배선 3). 대사 줄에서 얼굴이 뜬다.
         speaker: 'commander_father',
-        text: '"딸아이가 전하 이야기를 한 적이 없습니다."',
+        text: '"{자식:commander}아이가 전하 이야기를 한 적이 없습니다."',
       },
       {
         speaker: 'narration',

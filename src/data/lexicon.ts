@@ -34,9 +34,15 @@ export const DEFAULT_MONARCH_NAME: Record<Gender, string> = {
   female: '아일라',
 }
 
+/**
+ * ★ 연애 대상 5인의 3인칭은 성별과 무관하게 '그'로 통일한다(그녀 안 씀).
+ *   건조·관찰자적 서술 톤이 '그'를 성별 무관 3인칭으로 쓰고, 성별을 바꿔도 서술이
+ *   한 글자도 안 변한다. (군주는 MONARCH_TERMS 로 여전히 그/그녀를 가른다.)
+ *   성별로 갈리는 것은 호칭(공자/영애)과 관계어(아들/딸)뿐이다.
+ */
 export const CHARACTER_TERMS: Record<Gender, Terms> = {
   male: { title: '공자', address: '경', child: '아들', third: '그' },
-  female: { title: '영애', address: '경', child: '딸', third: '그녀' },
+  female: { title: '영애', address: '경', child: '딸', third: '그' },
 }
 
 /**
@@ -45,7 +51,12 @@ export const CHARACTER_TERMS: Record<Gender, Terms> = {
  *   {전하}        군주를 부를 때
  *   {그}          군주 3인칭       → 그 / 그녀
  *   {이름}        군주 고유명      → 플레이어가 정한 이름(빈칸이면 성별 기본값)
- *   {그:heir}     캐릭터 3인칭     → 해당 캐릭터의 gender 로 결정
- *   {이름:heir}   캐릭터 표시 이름
+ *   {그:heir}     캐릭터 3인칭     → 해당 캐릭터의 gender 로 결정 (그/그녀)
+ *   {이름:heir}   캐릭터 표시 이름  → 성별 가변이면 그 성별의 이름
+ *   {호칭:heir}   캐릭터 호칭       → 공자 / 영애
+ *   {자식:heir}   아들/딸 보통명사  → "섭정공이 {자식:heir}을 데려왔다"
+ *
+ * ★ 캐릭터 토큰의 성별은 세이브(characterGenders)가 우선, 없으면 기본 배치.
+ *   systems/text.ts 의 characterGender() 한 곳에서만 결정한다.
  */
 export const TOKEN_PATTERN = /\{([^}:]+)(?::([^}]+))?\}/g

@@ -15,7 +15,7 @@ export const TEEN_BOND_SCENES: Scene[] = [
     lines: [
       {
         speaker: 'narration',
-        text: '섭정공이 또 아들을 {왕}의 곁에 앉혀 두었다. 함께 배우라는 명분으로.',
+        text: '섭정공이 또 {자식:heir}을 {왕}의 곁에 앉혀 두었다. 함께 배우라는 명분으로.',
       },
       { speaker: 'heir', text: '"바둑이나 두시겠습니까. 아버지께서 권하셨습니다."' },
       {

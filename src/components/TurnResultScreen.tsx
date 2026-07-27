@@ -5,7 +5,7 @@ import { EVENT_BY_ID } from '../data/events'
 import { useOptions } from '../store/optionsStore'
 import { CutsceneScreen } from './scene/CutsceneScreen'
 import { deltaView } from '../systems/display'
-import { resolveText } from '../systems/text'
+import { characterGender, resolveText } from '../systems/text'
 import { resolveCharacterPortrait } from '../systems/outfits'
 import { CHARACTER_BY_ID } from '../data/characters'
 import { useGame } from '../store/gameStore'
@@ -139,7 +139,7 @@ export function TurnResultScreen() {
                   ? resolveCharacterPortrait(
                       manifest.characterPortraits,
                       ev.portrait,
-                      CHARACTER_BY_ID[ev.portrait]?.gender ?? 'male',
+                      CHARACTER_BY_ID[ev.portrait] ? characterGender(ev.portrait, game) : 'male',
                       game.age,
                     )?.thumbSrc ?? null
                   : null

@@ -3,7 +3,7 @@ import { DURABILITY, GAME_CONFIG, INITIAL_RESOURCES, INITIAL_STATS, MONTH_SCALE 
 import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import { durabilityGain, growthFactor, wellbeingCostFactor } from './durability'
-import { initialAffection } from './romance'
+import { initialAffection, initialCharacterGenders } from './romance'
 import type { Delta, DiaryEntry, Effect, GameDate, GameEvent, GameState } from '../types/game'
 
 /**
@@ -37,6 +37,7 @@ export function createInitialState(): GameState {
     monarchGender: 'male',
     monarchName: DEFAULT_MONARCH_NAME.male,
     affection: initialAffection(),
+    characterGenders: initialCharacterGenders(),
     plannedActivityIds: [],
     counters: {},
     flags: {},

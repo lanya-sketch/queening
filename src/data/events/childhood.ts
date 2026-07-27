@@ -57,7 +57,7 @@ export const CHILDHOOD_EVENTS: GameEvent[] = [
   // ── 13세 첫 등장 (①②③⑤, 스프라이트, 로맨스 아님) ──────────
   {
     id: 'child-meet-heir',
-    text: '섭정공이 아들을 데려왔다.',
+    text: '섭정공이 {자식:heir}을 데려왔다.',
     title: '또래',
     sceneId: 'scene-meet-heir',
     // 섭정공이 아들을 데려온다 — 정략. 봄에.

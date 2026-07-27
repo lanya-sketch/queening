@@ -1,10 +1,25 @@
 import { CHARACTER_BY_ID } from '../data/characters'
 import { CHARACTER_TERMS, DEFAULT_MONARCH_NAME, MONARCH_TERMS, TOKEN_PATTERN } from '../data/lexicon'
-import type { GameState } from '../types/game'
+import type { Gender, GameState } from '../types/game'
 
 /** 군주 표시 이름 — 비어 있으면 성별 기본값. 여러 화면이 공유하도록 한 곳에 둔다. */
 export function monarchName(game: GameState): string {
   return game.monarchName?.trim() || DEFAULT_MONARCH_NAME[game.monarchGender]
+}
+
+/**
+ * ★ 연애 대상의 성별(성별 제한 해제 1차). 세이브 선택이 우선, 없으면 기본 배치.
+ *   코드는 어디서도 "heir 는 남자"를 직접 읽지 않고 이 함수를 통한다.
+ */
+export function characterGender(charId: string, game: GameState): Gender {
+  return game.characterGenders?.[charId] ?? CHARACTER_BY_ID[charId]?.gender ?? 'male'
+}
+
+/** 연애 대상의 표시 이름 — 성별 가변이면(①②) 그 성별의 이름, 아니면 기본명. */
+export function characterName(charId: string, game: GameState): string {
+  const c = CHARACTER_BY_ID[charId]
+  if (!c) return charId
+  return c.nameByGender?.[characterGender(charId, game)] ?? c.name
 }
 
 /**
@@ -22,18 +37,21 @@ export function resolveText(text: string, game: GameState): string {
   const monarch = MONARCH_TERMS[game.monarchGender]
 
   return text.replace(TOKEN_PATTERN, (whole, name: string, arg?: string) => {
-    // 캐릭터를 가리키는 토큰 — {그:heir}, {이름:heir}
+    // 캐릭터를 가리키는 토큰 — {그:heir}, {이름:heir}, {호칭:heir}, {자식:heir}
     if (arg) {
       const character = CHARACTER_BY_ID[arg]
       if (!character) return whole
-      const terms = CHARACTER_TERMS[character.gender]
+      const terms = CHARACTER_TERMS[characterGender(arg, game)]
       switch (name) {
         case '그':
           return terms.third
         case '이름':
-          return character.name
+          return characterName(arg, game)
         case '호칭':
           return terms.title
+        case '자식':
+          // 역할이 아닌 "아들/딸" 보통명사(예: "섭정공이 {자식:heir}을 데려왔다").
+          return terms.child
         default:
           return whole
       }

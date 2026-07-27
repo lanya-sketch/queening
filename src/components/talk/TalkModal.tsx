@@ -6,7 +6,7 @@ import { TOPIC_BY_ID } from '../../data/topics'
 import {
   resolveCharacterPortrait, resolveMonarchPortrait, resolveOutfit,
 } from '../../systems/outfits'
-import { resolveText } from '../../systems/text'
+import { characterGender, characterName, resolveText } from '../../systems/text'
 import { availableTopics } from '../../systems/topics'
 import { ScenePlayer } from '../scene/ScenePlayer'
 import { useGame } from '../../store/gameStore'
@@ -75,14 +75,15 @@ export function TalkModal() {
     }
     const ch = CHARACTER_BY_ID[target.charId]
     if (ch && manifest.characterPortraits) {
-      const r = resolveCharacterPortrait(manifest.characterPortraits, target.charId, ch.gender, game.age)
+      const g = characterGender(target.charId, game)
+      const r = resolveCharacterPortrait(manifest.characterPortraits, target.charId, g, game.age)
       if (r) return r.thumbSrc
     }
     return info.portrait
   })()
   const affectionLabel =
     !isMonarch && CHARACTER_BY_ID[target.charId]
-      ? `${resolveText(CHARACTER_BY_ID[target.charId].name, game)} 호감도`
+      ? `${characterName(target.charId, game)} 호감도`
       : null
 
   const submit = () => {

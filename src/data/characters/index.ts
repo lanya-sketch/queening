@@ -13,6 +13,7 @@ export const CHARACTERS: Character[] = [
   {
     id: 'heir',
     name: '섭정공의 아들',
+    nameByGender: { male: '섭정공의 아들', female: '섭정공의 딸' },
     role: '귀족파 핵심. 정략으로 붙여졌고, 처음엔 서로 반감.',
     gender: 'male',
     // 5명 중 최저 시작 — "제일 공들여야 하는 메인 로맨스"
@@ -23,6 +24,7 @@ export const CHARACTERS: Character[] = [
   {
     id: 'loyalist',
     name: '충신 가문의 딸',
+    nameByGender: { male: '충신 가문의 아들', female: '충신 가문의 딸' },
     role: '왕당파. 어릴 때부터 곁에 있었다.',
     gender: 'female',
     startingAffection: 20,

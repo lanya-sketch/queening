@@ -1,4 +1,7 @@
 import { EVENTS, EVENT_BY_ID } from '../data/events'
+import { SCENES } from '../data/scenes'
+import { ENDING_INSERTS } from '../data/endings/inserts'
+import { CHARACTER_SHEETS } from '../data/persona/characters'
 import { BLOOD_OATH_EVENTS } from '../data/events/bloodoath'
 import { CONQUEST_EVENTS } from '../data/events/conquest'
 import { DECISIVE_EVENTS } from '../data/events/decisive'
@@ -322,6 +325,40 @@ export function installDevBridge(): void {
     /** 지금 상태에서 발동 가능한 이벤트 id — 우선순위 순. */
     triggerable() {
       return findTriggeredEvents(useGame.getState().game).map((e) => e.id)
+    },
+
+    /**
+     * ★ 성별 파라미터화 불변식 스냅샷 (성별 제한 해제 1차).
+     *
+     *   모든 서사 텍스트(씬·이벤트·엔딩 삽입·페르소나)를 **고정 기본 상태**에서 치환한
+     *   결과를 순서대로 돌려준다. 리터럴을 토큰으로 바꾸는 작업이 "기본 배치에서 출력을
+     *   1바이트도 안 바꾼다"를 증명하려면, 변경 전/후 이 배열이 완전히 같아야 한다.
+     *   patch 로 성별을 갈아 끼우면 "성별을 바꾸면 실제로 달라지는가"도 같은 경로로 본다.
+     */
+    genderSnapshot(patch?: Record<string, unknown>) {
+      const state = {
+        ...useGame.getState().game,
+        monarchGender: 'male',
+        monarchName: '카이로스',
+        ...patch,
+      } as never
+      const out: string[] = []
+      // ★ 모든 문자열을 치환한다(토큰 유무로 거르지 않는다) — 리터럴이 토큰으로 바뀌어도
+      //   같은 walk 위치에서 같은 결과가 나와야 배열이 정렬돼 diff 가 성립한다.
+      const walk = (v: unknown) => {
+        if (typeof v === 'string') {
+          out.push(resolveText(v, state))
+        } else if (Array.isArray(v)) {
+          v.forEach(walk)
+        } else if (v && typeof v === 'object') {
+          Object.values(v).forEach(walk)
+        }
+      }
+      walk(SCENES)
+      walk(EVENTS)
+      walk(ENDING_INSERTS)
+      walk(CHARACTER_SHEETS)
+      return out
     },
 
     /**

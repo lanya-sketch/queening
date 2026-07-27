@@ -97,7 +97,7 @@ export const BLOOD_OATH_EVENTS: GameEvent[] = [
     id: 'loyalist-chamber-hint',
     title: '길을 터 두었습니다',
     sceneId: 'scene-loyalist-hint',
-    text: '충신 가문의 딸이 처음으로, 말리는 대신 길을 알려주었다.',
+    text: '충신 가문의 {자식:loyalist}이 처음으로, 말리는 대신 길을 알려주었다.',
     condition: {
       minAge: 16,
       affection: { loyalist: { min: 45 } },
@@ -194,7 +194,7 @@ export const BLOOD_OATH_EVENTS: GameEvent[] = [
     id: 'half-heir-romance',
     title: '세 번째 궤',
     sceneId: 'scene-heir-confession',
-    text: '섭정공의 아들이 제 아버지의 서고를 말했다.',
+    text: '섭정공의 {자식:heir}이 제 아버지의 서고를 말했다.',
     condition: {
       minAge: 17,
       affection: { heir: { min: 70 } },

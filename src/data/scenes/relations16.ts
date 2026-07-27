@@ -31,7 +31,7 @@ export const RELATIONS16_SCENES: Scene[] = [
     lines: [
       {
         speaker: 'narration',
-        text: '섭정공이 아들에게 일렀다. {왕}이 어디까지 아는지, 아들의 입으로 떠보라고.',
+        text: '섭정공이 {자식:heir}에게 일렀다. {왕}이 어디까지 아는지, {자식:heir}의 입으로 떠보라고.',
       },
       { speaker: 'heir', text: '"아버지께서 전하를 시험하라 하십니다. …저는 그 자리에 서고 싶지 않습니다."' },
       {

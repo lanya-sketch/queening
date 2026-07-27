@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CHARACTER_BY_ID } from '../../data/characters'
 import { SCENE_BY_ID } from '../../data/scenes'
-import { resolveText } from '../../systems/text'
+import { characterGender, characterName, resolveText } from '../../systems/text'
 import { isRead, markRead } from '../../systems/readlog'
 import {
   resolveCharacterPortrait, resolveMonarchPortrait, resolveOutfit,
@@ -77,7 +77,7 @@ export function ScenePlayer({
     if (speaker === 'queen_mother') return '왕대비'
     // 주변 인물(배선 3) — 스프라이트만 매니페스트에 있고 CHARACTERS 엔 없어 라벨을 여기 둔다.
     if (speaker === 'commander_father') return '가문의 수장'
-    return CHARACTER_BY_ID[speaker]?.name ?? speaker
+    return CHARACTER_BY_ID[speaker] ? characterName(speaker, game) : speaker
   }
 
   const renderLines = finished ? scene.lines.map((l) => resolveText(l.text, game)) : null
@@ -149,7 +149,7 @@ function spriteFor(speaker: string, game: GameState, manifest: OutfitManifest): 
   }
   if (!manifest.characterPortraits) return null
   // 5인은 데이터 성별, 모후·섭정공은 config 에 성별이 박혀 있어(호출 성별은 무시됨).
-  const gender = CHARACTER_BY_ID[speaker]?.gender ?? 'male'
+  const gender = CHARACTER_BY_ID[speaker] ? characterGender(speaker, game) : 'male'
   return resolveCharacterPortrait(manifest.characterPortraits, speaker, gender, game.age)?.fullSrc ?? null
 }
 

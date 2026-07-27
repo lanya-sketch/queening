@@ -4,7 +4,7 @@ import { CHARACTERS, DEEP_BOND_THRESHOLD } from '../../data/characters'
 import { CHARACTER_TERMS } from '../../data/lexicon'
 import { affectionOf, isDeepBond, isPresent, isRomanceUnlocked } from '../../systems/romance'
 import { resolveCharacterPortrait } from '../../systems/outfits'
-import { resolveText } from '../../systems/text'
+import { characterGender, characterName, resolveText } from '../../systems/text'
 import { useAiEnabled } from '../../store/aiStore'
 import { useGame } from '../../store/gameStore'
 import { talkLocked, useTalk } from '../../store/talkStore'
@@ -107,7 +107,8 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
             const present = isPresent(character, game)
             const away = unlocked && !present
             const deep = isDeepBond(game, character.id)
-            const terms = CHARACTER_TERMS[character.gender]
+            const gender = characterGender(character.id, game)
+            const terms = CHARACTER_TERMS[gender]
             const canTalk = unlocked && present && aiEnabled && !locked
             return (
               <li
@@ -130,7 +131,7 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
                     src={
                       manifest.characterPortraits
                         ? resolveCharacterPortrait(
-                            manifest.characterPortraits, character.id, character.gender, game.age,
+                            manifest.characterPortraits, character.id, gender, game.age,
                           )?.thumbSrc ?? `/assets/characters/${character.portraitId}.svg`
                         : `/assets/characters/${character.portraitId}.svg`
                     }
@@ -139,10 +140,10 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
                     className="h-12 w-9 shrink-0 rounded object-cover object-top"
                   />
                   <span className="text-sm font-medium text-parchment">
-                    {resolveText(character.name, game)}
+                    {characterName(character.id, game)}
                   </span>
                   <span className="text-[11px] text-muted">
-                    {character.gender === 'male' ? '남' : '여'} · {terms.title}
+                    {gender === 'male' ? '남' : '여'} · {terms.title}
                   </span>
                   {deep && (
                     <span className="rounded bg-gold-400 px-1.5 py-0.5 text-[10px] font-semibold text-ink-950">

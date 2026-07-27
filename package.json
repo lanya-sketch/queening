@@ -49,7 +49,9 @@
     "verify:cutscene": "node tools/verify/cutscene.mjs",
     "verify:outing": "node tools/verify/outing.mjs",
     "verify:relations16": "node tools/verify/relations16.mjs",
-    "verify:slots": "node tools/verify/slots.mjs"
+    "verify:slots": "node tools/verify/slots.mjs",
+    "verify:gender": "node tools/verify/gender.mjs",
+    "verify:gender-lint": "node tools/verify/gender-lint.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

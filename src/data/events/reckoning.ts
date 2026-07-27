@@ -19,7 +19,7 @@ export const RECKONING_EVENTS: GameEvent[] = [
     id: 'heir-reckoning',
     title: '역적의 핏줄',
     text:
-      '섭정공은 처분되었다. 그러나 그 아들이 남아 있다.\n' +
+      '섭정공은 처분되었다. 그러나 그 {자식:heir}이 남아 있다.\n' +
       '역적의 핏줄을 그대로 두는 것은 위험하다고, 신하들이 입을 모은다.',
     condition: {
       minAge: 19,
@@ -39,16 +39,16 @@ export const RECKONING_EVENTS: GameEvent[] = [
         id: 'concubine',
         label: '가문을 지우고 곁에 묶는다',
         setFlags: { heir_reckoned: true, heir_concubine: true },
-        hint: '섭정공 가문을 왕실에 편입시키고, 그 아들을 소유로 남긴다',
-        resultText: '섭정공 가문의 문장은 지워졌다. 그 아들은 왕실의 사람으로 남았다.',
+        hint: '섭정공 가문을 왕실에 편입시키고, 그 {자식:heir}을 소유로 남긴다',
+        resultText: '섭정공 가문의 문장은 지워졌다. 그 {자식:heir}은 왕실의 사람으로 남았다.',
       },
       {
         id: 'spare',
-        label: '아버지의 죄를 아들에게 묻지 않는다',
+        label: '아버지의 죄를 {자식:heir}에게 묻지 않는다',
         setFlags: { heir_reckoned: true, heir_spared: true },
-        hint: '역적의 아들이 살아남는다. 언젠가의 불씨로',
+        hint: '역적의 {자식:heir}이 살아남는다. 언젠가의 불씨로',
         resultText:
-          '{왕}은 아들을 건드리지 않았다. 죄는 아버지의 것이지 핏줄의 것이 아니라고 했다.\n' +
+          '{왕}은 {자식:heir}을 건드리지 않았다. 죄는 아버지의 것이지 핏줄의 것이 아니라고 했다.\n' +
           '옳은 말이었다. 옳은 말이 늘 안전한 것은 아니다.',
       },
     ],
@@ -59,7 +59,7 @@ export const RECKONING_EVENTS: GameEvent[] = [
     title: '급진의 상징',
     text:
       '옛 질서를 되세우는 데에는 본보기가 필요하다. 하원을 따르던 자들에게 겁을 줄 이름 하나.\n' +
-      '충신 가문의 딸이 그 자리에 가장 알맞다고, 누군가 말한다.',
+      '충신 가문의 {자식:loyalist}이 그 자리에 가장 알맞다고, 누군가 말한다.',
     condition: {
       minAge: 19,
       flags: {
@@ -81,7 +81,7 @@ export const RECKONING_EVENTS: GameEvent[] = [
         label: '충성을 소유로 바꾼다',
         setFlags: { loyalist_reckoned: true, loyalist_concubine: true },
         hint: '늘 곁에 있던 사람을, 이제는 놓아주지 않는 방식으로 곁에 둔다',
-        resultText: '충신 가문의 딸은 왕실에 들었다. 곁에 있던 자리가, 갇힌 자리가 되었다.',
+        resultText: '충신 가문의 {자식:loyalist}은 왕실에 들었다. 곁에 있던 자리가, 갇힌 자리가 되었다.',
       },
       {
         id: 'spare',

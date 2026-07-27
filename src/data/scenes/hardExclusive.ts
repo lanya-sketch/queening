@@ -17,7 +17,7 @@ export const HARD_EXCLUSIVE_SCENES: Scene[] = [
     lines: [
       {
         speaker: 'heir',
-        text: '"…전하. 저는 오래 아버지의 아들로만 여기 서 있었습니다."',
+        text: '"…전하. 저는 오래 아버지의 {자식:heir}로만 여기 서 있었습니다."',
       },
       {
         speaker: 'narration',
@@ -26,8 +26,8 @@ export const HARD_EXCLUSIVE_SCENES: Scene[] = [
       {
         speaker: 'heir',
         text:
-          '"오늘은 아버지의 아들이 아니라, 제 이름으로 여쭙고 싶습니다.\n' +
-          '전하 곁에 서는 사람이, 섭정공의 아들이어도 괜찮으시겠습니까."',
+          '"오늘은 아버지의 {자식:heir}이 아니라, 제 이름으로 여쭙고 싶습니다.\n' +
+          '전하 곁에 서는 사람이, 섭정공의 {자식:heir}이어도 괜찮으시겠습니까."',
       },
       {
         speaker: 'narration',
@@ -179,7 +179,7 @@ export const HARD_EXCLUSIVE_SCENES: Scene[] = [
       {
         speaker: 'heir',
         text:
-          '"결국 저는 섭정공의 아들이었을 뿐이지요. 전하께서 저를 그 이상으로 보신 적이 있었는지,\n' +
+          '"결국 저는 섭정공의 {자식:heir}이었을 뿐이지요. 전하께서 저를 그 이상으로 보신 적이 있었는지,\n' +
           '이제 와서는 저도 모르겠습니다."',
       },
     ],
@@ -275,7 +275,7 @@ export const HARD_EXCLUSIVE_SCENES: Scene[] = [
       {
         speaker: 'narration',
         text:
-          '무관 가문의 힘을 꺾는 가장 확실한 방법은, 그 가문의 딸과 검을 함께 왕실로 들이는 것이었다.\n' +
+          '무관 가문의 힘을 꺾는 가장 확실한 방법은, 그 가문의 {자식:commander}과 검을 함께 왕실로 들이는 것이었다.\n' +
           '{왕}은 그것을 정치라 불렀고, 그도 굳이 다른 이름을 붙이지 않았다.',
       },
     ],
@@ -287,12 +287,12 @@ export const HARD_EXCLUSIVE_SCENES: Scene[] = [
       {
         speaker: 'narration',
         text:
-          '섭정공 가문의 문장은 기록에서 지워졌다. 그 아들은 이제 성도 가문도 없이,\n' +
+          '섭정공 가문의 문장은 기록에서 지워졌다. 그 {자식:heir}은 이제 성도 가문도 없이,\n' +
           '오직 왕실의 사람으로만 남았다.',
       },
       {
         speaker: 'heir',
-        text: '"…결국 저는 아버지의 아들도, 제 자신도 아니게 되었군요. 전하의 것일 뿐."',
+        text: '"…결국 저는 아버지의 {자식:heir}도, 제 자신도 아니게 되었군요. 전하의 것일 뿐."',
       },
       {
         speaker: 'narration',

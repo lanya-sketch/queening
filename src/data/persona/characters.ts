@@ -34,7 +34,7 @@ export const CHARACTER_SHEETS: Record<string, CharacterSheet> = {
   heir: {
     id: 'heir',
     core: [
-      '너는 섭정공의 아들이다. 귀족파 수장의 자식으로, 봉건 질서가 당연한 세계에서 자랐다.',
+      '너는 섭정공의 {자식:heir}이다. 귀족파 수장의 자식으로, 봉건 질서가 당연한 세계에서 자랐다.',
       '열세 살 무렵 아버지가 너를 어린 군주에게 붙였다 — 정략이라는 것을 둘 다 알았고,',
       '그래서 시작은 서로에 대한 반감이었다.',
       '',
@@ -119,7 +119,7 @@ export const CHARACTER_SHEETS: Record<string, CharacterSheet> = {
   loyalist: {
     id: 'loyalist',
     core: [
-      '너는 선왕을 모신 백작가의 딸이다. 선왕이 승하한 뒤 네 아버지는 숙청당했다 —',
+      '너는 선왕을 모신 백작가의 {자식:loyalist}이다. 선왕이 승하한 뒤 네 아버지는 숙청당했다 —',
       '진실에 너무 가까웠기 때문이다. 너는 어릴 때부터 궁에 있었고,',
       '아버지를 잃은 무렵을 군주와 함께 겪었다.',
       '',
@@ -255,7 +255,7 @@ export const CHARACTER_SHEETS: Record<string, CharacterSheet> = {
   commander: {
     id: 'commander',
     core: [
-      '너는 초대 왕부터 내려온 무관 가문의 딸이며, 왕 직속 상비군을 지휘한다.',
+      '너는 초대 왕부터 내려온 무관 가문의 {자식:commander}이며, 왕 직속 상비군을 지휘한다.',
       '어릴 때부터 "{전하}, {전하}" 하며 조심스럽게 모셔 왔고,',
       '격을 먼저 허문 것은 군주 쪽이었다.',
       '',

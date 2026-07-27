@@ -1,4 +1,5 @@
 import { GAME_CONFIG, INITIAL_RESOURCES } from '../data/config'
+import { CHARACTERS } from '../data/characters'
 import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import { durabilityBase } from './durability'
@@ -68,6 +69,12 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
   7: (state) => ({
     ...state,
     monarchName: DEFAULT_MONARCH_NAME[(state.monarchGender as 'male' | 'female') ?? 'male'],
+  }),
+  // v8 -> v9 : 연애 대상 5인 성별 파라미터화. 옛 세이브는 기본 배치(①③④남/②⑤여)로 채운다.
+  //            (characterGender() 가 없어도 폴백하지만, 세이브를 자기서술적으로 두려 명시한다.)
+  8: (state) => ({
+    ...state,
+    characterGenders: Object.fromEntries(CHARACTERS.map((c) => [c.id, c.gender])),
   }),
 }
 

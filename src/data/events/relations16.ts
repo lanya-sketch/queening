@@ -38,7 +38,7 @@ export const RELATIONS16_EVENTS: GameEvent[] = [
     id: 'relation-heir-2',
     title: '어느 편',
     sceneId: 'scene-relation-heir-2',
-    text: '섭정공이 아들에게 {왕}을 시험하라 일렀다. 그 애의 눈이 처음으로 갈렸다.',
+    text: '섭정공이 {자식:heir}에게 {왕}을 시험하라 일렀다. 그 애의 눈이 처음으로 갈렸다.',
     condition: { minAge: 18, month: 8, flags: OPEN, affection: { heir: { min: 45 } } },
     once: true,
     effects: [bond('heir', 6)],

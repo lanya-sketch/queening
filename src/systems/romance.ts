@@ -72,3 +72,8 @@ export function unlockedCharacters(game: GameState): Character[] {
 export function initialAffection(): Record<string, number> {
   return Object.fromEntries(CHARACTERS.map((c) => [c.id, c.startingAffection]))
 }
+
+/** 새 게임의 연애 대상 성별 초기값 — 기본 배치(①③④남/②⑤여). 선택 UI 는 2차. */
+export function initialCharacterGenders(): Record<string, 'male' | 'female'> {
+  return Object.fromEntries(CHARACTERS.map((c) => [c.id, c.gender]))
+}

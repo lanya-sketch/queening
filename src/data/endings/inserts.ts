@@ -240,26 +240,26 @@ export const ENDING_INSERTS: EndingInsert[] = [
     priority: 40,
     lines: [line(
       '섭정공의 핏줄은 아버지와 함께 정리되었다. 강탈한 증거로 아버지를 치고,\n' +
-      '그 아들까지 남기지 않았다. {왕}은 그것을 뒷일이라 불렀고, 뒷일에는 이름이 없었다.',
+      '그 {자식:heir}까지 남기지 않았다. {왕}은 그것을 뒷일이라 불렀고, 뒷일에는 이름이 없었다.',
     )],
   },
   {
     anchor: 'purge',
     match: (r) => has(r, 'heir_executed'),
     priority: 35,
-    lines: [line('섭정공의 아들은 역적의 핏줄로 처형되었다. 아버지의 죄가 아들에게로 흘렀다.')],
+    lines: [line('섭정공의 {자식:heir}은 역적의 핏줄로 처형되었다. 아버지의 죄가 {자식:heir}에게로 흘렀다.')],
   },
   {
     anchor: 'purge',
     match: (r) => has(r, 'heir_spared') && (mod(r, '정복의 전리품') || mod(r, '연인의 희생')),
     priority: 35,
-    lines: [line('섭정공의 아들은 살아남았다. {왕}은 죄를 아버지에게만 물었다 — 그 관용이 훗날 무엇이 될지는 몰랐다.')],
+    lines: [line('섭정공의 {자식:heir}은 살아남았다. {왕}은 죄를 아버지에게만 물었다 — 그 관용이 훗날 무엇이 될지는 몰랐다.')],
   },
   {
     anchor: 'purge',
     match: (r) => has(r, 'loyalist_scapegoat'),
     priority: 30,
-    lines: [line('충신 가문의 딸은 급진의 상징으로 몰려 희생되었다. 늘 옳은 편에 섰던 대가였다.')],
+    lines: [line('충신 가문의 {자식:loyalist}은 급진의 상징으로 몰려 희생되었다. 늘 옳은 편에 섰던 대가였다.')],
   },
   {
     anchor: 'purge',
@@ -289,7 +289,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     match: (r) => has(r, 'heir_concubine'),
     priority: 32,
     lines: [line(
-      '섭정공의 아들은 가문이 지워진 채 왕실에 편입되었다. 성도 아버지도 없이,\n' +
+      '섭정공의 {자식:heir}은 가문이 지워진 채 왕실에 편입되었다. 성도 아버지도 없이,\n' +
       '오직 {왕}의 소유로만 남았다 — 벗으려던 그늘째로 삼켜져서.',
     )],
   },
@@ -298,7 +298,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     match: (r) => has(r, 'loyalist_concubine'),
     priority: 32,
     lines: [line(
-      '충신 가문의 딸은 왕실에 들었다. 늘 곁에 있던 자리가, 스스로 남을 사람을 굳이 가둔 자리가 되었다.',
+      '충신 가문의 {자식:loyalist}은 왕실에 들었다. 늘 곁에 있던 자리가, 스스로 남을 사람을 굳이 가둔 자리가 되었다.',
     )],
   },
   {
@@ -322,7 +322,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     anchor: 'purge',
     match: (r) => has(r, 'heir_spared') && !mod(r, '정복의 전리품') && !mod(r, '연인의 희생'),
     priority: 15,
-    lines: [line('섭정공의 아들은 살아남았다. 역적의 핏줄이 남았다는 사실을, {왕}은 안고 가기로 했다.')],
+    lines: [line('섭정공의 {자식:heir}은 살아남았다. 역적의 핏줄이 남았다는 사실을, {왕}은 안고 가기로 했다.')],
   },
   {
     anchor: 'purge',

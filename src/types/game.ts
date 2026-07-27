@@ -47,9 +47,15 @@ export type Gender = 'male' | 'female'
 /** 연애 대상 정의. 실제 성격·대사는 M2b-3b. */
 export interface Character {
   id: string
+  /** 기본 표시 이름(기본 배치 성별 기준). 성별 가변이면 nameByGender 가 우선한다. */
   name: string
+  /**
+   * ★ 성별별 표시 이름(성별 제한 해제 1차). 있으면 characterName() 이 성별에 맞춰 고른다.
+   *   역할 호칭이 성별로 갈리는 ①(아들/딸)·②(딸/아들)만 채운다. ③④⑤ 는 중립명이라 불필요.
+   */
+  nameByGender?: Record<Gender, string>
   role: string
-  /** ★ 하드코딩하지 않고 데이터로 둔다 — (다) 전면 성별 선택 대비. */
+  /** 기본 배치 성별. 실제 렌더는 characterGender(id, game)(세이브 우선)를 쓴다. */
   gender: Gender
   startingAffection: number
   /** 로맨스 해금 조건(영구 관문). 한 번 열리면 닫히지 않는다. */
@@ -520,8 +526,15 @@ export interface GameState {
   actionPoints: number
   /** 현재 입고 있는 착장 id. 매니페스트에 없으면 기본 착장으로 되돌린다. */
   currentOutfitId: string
-  /** 군주의 성별. 연애 대상들의 성별은 데이터(CHARACTERS)에 있다. */
+  /** 군주의 성별. */
   monarchGender: Gender
+  /**
+   * ★ 연애 대상 5인의 성별(성별 제한 해제 1차 — 파라미터화).
+   *   키는 charId. 없거나 특정 charId 가 빠지면 CHARACTERS 의 기본 배치(①③④남/②⑤여)로
+   *   폴백한다 — 그래서 이 필드가 통째로 없어도(옛 세이브) 지금까지와 똑같이 돈다.
+   *   실제 선택 UI 는 2차에서 열린다. 지금은 기본 배치가 그대로 채워진다.
+   */
+  characterGenders?: Record<string, Gender>
   /**
    * 군주의 고유명(플레이어가 인트로에서 정함). 역할 호칭 {왕}/{전하} 과 **별개** —
    * 이름은 `{이름}`(인자 없음) 토큰으로만 치환되고 {왕} 을 대체하지 않는다.
