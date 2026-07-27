@@ -3,6 +3,7 @@ import { HARD_EXCLUSIVE_SCENES } from './hardExclusive'
 import { CHILDHOOD_SCENES } from './childhood'
 import { TEEN_BOND_SCENES } from './teenBonds'
 import { RELATIONS16_SCENES } from './relations16'
+import { POISON_SCENES } from './poison'
 
 /**
  * 대사 씬 (M2b-3a~).
@@ -350,6 +351,7 @@ export const SCENES: Scene[] = [
   ...CHILDHOOD_SCENES,
   ...TEEN_BOND_SCENES,
   ...RELATIONS16_SCENES,
+  ...POISON_SCENES,
 ]
 
 export const SCENE_BY_ID: Record<string, Scene> = Object.fromEntries(

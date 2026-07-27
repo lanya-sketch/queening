@@ -112,6 +112,13 @@ export const PRIORITY: Record<string, number> = {
   // ③ 정복은 능동 야망 — 미스터리 파생 대역 아래끝에 유일값으로.
   'prince-conquest': 50,
 
+  // 모후의 약 중반 전개 — 침실 발각(chamber-caught 56) 하류. 전부 queen_poison_path
+  //   게이트 + once + 나이라 실경쟁은 거의 없다(안 탄 플레이엔 아예 안 뜬다).
+  //   결정적 씬(60+)에 밀리면 다음 턴으로 넘어가되, 20세 전에 위기(E3)까지 소화된다.
+  'poison-resumes': 50.7,
+  'poison-fog': 50.6,
+  'poison-crisis': 50.5,
+
   // ── 30–49 정치 현안 + 청산(위쪽)
   // 청산은 19세+ 의 정치 행위라 이 대역 맨 위에 둔다 — 일상 현안보다 앞서되
   // 진실·마일스톤·처분보다는 뒤. heir 청산은 disposal(72) 이 regent_disposed 를

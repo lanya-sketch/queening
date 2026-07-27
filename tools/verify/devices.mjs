@@ -98,7 +98,10 @@ log('=== A. ★★ M3 예약 — 판정이 앞당겨지지 않았는가 ===')
 log('')
 
 const reservation = await page.evaluate(() => {
-  const RESERVED = ['union_possible', 'military_route_open', 'queen_poison_path']
+  // ③ 공동왕조·⑤ 군사노선은 여전히 M3 엔딩 판정 전용(중반에 안 읽힌다).
+  // ★ queen_poison_path 는 「모후의 약」 중반 전개(events/poison.ts)가 회수해 이제 소비된다
+  //   — 예약이 아니라 판정된 flag 라 이 목록에서 뺀다(검증은 verify:poison).
+  const RESERVED = ['union_possible', 'military_route_open']
   /**
    * ★ `flag: false` 로 읽는 것은 **자기 재발동 방지 가드**다(한 번 열렸으면 또 열지 않는다).
    *   판정이란 열린 경로를 **전제로 분기하는 것**, 즉 `flag: true` 로 읽는 것이다.

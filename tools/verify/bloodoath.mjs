@@ -113,19 +113,24 @@ log(`   새 이벤트 ${dep.newCount}건 / 기존 이벤트 ${dep.oldCount}건`)
 log('A1 ★ 새 이벤트가 clue_*/truth_* 를 하나도 쓰지 않음:',
   dep.newWritesMysteryFlags.length === 0 ? '없음' : dep.newWritesMysteryFlags.join(', '),
   ok(dep.newWritesMysteryFlags.length === 0))
-// ★ 역방향 간선은 딱 하나만 허용된다: regent_hostile.
-//   명세가 지시한 의도된 결합(적대 수색 강행 = 되돌릴 수 없는 결렬)이다.
-//   중요한 건 "없다"가 아니라 **그 하나뿐이고, 플레이어가 골라야만 생긴다**는 것.
-const ALLOWED_BACK_EDGE = 'regent_hostile'
-const unexpected = dep.oldReadsNewFlags.filter((s) => !s.endsWith(ALLOWED_BACK_EDGE))
+// ★ 역방향 간선은 명세가 지시한 것만 허용된다:
+//   · regent_hostile — 적대 수색 강행(플레이어 선택 = 되돌릴 수 없는 결렬).
+//   · queen_poison_path — 침실 발각의 대가로 열리는 「모후의 약」 중반 전개(M3-pending #3).
+//     이건 발각(chamber-caught)에서 자동으로 서고 poison-* 이 읽는다 — "발각의 대가"라는
+//     설계 그 자체라, 아래 '자동 없음' 검사에서 예외로 둔다(의도된 auto 결합).
+const ALLOWED_BACK_EDGES = ['regent_hostile', 'queen_poison_path']
+const unexpected = dep.oldReadsNewFlags.filter((s) => !ALLOWED_BACK_EDGES.some((f) => s.endsWith(f)))
 log('A2 기존 → 새 flag 역방향 간선:',
   dep.oldReadsNewFlags.length === 0 ? '없음' : dep.oldReadsNewFlags.join(', '))
-log('   ★ 허용된 하나(regent_hostile) 외에는 없음:',
+log('   ★ 허용된 것(regent_hostile · queen_poison_path) 외에는 없음:',
   unexpected.length === 0 ? '없음' : unexpected.join(', '),
   ok(unexpected.length === 0))
-log('   ★ 그 간선은 자동 발생하지 않음 — 플레이어가 선택해야만 생김:',
-  dep.oldReadsAutoFlags.length === 0 ? '자동 없음' : dep.oldReadsAutoFlags.join(', '),
-  ok(dep.oldReadsAutoFlags.length === 0))
+// regent_hostile 은 플레이어가 골라야만 생긴다(자동이면 안 됨). queen_poison_path 는
+// 발각의 대가라 의도적으로 자동이므로 제외한다.
+const unexpectedAuto = dep.oldReadsAutoFlags.filter((s) => !s.endsWith('queen_poison_path'))
+log('   ★ regent_hostile 간선은 자동 발생하지 않음 — 플레이어가 선택해야만 생김:',
+  unexpectedAuto.length === 0 ? '자동 없음' : unexpectedAuto.join(', '),
+  ok(unexpectedAuto.length === 0))
 log('A3 새 이벤트는 미스터리 flag 를 읽기만 함 (단방향):',
   dep.newReadsMysteryFlags.join(', '),
   ok(dep.newReadsMysteryFlags.length > 0))
