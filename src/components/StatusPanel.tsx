@@ -10,6 +10,8 @@ import { talkLocked, useTalk } from '../store/talkStore'
 import { monarchName, resolveText } from '../systems/text'
 import { PortraitButton } from './portrait/PortraitButton'
 import { RomancePanel } from './romance/RomancePanel'
+import { JournalScreen } from './JournalScreen'
+import { MYSTERY_ENTRIES } from '../data/mystery'
 import { Button } from './ui/Button'
 import { Gauge, GearIcon, Lozenge, SectionHead } from './ui/Chrome'
 
@@ -26,6 +28,7 @@ export function StatusPanel() {
   const openHelp = useApp((s) => s.openHelp)
   const openSettings = useApp((s) => s.openSettings)
   const [romanceOpen, setRomanceOpen] = useState(false)
+  const [journalOpen, setJournalOpen] = useState(false)
   const game = useGame((s) => s.game)
   const savedAt = useGame((s) => s.savedAt)
   const activeSlot = useGame((s) => s.activeSlot)
@@ -43,6 +46,8 @@ export function StatusPanel() {
   // ★ 관계 버튼 노출 게이트. 대화는 "신뢰가 쌓였거나 첫 캐릭터를 만난 뒤"(명세).
   const showBond = game.age >= 13
   const showTalk = aiEnabled && (game.tutorTrust >= 40 || game.age >= 13)
+  // ★ 기록 — 첫 단서가 잡힌 뒤부터 보인다("이제 이게 쓸모 있다"는 신호, 인연 패턴).
+  const showJournal = MYSTERY_ENTRIES.some((e) => game.flags[e.flag] === true)
 
   // ★ 데스크톱: 열 하나가 뷰포트 높이를 통째로 갖고 안에서 스크롤한다(페이지 스크롤 아님).
   return (
@@ -167,7 +172,7 @@ export function StatusPanel() {
               대화 → AI 가 켜지고 신뢰가 쌓인 뒤(신뢰 40+).
             나타나는 것 자체가 "이제 이게 쓸모 있다"는 신호이고, 코치마크가 함께 뜬다.
         */}
-        {(showBond || showTalk) && (
+        {(showBond || showTalk || showJournal) && (
           <div className="flex gap-2 px-4 pb-3 lg:px-5">
             {showBond && (
               <Button
@@ -176,6 +181,15 @@ export function StatusPanel() {
                 onClick={() => setRomanceOpen(true)}
               >
                 인연
+              </Button>
+            )}
+            {showJournal && (
+              <Button
+                data-journal-button
+                className="flex-1"
+                onClick={() => setJournalOpen(true)}
+              >
+                기록
               </Button>
             )}
             {showTalk && (
@@ -300,6 +314,7 @@ export function StatusPanel() {
       </div>
 
       {romanceOpen && <RomancePanel onClose={() => setRomanceOpen(false)} />}
+      {journalOpen && <JournalScreen onClose={() => setJournalOpen(false)} />}
     </aside>
   )
 }
