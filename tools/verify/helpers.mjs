@@ -393,21 +393,15 @@ export const choiceButtons = (p) => p.locator('[data-choice]')
  * 씬이 없으면 아무 일도 하지 않는다.
  */
 export async function advanceScene(p) {
-  // ★ D-3 타이핑: 한 줄에 클릭 두 번(타이핑 중 클릭=줄 완성, 완성 후 클릭=다음 줄)이
-  //   필요할 수 있다. 그래서 '다음'을 안 보일 때까지 넉넉히 누른다(각 줄 완성+진행).
-  for (let i = 0; i < 50; i++) {
-    const next = p.getByRole('button', { name: /^다음$/ })
-    if (!(await next.isVisible().catch(() => false))) break
-    await next.click()
-    await p.waitForTimeout(45)
-  }
-  // 마지막 줄 버튼은 "계속" — 타이핑 완성 + 종료로 최대 두 번.
-  // (이벤트 진행 버튼 "계속 (N건 더)" 와는 정확 매칭으로 구분된다.)
-  for (let i = 0; i < 2; i++) {
-    const end = p.getByRole('button', { name: /^계속$/ })
-    if (!(await end.isVisible().catch(() => false))) break
-    await end.click()
-    await p.waitForTimeout(45)
+  // ★ 대화창 라운드: 「다음」 버튼이 사라지고 **대화창 전체가 클릭 대상**이 됐다
+  //   (data-scene-advance). 한 클릭이 곧 진행 — 타이핑 중이면 그 줄 완성, 완성 후면
+  //   다음 단락, 마지막 줄이면 씬 종료. 씬이 끝나면 대화창이 '기록' 렌더로 바뀌며
+  //   data-scene-advance 가 사라지므로, 그게 없어질 때까지 누른다.
+  const panel = p.locator('[data-scene-advance]')
+  for (let i = 0; i < 80; i++) {
+    if (!(await panel.first().isVisible().catch(() => false))) break
+    await panel.first().click({ timeout: 3000 }).catch(() => {})
+    await p.waitForTimeout(40)
   }
 }
 

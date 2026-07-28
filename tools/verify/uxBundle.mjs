@@ -79,9 +79,9 @@ await setGame({ monarchName: '카이로스', monarchGender: 'male', age: 20, pha
 await page.waitForTimeout(300)
 // 엔딩 씬을 넘겨 결산 헤더까지.
 for (let i = 0; i < 40; i++) {
-  const nx = page.getByRole('button', { name: /^(다음|계속)$/ })
+  const nx = page.locator('[data-scene-advance]') // 「다음」 버튼 제거 — 대화창 전체 클릭
   if (!(await nx.isVisible().catch(() => false))) break
-  await nx.click(); await page.waitForTimeout(60)
+  await nx.click().catch(() => {}); await page.waitForTimeout(60)
 }
 const endedText = await page.locator('[data-screen="ended"], [data-screen="dead"]').first().innerText().catch(() => '')
 log('A7 ★ 엔딩 화면에 이름 노출:', ok(endedText.includes('카이로스')))

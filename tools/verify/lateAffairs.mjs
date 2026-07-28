@@ -60,7 +60,7 @@ async function boldLocked(id, influence) {
   await page.waitForTimeout(200)
   // 씬이 있으면 넘긴다(현안은 씬 없음이지만 방어적으로).
   for (let i = 0; i < 6; i++) {
-    const next = page.getByRole('button', { name: /^(다음|계속)$/ })
+    const next = page.locator('[data-scene-advance]') // 「다음」 버튼 제거 — 대화창 전체 클릭
     if (!(await next.isVisible().catch(() => false))) break
     await next.click(); await page.waitForTimeout(80)
   }
@@ -118,9 +118,9 @@ await page.waitForTimeout(300)
 let endingText = ''
 for (let i = 0; i < 60; i++) {
   endingText += ' ' + (await page.locator('[data-screen="ended"], [data-screen="dead"]').innerText().catch(() => ''))
-  const next = page.getByRole('button', { name: /^(다음|계속)$/ })
+  const next = page.locator('[data-scene-advance]') // 「다음」 버튼 제거 — 대화창 전체 클릭
   if (!(await next.isVisible().catch(() => false))) break
-  await next.click(); await page.waitForTimeout(60)
+  await next.click().catch(() => {}); await page.waitForTimeout(60)
 }
 log('E1 ★ empire_defied 서술 뜸:', ok(endingText.includes('무릎을 꿇지 않았다')))
 log('E2 ★ crown_centralized 서술 뜸:', ok(endingText.includes('하나가 되었다')))

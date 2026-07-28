@@ -30,9 +30,9 @@ await page.evaluate(() => window.__queeningAi.forceEvent('prince-arrival'))
 await page.waitForTimeout(300)
 // 씬을 끝까지 넘겨 결과칩(효과 미리보기)까지.
 for (let i = 0; i < 30; i++) {
-  const nx = page.getByRole('button', { name: /^(다음|계속)$/ })
+  const nx = page.locator('[data-scene-advance]') // 「다음」 버튼 제거 — 대화창 전체 클릭
   if (!(await nx.isVisible().catch(() => false))) break
-  await nx.click(); await page.waitForTimeout(80)
+  await nx.click().catch(() => {}); await page.waitForTimeout(80)
 }
 const t1 = await bodyText()
 log('A2-1 ★ 화면에 __counter 없음:', ok(!t1.includes('__counter')))

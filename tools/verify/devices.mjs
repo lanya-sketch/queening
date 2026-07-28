@@ -202,7 +202,7 @@ const beforeAff = (await stateOf()).affection.commander
 await topicBtn.click()
 await page.waitForTimeout(400)
 log('C4 ★ AI 호출 없이 고정 씬이 재생됨 (키가 가짜여도 동작):',
-  ok(await dialog.getByRole('button', { name: /다음|계속/ }).isVisible()))
+  ok(await dialog.locator('[data-scene-advance]').isVisible())) // 「다음」 버튼 제거 — 대화창 전체가 클릭 대상
 await page.screenshot({ path: `${OUT}/02-topic-scene.png` })
 await advanceScene(page)
 await page.waitForTimeout(300)

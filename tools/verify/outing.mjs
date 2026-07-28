@@ -152,9 +152,9 @@ await page.waitForTimeout(300)
 let endedText = ''
 for (let i = 0; i < 30; i++) {
   endedText += ' ' + (await page.locator('[data-screen="dead"], [data-screen="ended"]').innerText().catch(() => ''))
-  const nx = page.getByRole('button', { name: /^(다음|계속)$/ })
+  const nx = page.locator('[data-scene-advance]') // 「다음」 버튼 제거 — 대화창 전체 클릭
   if (!(await nx.isVisible().catch(() => false))) break
-  await nx.click(); await page.waitForTimeout(60)
+  await nx.click().catch(() => {}); await page.waitForTimeout(60)
 }
 log('E4 ★ 「해고」 데드 씬(남겨진 아이):', ok(endedText.includes('궁문이 닫혔다') || endedText.includes('남겨진')))
 await page.screenshot({ path: `${OUT}/dead-tutor.png` })

@@ -2,7 +2,7 @@
 //
 // ★ 핵심: 왕/여왕 양쪽으로 돌려 복합어(선왕·왕국·왕당파·왕대비·옥좌)가 깨지지 않는지,
 //   그리고 여왕 플레이가 텍스트상 일관되는지.
-import { APP_URL, enterGame, launch, log, ok, overflow, shotsDir, SAVE_VERSION, saveToSlot, loadFromSlot, readSlot } from './helpers.mjs'
+import { APP_URL, advanceScene, enterGame, launch, log, ok, overflow, shotsDir, SAVE_VERSION, saveToSlot, loadFromSlot, readSlot } from './helpers.mjs'
 
 const OUT = shotsDir('romance')
 
@@ -171,20 +171,14 @@ log('E2 씬이 한 줄만 먼저 보임:',
   ok((await page.locator('article').innerText()).includes('대연회장의 문이 열린다')))
 log('E3 진행 표시 (1 / 4):', ok((await page.locator('article').innerText()).includes('1 / 4')))
 log('E4 여왕 토큰 치환 확인 — 다음 줄로')
-await page.getByRole('button', { name: '다음' }).click()
+await page.locator('[data-scene-advance]').click() // 대화창 전체가 클릭 대상(「다음」 버튼 제거)
 await page.waitForTimeout(250)
 const sceneText = await page.locator('article').innerText()
 log('E5 씬 대사도 성별 치환:', ok(sceneText.includes('여왕의 성년을 알리는')))
 await page.screenshot({ path: `${OUT}/04-scene.png`, fullPage: false })
 
-// 끝까지 진행
-for (let i = 0; i < 4; i++) {
-  const next = page.getByRole('button', { name: /^다음$|^계속$/ })
-  if (await next.isVisible().catch(() => false)) {
-    await next.click()
-    await page.waitForTimeout(200)
-  }
-}
+// 끝까지 진행 — 대화창 전체 클릭(「다음」 버튼 제거)
+await advanceScene(page)
 await page.waitForTimeout(300)
 log('E6 씬 종료 후 진행 버튼 등장:',
   ok(await page.getByRole('button', { name: /다음 달로|계속 \(/ }).isVisible()))

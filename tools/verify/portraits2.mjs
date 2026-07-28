@@ -81,8 +81,8 @@ for (let i = 0; i < 4; i++) {
     return s ? { src: s.getAttribute('src'), w: s.naturalWidth } : null
   })
   if (sprite) { globalThis.__sprite = sprite; break }
-  const next = page.getByRole('button', { name: /^(다음|계속)$/ })
-  if (await next.isVisible().catch(() => false)) { await next.click(); await page.waitForTimeout(200) }
+  const next = page.locator('[data-scene-advance]') // 「다음」 버튼 제거 — 대화창 전체 클릭
+  if (await next.isVisible().catch(() => false)) { await next.click().catch(() => {}); await page.waitForTimeout(200) }
 }
 const sprite = await page.evaluate(() => {
   const imgs = [...document.querySelectorAll('article img')]

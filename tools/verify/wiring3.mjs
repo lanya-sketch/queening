@@ -62,13 +62,21 @@ for (let i = 0; i < 8; i++) {
     return s ? { src: s.getAttribute('src'), w: s.naturalWidth } : null
   })
   if (cfSprite) break
-  const next = page.getByRole('button', { name: /^(다음|계속)$/ })
-  if (await next.isVisible().catch(() => false)) { await next.click(); await page.waitForTimeout(200) }
+  const next = page.locator('[data-scene-advance]') // 「다음」 버튼 제거 — 대화창 전체 클릭
+  if (await next.isVisible().catch(() => false)) { await next.click().catch(() => {}); await page.waitForTimeout(200) }
 }
 log('B1 ★ 씬 화자 줄에 commander_father 전신 스프라이트:', cfSprite?.src.split('/').slice(-2).join('/'),
   ok(!!cfSprite && cfSprite.src.includes('/characters/others/commander_father.png') && !cfSprite.src.includes('/portraits/')))
 log('B2 ★ 전신 원본 로드됨(크롭 아님):', `${cfSprite?.w ?? 0}px`, ok((cfSprite?.w ?? 0) > 0))
-const cfLabel = await page.getByText('가문의 수장').first().isVisible().catch(() => false)
+// ★ 라벨은 그 인물이 "말하는 줄"에서만 뜬다 — 스프라이트는 등장부터 보이지만(회색 포함)
+//   화자 라벨은 commander_father 차례라야 나온다. 대화창을 넘겨 그 줄까지 간다.
+let cfLabel = await page.getByText('가문의 수장').first().isVisible().catch(() => false)
+for (let i = 0; i < 12 && !cfLabel; i++) {
+  const adv = page.locator('[data-scene-advance]')
+  if (!(await adv.isVisible().catch(() => false))) break
+  await adv.click().catch(() => {}); await page.waitForTimeout(150)
+  cfLabel = await page.getByText('가문의 수장').first().isVisible().catch(() => false)
+}
 log('B3 화자 라벨 표시(가문의 수장):', ok(cfLabel))
 await page.screenshot({ path: `${OUT}/commander-father-vn.png` })
 

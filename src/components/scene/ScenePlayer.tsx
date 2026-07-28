@@ -8,17 +8,23 @@ import {
 } from '../../systems/outfits'
 import { useGame } from '../../store/gameStore'
 import { SPEED_MS, useOptions } from '../../store/optionsStore'
-import { Button } from '../ui/Button'
 import { useTypewriter } from './useTypewriter'
 import type { GameState, OutfitManifest, Scene } from '../../types/game'
 
 /**
- * 대사 씬 재생기 (M2b-3a → D-3 타이핑·스킵 → 배선2 VN 전신).
+ * 대사 씬 재생기 — VN 대화창 (완주 피드백 2, 대화창 라운드).
  *
- *   · 현재 줄을 옵션 속도로 **타이핑**. 타이핑 중 진행 버튼 → 그 줄 즉시 완성.
- *   · 씬을 끝까지 본 적 있으면(readlog) **스킵** 활성. 씬 끝까지 보면 markRead.
- *   · showSprites 면 **말하는 캐릭터의 전신 스프라이트**를 위에 얹는다(이벤트 씬 VN 레이아웃).
- *     narration 은 직전 캐릭터를 유지하고, 튜터(플레이어)는 뜨지 않는다.
+ * ★ 프메(오토메) 방식: **고정 프레임** 안에서 한 단락씩 갈아끼운다.
+ *   · 상단에 화자 **반신 스프라이트**(배경 슬롯 위). 안 말하는 쪽은 회색 명암.
+ *   · 그 아래 **고정 너비·고정 높이** 대화창 — 대사 길이와 무관하게 위치·높이 불변.
+ *     예전처럼 줄을 아래로 **쌓지 않는다**(누적 로그 → 화면 출렁임 제거).
+ *   · ★ 「다음」 버튼 없음 — **대화창 전체가 클릭 대상**. 한 동작으로 통일:
+ *     타이핑 중 클릭=그 줄 즉시 완성, 완성 후 클릭=다음 단락, 마지막 줄 클릭=씬 종료.
+ *   · "더 있다" 신호는 우하단 **▼**(완성 후 깜빡) + 진행 표시(3/7).
+ *   · 이미 끝까지 본 씬(readlog)이면 **씬 스킵** 활성.
+ *   · finished(이미 본 상태)면 전 대사를 조용한 기록으로 펼쳐 선택지와 함께 다시 읽게 한다.
+ *
+ * ★ 씬 데이터(Scene/SceneLine)·showSprites 계약은 건드리지 않는다 — 렌더러만 바뀐다.
  */
 export function ScenePlayer({
   sceneId,
@@ -27,9 +33,9 @@ export function ScenePlayer({
   onFinished,
 }: {
   sceneId: string
-  /** true 면 전체 대사를 한 번에 보여주고 진행 버튼을 감춘다(씬을 이미 본 상태). */
+  /** true 면 전체 대사를 조용한 기록으로 펼치고 진행 UI를 감춘다(씬을 이미 본 상태). */
   finished?: boolean
-  /** true 면 이벤트 씬 VN 레이아웃 — 화자 전신 스프라이트를 표시한다. */
+  /** true 면 이벤트 씬 VN 레이아웃 — 화자 반신 스프라이트를 표시한다. */
   showSprites?: boolean
   onFinished: () => void
 }) {
@@ -80,66 +86,142 @@ export function ScenePlayer({
     return CHARACTER_BY_ID[speaker] ? characterName(speaker, game) : speaker
   }
 
-  const renderLines = finished ? scene.lines.map((l) => resolveText(l.text, game)) : null
+  // ── finished: 조용한 기록 — 선택지와 함께 다시 읽는 완결된 대화(진행 UI 없음). ──
+  if (finished) {
+    return (
+      <div className="rounded-2xl border border-line-gold/40 bg-ink-950/60 p-4 sm:p-5">
+        <div className="space-y-2.5">
+          {scene.lines.map((l, i) => {
+            const label = speakerLabel(l.speaker)
+            return (
+              <div key={i}>
+                {label && <p className="text-[11px] font-medium tracking-wide text-gold-400/80">{label}</p>}
+                {resolveText(l.text, game).split('\n').map((part, j) => (
+                  <p key={j} className="text-[13.5px] leading-relaxed text-parchment/75">{part || ' '}</p>
+                ))}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
 
-  // ★ 이벤트 씬 전신: 현재(index)까지 거슬러 마지막으로 "스프라이트가 있는 화자"를 찾는다.
-  //   화자가 narration/튜터면 직전 캐릭터를 유지. finished(이미 본 씬)면 마지막 화자.
-  const spriteSrc = showSprites
-    ? activeSprite(scene, finished ? scene.lines.length - 1 : index, game, manifest)
-    : null
+  // ── 재생 중: 프메 대화창 ──
+  const name = speakerLabel(line?.speaker ?? '')
+  // 씬 안의 화자를 등장 순서로 모은다(스프라이트 있는 인물만). 현재 화자 + 상대까지 최대 둘.
+  const cast = showSprites ? sceneCast(scene, game, manifest) : []
+  const activeKey = showSprites ? activeSpriteKey(scene, index, game, manifest) : null
 
   return (
-    <div>
-      {spriteSrc && (
-        <div className="relative mb-3 flex h-[34dvh] items-end justify-center overflow-hidden rounded-lg bg-gradient-to-b from-ink-800/60 to-ink-950 lg:h-[46dvh]">
-          {/* 배경 에셋은 후속 — 지금은 어두운 기본 위에 전신 스프라이트만. */}
-          <img
-            src={spriteSrc}
-            alt=""
-            draggable={false}
-            className="h-full w-auto object-contain object-bottom drop-shadow-2xl"
+    <div
+      data-scene-advance
+      role="button"
+      tabIndex={0}
+      aria-label="대화 진행"
+      onClick={advance}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          advance()
+        }
+      }}
+      className="cursor-pointer select-none"
+    >
+      {/* ── 무대(컷신): 배경 슬롯(지금은 어두운 그라데이션, 나중에 배경 그림) + 반신 스프라이트.
+             ★ 대화창과 붙이지 않고 독립 패널로 둔다 — 아래 대화창은 따로. ── */}
+      {cast.length > 0 && (
+        <div
+          className={`relative flex h-[34dvh] items-start justify-center overflow-hidden rounded-2xl border border-line-gold/40 bg-gradient-to-b from-ink-700/40 via-ink-900 to-ink-950 sm:h-[42dvh] ${
+            cast.length > 1 ? 'gap-1 sm:gap-3' : ''
+          }`}
+        >
+          {/* 배경 비네트 */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{ background: 'radial-gradient(120% 80% at 50% 0%, rgba(247,215,145,0.05), transparent 60%)' }}
           />
+          {cast.map((c) => {
+            const active = c.key === activeKey
+            return (
+              // ★ 반신 크롭: 전신 스프라이트를 상단 정렬로 클립 — 허벅지 위만 크게 보인다(#28 초상 크게).
+              //   안 말하는 쪽은 회색 명암(#8) — 흑백(saturate-0) + 어둡게(brightness).
+              <div
+                key={c.key}
+                className={`relative h-full shrink-0 overflow-hidden ${
+                  cast.length > 1 ? 'w-[48%] max-w-[430px]' : 'w-[64%] max-w-[520px]'
+                }`}
+              >
+                <img
+                  src={c.src}
+                  alt=""
+                  draggable={false}
+                  className={`absolute left-1/2 top-0 w-full max-w-none -translate-x-1/2 drop-shadow-2xl transition-all duration-300 ${
+                    active
+                      ? 'opacity-100 saturate-100 brightness-100'
+                      : 'opacity-90 saturate-0 brightness-[0.45]'
+                  }`}
+                />
+              </div>
+            )
+          })}
         </div>
       )}
-      <div className="space-y-3">
-        {finished
-          ? scene.lines.map((l, i) => (
-              <LineBlock key={i} label={speakerLabel(l.speaker)} text={renderLines![i]} dim={false} />
-            ))
-          : scene.lines.slice(0, index + 1).map((l, i) => (
-              <LineBlock
-                key={i}
-                label={speakerLabel(l.speaker)}
-                // 현재 줄만 타이핑 중인 부분 텍스트, 지난 줄은 전체.
-                text={i === index ? tw.shown : resolveText(l.text, game)}
-                dim={i !== index}
-              />
-            ))}
-      </div>
 
-      {!finished && (
-        <div className="mt-4">
-          <div className="flex items-center gap-2">
-            {/* 타이핑 중 클릭 → 그 줄 즉시 완성, 완성 후 클릭 → 진행. 라벨은 진행 기준. */}
-            <Button variant="primary" className="flex-1" onClick={advance}>
-              {atEnd ? '계속' : '다음'}
-            </Button>
-            {alreadyRead && (
-              <Button className="shrink-0 px-4" onClick={skip}>
-                씬 스킵
-              </Button>
-            )}
-          </div>
-          <p className="mt-1 text-center text-[11px] text-faint">
-            {index + 1} / {scene.lines.length}
-          </p>
+      {/* ── 대화창: ★ 무대와 분리된 독립 패널. 무대만큼 가로로 꽉 찬 풀 너비.
+             고정 높이 프레임 (대사 길이 무관 — 위치·높이 불변). ── */}
+      <div className="relative mt-2.5 w-full rounded-2xl border border-line-gold/70 bg-gradient-to-b from-ink-900 to-ink-950 px-4 py-3.5 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.7)] sm:px-6 sm:py-4">
+        {/* 씬 스킵 — 코너. 클릭이 진행으로 새지 않게 stopPropagation. */}
+        {alreadyRead && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              skip()
+            }}
+            className="absolute right-2.5 top-2.5 rounded-full border border-line-gold/40 bg-ink-950/70 px-2.5 py-1 text-[10px] text-muted backdrop-blur-sm active:bg-ink-800"
+          >
+            씬 스킵 ⏭
+          </button>
+        )}
+        {/* 화자 이름 + 금빛 실선 */}
+        <div className="flex min-h-[1.15rem] items-center gap-2.5">
+          {name && (
+            <>
+              <span aria-hidden className="text-gold-400">◈</span>
+              <span className="font-title text-[13.5px] font-semibold tracking-wide text-gold-300">{name}</span>
+            </>
+          )}
+          <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-line-gold/70 via-line-gold/30 to-transparent" />
         </div>
-      )}
+
+        {/* 텍스트 — 고정 높이(출렁임 0), 한 단락. 긴 대사는 이 안에서만 스크롤. */}
+        <div className="mt-2.5 h-[5.5rem] overflow-y-auto pr-1 sm:h-[6rem]">
+          {tw.shown.split('\n').map((part, j) => (
+            <p key={j} className="text-[14.5px] leading-relaxed text-parchment">
+              {part || ' '}
+            </p>
+          ))}
+        </div>
+
+        {/* 진행 표시(N/M) + ▼ */}
+        <div className="mt-1.5 flex items-center justify-end gap-2 text-faint">
+          <span className="text-[11px] tabular-nums">{index + 1} / {scene.lines.length}</span>
+          <span
+            aria-hidden
+            className={`text-[11px] text-gold-300 transition-opacity duration-200 ${
+              tw.done ? 'animate-pulse opacity-100' : 'opacity-0'
+            }`}
+          >
+            ▼
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
 
-/** 한 화자의 전신 스프라이트 경로. 튜터/narration/미등록이면 null. */
+/** 한 화자의 반신 스프라이트 경로. 튜터/narration/미등록이면 null. */
 function spriteFor(speaker: string, game: GameState, manifest: OutfitManifest): string | null {
   if (speaker === 'narration' || speaker === 'tutor') return null
   if (speaker === 'monarch') {
@@ -153,29 +235,34 @@ function spriteFor(speaker: string, game: GameState, manifest: OutfitManifest): 
   return resolveCharacterPortrait(manifest.characterPortraits, speaker, gender, game.age)?.fullSrc ?? null
 }
 
-/** index 부터 거슬러 올라가 마지막으로 스프라이트가 있는 화자를 찾는다(narration 은 유지). */
-function activeSprite(
+/**
+ * 씬에 등장하는 화자(스프라이트 있는 인물)를 **등장 순서대로 최대 둘** 모은다.
+ * ★ 둘이면 무대에 나란히 세우고, 안 말하는 쪽을 회색 명암 처리한다.
+ */
+function sceneCast(
+  scene: Scene,
+  game: GameState,
+  manifest: OutfitManifest,
+): { key: string; src: string }[] {
+  const seen = new Map<string, string>()
+  for (const l of scene.lines) {
+    if (seen.has(l.speaker)) continue
+    const src = spriteFor(l.speaker, game, manifest)
+    if (src) seen.set(l.speaker, src)
+    if (seen.size >= 2) break
+  }
+  return [...seen].map(([key, src]) => ({ key, src }))
+}
+
+/** 현재(index) 줄 기준 "말하는 화자" 키 — narration/튜터면 직전 화자를 유지. */
+function activeSpriteKey(
   scene: Scene,
   index: number,
   game: GameState,
   manifest: OutfitManifest,
 ): string | null {
   for (let i = Math.min(index, scene.lines.length - 1); i >= 0; i--) {
-    const src = spriteFor(scene.lines[i].speaker, game, manifest)
-    if (src) return src
+    if (spriteFor(scene.lines[i].speaker, game, manifest)) return scene.lines[i].speaker
   }
   return null
-}
-
-function LineBlock({ label, text, dim }: { label: string | null; text: string; dim: boolean }) {
-  return (
-    <div className={dim ? 'opacity-60' : ''}>
-      {label && <p className="text-xs text-gold-400">{label}</p>}
-      {text.split('\n').map((part, j) => (
-        <p key={j} className="text-sm leading-relaxed text-parchment">
-          {part}
-        </p>
-      ))}
-    </div>
-  )
 }
