@@ -1,4 +1,4 @@
-import type { Choice, GameEvent } from '../../types/game'
+import type { Choice, GameEvent, GameState } from '../../types/game'
 
 /**
  * 혈서 반쪽 — 확증 루트 (M2b-3c-1).
@@ -42,6 +42,13 @@ export const CHAMBER = {
   resolved: 'chamber_resolved',
   alertMax: 'queen_alert_max',
   poisonPath: 'queen_poison_path',
+  /**
+   * ★ 궁 안 이동(2-b-1) 게이트 — chamber-search 는 이제 **왕대비궁 방문 + 부재** 때에만 열린다.
+   *   방문 resolver(systems/visit.ts)가 이 transient flag 를 세우고 그 자리에서 수색을 enqueue 한다.
+   *   조건에 이 flag 를 넣어 **자동발동을 차단**한다(이벤트는 EVENTS 에 남아 ablate·triggerable 은 보존).
+   *   turn.ts 가 턴 종료에 소거한다.
+   */
+  open: 'queen_chamber_open',
 } as const
 
 /**
@@ -59,14 +66,35 @@ const COURTCRAFT_HINTED = 30
 const ESCAPE_COURTCRAFT = 40
 const ESCAPE_RHETORIC = 35
 
-/** 수색에 진입할 수 있는 공통 조건. 두 벌로 나뉘는 건 궁정처세 요구뿐이다. */
+/** 수색에 진입할 수 있는 공통 조건. 두 벌로 나뉘는 건 궁정처세 요구뿐이다.
+ *  ★ queen_chamber_open(방문 게이트)이 함께 걸려, 왕대비궁 방문·부재 없이는 자동발동하지 않는다. */
 const searchBase = {
   minAge: 17,
   flags: {
     clue_apothecary: true,
     [CHAMBER.searched]: false,
     [BLOOD_OATH.halfMonarch]: false,
+    [CHAMBER.open]: true,
   },
+}
+
+/**
+ * ★ 침실 수색 자격 — 방문 게이트(queen_chamber_open)를 **뺀** 나머지를 본다.
+ *   왕대비궁 방문 resolver(systems/visit.ts)가 부재를 확인한 뒤 이걸로 어느 벌을 열지 고른다.
+ *   게이트 논리를 한 곳(여기)에 둔다 — 조건 정의와 어긋나지 않게.
+ */
+export function chamberSearchEligible(
+  game: GameState,
+): 'chamber-search' | 'chamber-search-hinted' | null {
+  const f = game.flags
+  if (game.age < searchBase.minAge) return null
+  if (!f.clue_apothecary) return null
+  if (f[CHAMBER.searched]) return null
+  if (f[BLOOD_OATH.halfMonarch]) return null
+  const cc = game.stats.courtcraft
+  if (cc >= COURTCRAFT_PLAIN) return 'chamber-search'
+  if (f[CHAMBER.hint] && cc >= COURTCRAFT_HINTED) return 'chamber-search-hinted'
+  return null
 }
 
 const searchChoices: Choice[] = [

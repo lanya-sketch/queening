@@ -1,5 +1,4 @@
 import type { Activity, ActivityTier, Effect, StatKey } from '../types/game'
-import { RISK_TUTOR } from '../systems/risk'
 
 /**
  * 활동 추가는 이 배열에 객체 하나 넣는 것으로 끝난다.
@@ -221,57 +220,10 @@ export const ACTIVITIES: Activity[] = [
     tags: ['rest', 'play'],
   },
 
-  // ── 궁 밖 (외출 시스템 뼈대) ────────────────────────────────
-  // ★ 두 축: 합법 시찰(안전·꾸민 얼굴) vs 불법 몰래(위험·맨얼굴). "겉을 볼까 속을 볼까".
-  //   보상은 심신·정보·서사이지 **스탯이 아니다** — 외출이 효율적 육성 수단이 되면 칸 경쟁이
-  //   무너진다(민심은 컷신 서술로, people_* flag 를 읽어 "지금 백성이 어떤지"를 보여준다).
-  {
-    id: 'patrol-town',
-    name: '거리를 시찰한다',
-    description:
-      '수행을 갖춰 저잣거리를 돈다. 어릴 땐 스승의 손을 잡고, 크면 왕의 이름으로. ' +
-      '길은 미리 쓸리고, 사람들은 왕을 알아본다 — 보이는 것은 잘 차려진 겉이다.',
-    apCost: 1,
-    // 합법이라 이르게 열린다(튜터 동행). 발각도 의심도 없다.
-    requires: { minAge: 11 },
-    effects: [
-      { target: { kind: 'resource', key: 'wellbeing' }, amount: 8, variance: 2 },
-    ],
-    setFlags: { outing_legal: true },
-    tags: ['outing', 'outing-legal'],
-  },
-  {
-    id: 'sneak-town',
-    name: '몰래 저잣거리로',
-    description:
-      '남루한 옷으로 갈아입고 스승과 함께 궁을 빠져나간다. 아무도 왕인 줄 모르는 곳에서 ' +
-      '사람들이 진짜 하는 말을 듣는다. 들키면 책임은 왕이 아니라 스승의 것이다.',
-    apCost: 1,
-    // 불법 잠행은 13세부터(인물·세계가 열리는 때).
-    requires: { minAge: 13 },
-    effects: [
-      { target: { kind: 'resource', key: 'wellbeing' }, amount: 10, variance: 2 },
-      // ★ 흔적 — 몰래 다닐 때마다 tutorRisk 가 조금씩 쌓인다("매번 둘러대도 흔적은 남는다").
-      { target: { kind: 'counter', key: RISK_TUTOR }, amount: 1 },
-    ],
-    setFlags: { went_out: true, outing_sneak: true },
-    tags: ['outing', 'outing-sneak'],
-  },
-  {
-    id: 'sneak-slum',
-    name: '몰래 빈민가로',
-    description:
-      '성 그늘의 뒷골목으로 든다. 격식으론 닿을 수 없는 곳 — 장부에 안 적히는 얼굴들이 ' +
-      '거기 있다. 보고 나면 잠이 얕아지지만, 아는 것과 모르는 것은 다르다.',
-    apCost: 1,
-    requires: { minAge: 13 },
-    effects: [
-      { target: { kind: 'resource', key: 'wellbeing' }, amount: 6, variance: 2 },
-      { target: { kind: 'counter', key: RISK_TUTOR }, amount: 1 },
-    ],
-    setFlags: { went_out: true, outing_sneak: true },
-    tags: ['outing', 'outing-sneak'],
-  },
+  // ── 궁 밖 (외출) ───────────────────────────────────────────
+  // ★ 외출(순찰/잠행)은 활동 카드에서 빠졌다 — AP 를 먹지 않는 「이번 달, 어디로」(궁 안 이동)에
+  //   통합됐다(2-b-1). 목적지 피커에서 궁 안 장소와 같은 층에 서고, 발각(outing-caught)·
+  //   went_out·__risk:tutor 체인은 systems/visit.ts 가 그대로 세운다.
 ]
 
 export const ACTIVITY_BY_ID: Record<string, Activity> = Object.fromEntries(

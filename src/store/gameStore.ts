@@ -12,6 +12,9 @@ import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/
 import { rng } from '../systems/rng'
 import { getSlotSummary, loadGame, saveGame } from '../systems/save'
 import { createInitialState, endTurn, hasReachedEnd } from '../systems/turn'
+import { canVisit, planVisit, SCENE_PLACE_VISIT } from '../systems/visit'
+import { SCENE_BY_ID } from '../data/scenes'
+import type { PlaceId } from '../data/places'
 
 /** 이벤트 큐를 다 비운 뒤 돌아갈 화면. 20세를 넘겼으면 스케줄 대신 종료 화면. */
 function idlePhase(game: GameState): Phase {
@@ -42,6 +45,11 @@ interface GameStore {
   addActivity: (activityId: string) => void
   removeActivityAt: (index: number) => void
   clearPlan: () => void
+  /**
+   * ★ 궁 안 이동(2-b-1) — AP 무소모·월 1회. 목적지 방문 계획을 세우고 그 장소 이벤트를
+   *   온디맨드로 발동한다(기존 EventScreen 재사용). 왕대비궁 부재+자격이면 chamber-search 로 분기.
+   */
+  visitDestination: (place: PlaceId) => void
   endTurn: () => void
   /** 결과 화면 → 이벤트 or 스케줄. */
   continueFromResult: () => void
@@ -147,6 +155,28 @@ export const useGame = create<GameStore>()((set, get) => ({
     )
     set({
       game: { ...game, actionPoints: game.actionPoints + refund, plannedActivityIds: [] },
+    })
+  },
+
+  // ★ 궁 안 이동 — 방문 계획(rng)을 세워 장소 이벤트를 그 자리에서 발동한다(AP 무소모).
+  visitDestination: (place) => {
+    const { game } = get()
+    if (!canVisit(game)) return
+    const plan = planVisit(place, game, rng)
+    const event = EVENT_BY_ID[plan.eventId]
+    if (!event) return
+    // 조립 씬(장소)이면 고정 슬롯에 얹는다. chamber-search 는 제 씬을 쓰므로 null.
+    if (plan.scene) SCENE_BY_ID[SCENE_PLACE_VISIT] = plan.scene
+    set({
+      game: {
+        ...game,
+        // 방문 flag + 이벤트 기본 setFlags(예: chamber-search 의 queen_chamber_searched)를 함께 적용.
+        flags: { ...game.flags, ...plan.setFlags, ...event.setFlags },
+        counters: { ...(game.counters ?? {}), ...plan.counters },
+        pendingEventIds: [plan.eventId],
+        phase: 'event',
+      },
+      lastChoiceOutcome: null,
     })
   },
 

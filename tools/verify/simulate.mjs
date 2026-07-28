@@ -142,6 +142,8 @@ const RUNS = [
     name: 'H. 혈서 확증 루트 (침실 수색 + 강탈 + 심판)',
     targets: { 궁정처세: 72, 통치학: 50, 변론: 60 },
     reclaim: true,
+    // ★ 2-b-1: 침실 수색은 이제 왕대비궁 방문·부재로만 열린다. 자격이 되면 방문한다(부재 강제).
+    visitQueen: true,
     choices: [
       [/왕대비의 초대/, /아버지 이야기/],
       [/달이 없는 밤/, /숨는다/],
@@ -363,6 +365,8 @@ async function runSimulation(browser, run) {
   let turns = 0
   let diedEarly = false
   let minInfluence = 100
+  let queenVisited = false // 왕대비궁은 한 번만 시도(수색 성립·불발 무관 — 무한 루프 방지)
+  let eventStuck = 0 // 제목 없는 이벤트 화면 연속 횟수(하네스 flake 안전장치)
 
   while (turns < 300) { // 108개월 + 이벤트·결과 화면(월 단위 전환으로 60→300)
     const phase = await phaseOf(page)
@@ -375,6 +379,25 @@ async function runSimulation(browser, run) {
       const infl = panel.stats['국정 영향도'] ?? 0
       minInfluence = Math.min(minInfluence, infl)
       if (turns % 8 === 0) influenceTrack.push(`${panel.age.replace('왕 ', '')}:${infl}`)
+
+      // ★ 2-b-1: 침실 수색은 왕대비궁 방문으로만 열린다. 혈서 빌드는 자격이 되면 방문(부재 강제,
+      //   rng 안 건드림 → 결정론 무손상). 방문이 phase 를 event 로 옮기면 다음 루프가 씬을 처리한다.
+      // ★ bloodoath 를 ablate 한 빌드에서는 방문하지 않는다 — 방문 경로(EVENT_BY_ID)가
+      //   splice(EVENTS)를 우회해 chamber-search 를 되살리면 "제거 빌드에 없음"(A2)이 깨진다.
+      const bloodoathAblated = (process.env.QUEENING_ABLATE ?? '').includes('bloodoath')
+      if (run.visitQueen && !queenVisited && !bloodoathAblated) {
+        const f = await page.evaluate(() => window.__queeningAi.state.flags)
+        const ageNum = parseInt((panel.age.match(/\d+/) ?? ['0'])[0], 10)
+        const eligible = ageNum >= 17 && f.clue_apothecary && !f.queen_chamber_searched && !f.queen_poison_path
+        if (eligible && (await page.locator('[data-goto-button]').isVisible().catch(() => false))) {
+          queenVisited = true
+          await page.evaluate(() => window.__queeningAi.forceQueenAbsent(true))
+          await page.locator('[data-goto-button]').click(); await page.waitForTimeout(60)
+          await page.locator('[data-destination="queen"]').click(); await page.waitForTimeout(100)
+          await page.evaluate(() => window.__queeningAi.forceQueenAbsent(null))
+          continue
+        }
+      }
 
       for (const name of planTurn(panel, run)) await clickCard(page, name)
       await page.getByRole('button', { name: /턴 종료/ }).click()
@@ -392,7 +415,20 @@ async function runSimulation(browser, run) {
     if (phase === 'event') {
       // 씬이 붙은 이벤트는 대사를 먼저 넘긴다
       await advanceScene(page)
-      const title = await page.locator('[data-event-title]').innerText()
+      // ★ 하네스 안정화(ablation-c1-flaky): advanceScene 가 씬을 끝내며 이벤트를 넘겼을 수 있고,
+      //   전환 중이면 제목이 아직 없다. 30초 크래시 대신 짧게 기다리고, 없으면 진행 버튼으로 빠져나간다.
+      if ((await phaseOf(page)) !== 'event') continue
+      const titleEl = page.locator('[data-event-title]')
+      const hasTitle = await titleEl.waitFor({ state: 'visible', timeout: 4000 }).then(() => true).catch(() => false)
+      if (!hasTitle) {
+        eventStuck++
+        const cont = page.getByRole('button', { name: /다음 달로|계속|무슨 일이|알겠어요/ }).first()
+        if (await cont.isVisible().catch(() => false)) { await cont.click().catch(() => {}); await page.waitForTimeout(60) }
+        if (eventStuck > 6) break // 빠져나갈 길이 없으면 이 빌드만 중단(전체 크래시 방지)
+        continue
+      }
+      eventStuck = 0
+      const title = await titleEl.innerText().catch(() => '')
       const panel = await readPanel(page)
       let picked = null
       const choices = choiceButtons(page)

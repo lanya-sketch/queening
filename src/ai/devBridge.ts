@@ -27,7 +27,8 @@ import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
 import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { resolveCharacterPortrait, resolveMonarchPortrait, validateManifest } from '../systems/outfits'
-import { setDeterministic, rng } from '../systems/rng'
+import { setDeterministic, setRng, rng } from '../systems/rng'
+import { planVisit, setForceQueenAbsent } from '../systems/visit'
 import {
   clearAllSlots, exportSlot, hasAnySave, importCode, listSlots, migrateLegacySave,
 } from '../systems/save'
@@ -169,6 +170,33 @@ export function installDevBridge(): void {
     forceEvent(eventId: string) {
       const game = useGame.getState().game
       useGame.setState({ game: { ...game, pendingEventIds: [eventId], phase: 'event' } })
+    },
+    /** ★ 궁 안 이동(2-b-1) — 목적지 방문을 코드로 발동한다(방문 계획·rng 그대로). */
+    visit(place: string) {
+      useGame.getState().visitDestination(place as never)
+      return useGame.getState().game.pendingEventIds[0] ?? null
+    },
+    /** ★ 왕대비궁 부재를 강제한다(결정론 무손상) — true 부재 / false 재실 / null 정상 롤. */
+    forceQueenAbsent(v: boolean | null) {
+      setForceQueenAbsent(v)
+    },
+    /**
+     * ★ 방문 계획만 미리 본다(상태 불변) — 인물 조우 가중치·pity 분포 실측용.
+     *   조립 씬에서 화자(인물)를 골라 "그날 누가 있나"를 돌려준다. rng 는 소모한다.
+     */
+    visitPeek(place: string) {
+      const plan = planVisit(place as never, useGame.getState().game, rng)
+      const CH = new Set(['heir', 'loyalist', 'prince', 'commander'])
+      const line = plan.scene?.lines.find((l) => CH.has(l.speaker))
+      return line ? line.speaker : null
+    },
+    /**
+     * ★ 난수원을 상수로 고정한다 — 부재/조우 롤을 검증에서 강제하기 위해.
+     *   0 이면 rng()<p 가 늘 참(왕대비궁 부재 강제), 0.99 면 늘 거짓(재실 강제).
+     *   null 이면 원상 복구(Math.random). 결정론(0.5)과 달리 경계값을 눌러 준다.
+     */
+    setRngConst(v: number | null) {
+      setRng(v == null ? null : () => v)
     },
     setIncidentTimer(on: boolean) {
       useIncidents.getState().setTimerEnabled(on)

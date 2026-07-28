@@ -1,12 +1,15 @@
+import { useState } from 'react'
 import { ACTIVITIES, ACTIVITY_BY_ID } from '../data/activities'
 import { MONTH_SCALE } from '../data/config'
 import { activityEffects, activityTierLabel } from '../systems/activityTier'
 import { difficultyStars, effectView } from '../systems/display'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { resolveText } from '../systems/text'
+import { canVisit } from '../systems/visit'
 import { useGame } from '../store/gameStore'
 import type { Activity, GameState } from '../types/game'
 import { EffectPill, LockedNote, Lozenge, Stars } from './ui/Chrome'
+import { DestinationScreen } from './DestinationScreen'
 
 /**
  * 일과 화면 (UI 리디자인 1단계).
@@ -30,7 +33,7 @@ const GROUPS: { label: string; hint: string; ids: string[] }[] = [
     hint: '권력의 소재를 건드린다',
     ids: ['attend-council', 'secret-correspondence', 'cede-affairs', 'direct-decree'],
   },
-  { label: '궁 밖', hint: '담을 넘는다 — 겉을 볼까, 속을 볼까', ids: ['patrol-town', 'sneak-town', 'sneak-slum'] },
+  // ★ '궁 밖'(순찰/잠행)은 활동 카드에서 빠졌다 — 「이번 달, 어디로」(AP-프리 궁 안 이동)에 통합(2-b-1).
   { label: '쉼', hint: '아무것도 하지 않는다', ids: ['rest', 'play'] },
 ]
 
@@ -167,6 +170,7 @@ export function ScheduleScreen() {
   const removeActivityAt = useGame((s) => s.removeActivityAt)
   const clearPlan = useGame((s) => s.clearPlan)
   const endTurn = useGame((s) => s.endTurn)
+  const [destOpen, setDestOpen] = useState(false)
 
   const planFlagged = game.plannedActivityIds.some((id) =>
     ACTIVITY_BY_ID[id]?.tags?.includes('independence'),
@@ -280,6 +284,29 @@ export function ScheduleScreen() {
         )}
       </section>
 
+      {/* ★ 「이번 달, 어디로」 — AP 를 쓰지 않는 궁 안 이동(2-b-1). 활동 12장과 분리된 층.
+             이번 달 아직 안 나갔을 때만 뜬다. */}
+      {canVisit(game) && (
+        <button
+          data-goto-button
+          onClick={() => setDestOpen(true)}
+          className="mb-6 flex w-full items-center gap-3 rounded-panel border px-4 py-3.5 text-left lg:shrink-0"
+          style={{
+            borderColor: 'rgba(212,176,106,.34)',
+            background: 'linear-gradient(180deg,rgba(212,176,106,.08),rgba(255,255,255,.015))',
+          }}
+        >
+          <span aria-hidden className="text-[18px] text-gold-300">◈</span>
+          <span className="flex-1">
+            <span className="block font-title text-[15px] font-bold text-gold-300">이번 달, 어디로</span>
+            <span className="block text-[12px] text-muted">
+              행동력 없이 한 곳을 다녀옵니다 — 서고·정원·연무장·왕대비궁, 또는 담 밖.
+            </span>
+          </span>
+          <span aria-hidden className="text-faint">→</span>
+        </button>
+      )}
+
       {/* 활동 — 카테고리 묶음. 폰은 가로 스크롤, PC는 그리드로 12장이 한눈에. */}
       {/* ★ 데스크톱은 이 영역만 세로로 스크롤한다 — 가로 스크롤은 폰 전용. */}
       <div className="kg-scroll kg-fade-y flex flex-col gap-7 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
@@ -345,6 +372,8 @@ export function ScheduleScreen() {
           </button>
         </div>
       </div>
+
+      {destOpen && <DestinationScreen onClose={() => setDestOpen(false)} />}
     </div>
   )
 }

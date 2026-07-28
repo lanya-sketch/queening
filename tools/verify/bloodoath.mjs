@@ -181,9 +181,12 @@ const BASE = {
   courtInfluence: 20, regentRapport: 30, regentSuspicion: 30, wellbeing: 80,
   counters: { '__cooldown:prince-arrival': 99 },
 }
+// ★ 2-b-1: chamber-search 는 이제 왕대비궁 방문·부재 게이트(queen_chamber_open)가 함께 걸린다.
+//   B 절은 그 게이트가 열린 상태(방문·부재 가정)에서 궁정처세/실마리 문턱이 유지되는지 본다 —
+//   방문 위에 얹히는 조건이 그대로임을 확인. (자동발동 차단 자체는 verify:places 가 본다.)
 const withFlags = (f, extra = {}) => ({
   ...BASE, ...extra,
-  flags: { ...SEEN_OTHERS, romance_unlocked: true, clue_apothecary: true, ...f },
+  flags: { ...SEEN_OTHERS, romance_unlocked: true, clue_apothecary: true, queen_chamber_open: true, ...f },
 })
 
 const c54 = await triggerable({ ...withFlags({}), stats: { courtcraft: 28, rhetoric: 40, statecraft: 40, finance: 20, martial: 20 } })

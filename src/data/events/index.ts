@@ -16,6 +16,7 @@ import { SURPRISE_EVENTS } from './surprises'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
 import { OUTING_EVENTS } from './outings'
+import { PLACE_EVENTS } from './places'
 import { RELATIONS16_EVENTS } from './relations16'
 import { ROMANCE_EVENTS } from './romance'
 import { TEEN_EVENTS } from './teen'
@@ -82,7 +83,10 @@ export const MINOR_EVENTS: GameEvent[] = MINOR_POOL.map((event) => ({
   priority: PRIORITY[event.id] ?? event.priority ?? 0,
 }))
 
-/** 화면이 렌더할 수 있도록 메인 + 소소 채널을 모두 담는다. */
+/**
+ * 화면이 렌더할 수 있도록 메인 + 소소 채널 + 장소 이벤트를 모두 담는다.
+ * ★ PLACE_EVENTS 는 EVENTS(자동발동)엔 없고 여기에만 있다 — 방문 resolver가 직접 enqueue 한다.
+ */
 export const EVENT_BY_ID: Record<string, GameEvent> = Object.fromEntries(
-  [...EVENTS, ...MINOR_EVENTS].map((e) => [e.id, e]),
+  [...EVENTS, ...MINOR_EVENTS, ...PLACE_EVENTS].map((e) => [e.id, e]),
 )

@@ -218,9 +218,23 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
     triggered.push(event)
   }
 
-  // 3-a-2. 외출 신호 소거 — `went_out` 은 **그 턴에만** 유효한 신호다(활동이 세우고, 이 턴의
-  //   발각 이벤트가 조건으로 읽은 뒤 여기서 끈다). 안 끄면 다음 턴에도 남아 발각이 오발한다.
-  if (next.flags.went_out) next.flags = { ...next.flags, went_out: false }
+  // 3-a-2. 외출·방문 신호 소거 — `went_out` 과 궁 안 이동(2-b-1) transient flag 들은
+  //   **그 턴에만** 유효하다. 이 턴의 발각(outing-caught)·수색(chamber-search)이 조건으로 읽은 뒤
+  //   여기서 끈다. 안 끄면 다음 턴에 남아 오발한다.
+  //   대상: went_out · visited_this_month · visited_<place> · queen_chamber_open.
+  //   (인물 조우 pity 인 `__seen:<id>` 는 counter 라 위 tickCounters 가 매 턴 감소시킨다 — 여기서 안 만짐.)
+  const clearedFlags = { ...next.flags }
+  let flagsDirty = false
+  for (const key of Object.keys(clearedFlags)) {
+    if (
+      clearedFlags[key] &&
+      (key === 'went_out' || key === 'queen_chamber_open' || key.startsWith('visited_'))
+    ) {
+      clearedFlags[key] = false
+      flagsDirty = true
+    }
+  }
+  if (flagsDirty) next.flags = clearedFlags
 
   // 3-b. 위험 누적 — 조기 데드엔딩 씨앗(심신 파탄 / 의심 무방비).
   //   숨은 카운터라 UI 에 없고, surprises.ts 의 경고·데드 이벤트가 조건으로 읽는다.
