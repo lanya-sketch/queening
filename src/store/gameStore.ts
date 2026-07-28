@@ -121,6 +121,7 @@ export const useGame = create<GameStore>()((set, get) => ({
     const { game } = get()
     const activity = ACTIVITY_BY_ID[activityId]
     if (!activity || game.phase !== 'schedule') return
+    if (game.flags.forced_rest) return // ★ [2] 병 — 앓아누운 달은 활동을 못 고른다.
     if (activity.apCost > game.actionPoints) return
     if (activity.requires && !matchesCondition(game, activity.requires)) return
     set({

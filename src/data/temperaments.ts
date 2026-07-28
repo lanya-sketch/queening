@@ -1,6 +1,16 @@
 import type { Gender, StatKey, Stats } from '../types/game'
 
 /**
+ * ★ [2] 활동 선호 카테고리 — 활동의 `pref` 태그와 맞춘다.
+ *   신뢰는 "이 아이가 원하는 걸 해줬는가"(선호 일치)로 오른다. 기질이 기본 성향을 정한다.
+ */
+export type PrefCategory =
+  | '통치학' | '변론' | '무예' | '재정' | '궁정처세' | '사냥' | '정무' | '휴식' | '놀이'
+
+/** 매달 wish 로테이션이 도는 수업 풀(균형은 편향이 없어 여기서 매달 다른 것을 원한다). */
+export const LESSON_CATEGORIES: PrefCategory[] = ['통치학', '변론', '무예', '재정', '궁정처세']
+
+/**
  * 시작 기질 (바이블 M2b-0 예약 항목) — "어떤 아이였는가".
  *
  * ★ 난이도 시스템이 아니라 **시작 빌드 프리셋**이다. 밸런스를 여러 벌 만들지 않는다.
@@ -33,6 +43,12 @@ export interface Temperament {
   down: StatKey[]
   /** 신뢰가 기본보다 높은가(여린). */
   trustUp?: boolean
+  /**
+   * ★ [2] 활동 선호 — 신뢰가 선호 일치로 오른다.
+   *   likes: 좋아하는 활동 카테고리 / dislikes: 싫어하는 것 /
+   *   overloadDislike: 특정 활동이 아니라 **무리한 일정(3활동)** 자체를 싫어함(여린).
+   */
+  preferences: { likes: PrefCategory[]; dislikes: PrefCategory[]; overloadDislike?: boolean }
 }
 
 /** 기본(균형) 시작값 — config.INITIAL_STATS 와 같아야 한다. 재분배의 기준. */
@@ -51,6 +67,8 @@ export const TEMPERAMENTS: Temperament[] = [
     tutorTrust: BASE_TRUST,
     up: [],
     down: [],
+    // 균형은 고정 편향이 없다 — wish 가 매달 전 수업에서 돈다(LESSON_CATEGORIES).
+    preferences: { likes: [], dislikes: [] },
   },
   {
     id: 'bright',
@@ -62,6 +80,7 @@ export const TEMPERAMENTS: Temperament[] = [
     tutorTrust: BASE_TRUST,
     up: ['statecraft', 'rhetoric'],
     down: ['martial', 'courtcraft'],
+    preferences: { likes: ['통치학', '변론'], dislikes: ['무예'] },
   },
   {
     id: 'robust',
@@ -73,6 +92,7 @@ export const TEMPERAMENTS: Temperament[] = [
     tutorTrust: BASE_TRUST,
     up: ['martial'],
     down: ['finance', 'courtcraft'],
+    preferences: { likes: ['무예', '사냥'], dislikes: ['통치학', '변론'] },
   },
   {
     id: 'cunning',
@@ -84,6 +104,8 @@ export const TEMPERAMENTS: Temperament[] = [
     tutorTrust: BASE_TRUST,
     up: ['courtcraft', 'finance'],
     down: ['statecraft'],
+    // 좋아하는 건 있되 딱히 싫어하는 게 없는 성격.
+    preferences: { likes: ['궁정처세', '정무'], dislikes: [] },
   },
   {
     id: 'tender',
@@ -96,6 +118,8 @@ export const TEMPERAMENTS: Temperament[] = [
     up: [],
     down: ['statecraft', 'rhetoric', 'courtcraft'],
     trustUp: true,
+    // ★ 특정 활동이 아니라 강도를 싫어한다 — 무리한 일정(3활동)이 비선호. 여린의 성격과 맞다.
+    preferences: { likes: ['휴식', '놀이'], dislikes: [], overloadDislike: true },
   },
 ]
 

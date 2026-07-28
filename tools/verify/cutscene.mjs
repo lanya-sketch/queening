@@ -28,7 +28,8 @@ const runTurn = (patch, plan) =>
     const q = window.__queeningAi
     q.setDeterministic(true)
     q.setMinorEnabled(false)
-    q.setGame({ phase: 'schedule', actionPoints: 3, date: { year: 3, month: 6 }, ...patch })
+    // ★ [2] 케이스 격리 — 앞 케이스가 남긴 forced_rest(병)·strain 카운터가 새지 않게 초기화.
+    q.setGame({ phase: 'schedule', actionPoints: 3, date: { year: 3, month: 6 }, ...patch, flags: { ...(patch.flags ?? {}) }, counters: {} })
     q.stepTurn(plan)
     const g = q.state
     return { report: g.lastTurnReport, stats: g.stats, wellbeing: g.wellbeing }
@@ -80,7 +81,8 @@ async function endTurnUI(speed, cutsceneOn, patch, plan) {
     q.setTextSpeed(speed)
     q.setCutsceneEnabled(cutsceneOn)
     q.setDeterministic(true); q.setMinorEnabled(false)
-    q.setGame({ phase: 'schedule', actionPoints: 3, date: { year: 3, month: 6 }, ...patch })
+    // ★ [2] 케이스 격리 — forced_rest·strain 이 앞 케이스에서 새지 않게 초기화.
+    q.setGame({ phase: 'schedule', actionPoints: 3, date: { year: 3, month: 6 }, ...patch, flags: { ...(patch.flags ?? {}) }, counters: {} })
   }, { speed, cutsceneOn, patch })
   await page.waitForTimeout(180)
   await page.evaluate((plan) => window.__queeningAi.stepTurn(plan), plan)

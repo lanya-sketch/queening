@@ -1,4 +1,5 @@
 import type { DiaryEntry } from '../types/game'
+import type { PrefRelation } from '../systems/parenting'
 import { ACTIVITY_BY_ID } from './activities'
 
 /**
@@ -20,6 +21,8 @@ export interface DiaryContext {
   temperamentId: string | null
   /** 민심 — people_relieved_ / people_burdened_ flag 의 균형. 외출 서술이 읽는다("장부가 아니라 얼굴"). */
   peopleMood: 'relieved' | 'burdened' | 'mixed'
+  /** ★ [2] 이 활동이 이 아이가 원하는 것이었는지(선호 일치). */
+  preferenceMatch?: PrefRelation
 }
 
 interface Line {
@@ -129,11 +132,19 @@ export function activityName(activityId: string): string {
 
 /** 그날의 한 줄. 대표 활동은 조건별 문구, 나머지는 이름+심신 톤 fallback. */
 export function diaryLine(activityId: string, c: DiaryContext): string {
+  const name = activityName(activityId)
+  // ★ [2] 감기·비선호는 그달 서술을 지배한다 — 부정 신호는 활동 고유 문구보다 앞선다.
+  //   (감기 <20 은 피로 <40 보다 낮은 별개 밴드 — 피로 문구를 덮지 않는다.)
+  if (c.wellbeing < 20) return `${name}. 감기 기운에 좀처럼 집중하지 못했다.`
+  if (c.preferenceMatch === 'dislike') return `${name}을 시켰다. 내내 내키지 않는 얼굴이었다.`
+  // ★ 긍정 선호(wish/like)는 활동 고유 문구(기질·등급)를 **덮지 않는다** — 그 문구가 이미
+  //   "잘 맞는다"를 전한다(영민+통치학·강건+검술). 고유 문구가 없을 때만 fallback 으로 뜬다.
   const lines = LINES[activityId]
   if (lines) {
     for (const l of lines) if (matches(l, c)) return l.text
   }
-  const name = activityName(activityId)
+  if (c.preferenceMatch === 'wish') return `${name} — 요즘 이 아이가 바라던 것이다. 유난히 열심이었다.`
+  if (c.preferenceMatch === 'like') return `오늘 ${name}에는 제법 열심이었다.`
   if (c.wellbeing < 40) return `${name}으로 하루를 보냈다. 지친 몸으로 겨우 해냈다.`
   if (c.luck === 'good') return `${name}으로 하루를 보냈다. 뜻밖에 잘 풀린 하루였다.`
   if (c.wellbeing >= 70) return `${name}으로 하루를 보냈다. 몸도 마음도 가벼웠다.`

@@ -58,6 +58,7 @@ export const ACTIVITIES: Activity[] = [
     tierStat: 'statecraft',
     tiers: lessonTiers('statecraft'),
     tags: ['study'],
+    pref: '통치학',
   },
   {
     id: 'lecture-finance',
@@ -68,6 +69,7 @@ export const ACTIVITIES: Activity[] = [
     tierStat: 'finance',
     tiers: lessonTiers('finance'),
     tags: ['study'],
+    pref: '재정',
   },
   {
     id: 'debate-practice',
@@ -76,8 +78,10 @@ export const ACTIVITIES: Activity[] = [
     apCost: 1,
     effects: [stat('rhetoric', 5, 2), res('wellbeing', -9), res('regentSuspicion', 1)],
     tierStat: 'rhetoric',
-    tiers: lessonTiers('rhetoric', res('tutorTrust', 1)),
+    // ★ [2] 고정 신뢰(+1/등급) 제거 — 신뢰는 이제 선호 일치로만 오른다(systems/parenting.ts).
+    tiers: lessonTiers('rhetoric'),
     tags: ['study'],
+    pref: '변론',
   },
   {
     id: 'sword-training',
@@ -89,6 +93,7 @@ export const ACTIVITIES: Activity[] = [
     // ★ 대비 쌍(#19): 몸을 쓰는 만큼 궁정의 결이 거칠어진다.
     tiers: lessonTiers('martial', stat('courtcraft', -1)),
     tags: ['physical'],
+    pref: '무예',
   },
   {
     id: 'attend-banquet',
@@ -103,6 +108,7 @@ export const ACTIVITIES: Activity[] = [
       ...t, effects: [...t.effects, res('regentRapport', -1)],
     })),
     tags: ['court'],
+    pref: '궁정처세',
   },
   {
     id: 'royal-hunt',
@@ -119,6 +125,7 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -18 },
     ],
     tags: ['physical', 'court'],
+    pref: '사냥',
   },
   {
     id: 'attend-council',
@@ -135,20 +142,22 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -5 },
     ],
     tags: ['court'],
+    pref: '정무',
   },
   {
     id: 'secret-correspondence',
     name: '밀서 작성',
     description: '섭정공을 거치지 않고 변경 영주들에게 직접 글을 보내게 한다. 위험하지만 필요한 일.',
     apCost: 2,
+    // ★ [2] 고정 신뢰(+5) 제거 — 신뢰는 이제 선호 일치로만 오른다(systems/parenting.ts).
     effects: [
       { target: { kind: 'stat', key: 'statecraft' }, amount: 4, variance: 2 },
       { target: { kind: 'stat', key: 'courtcraft' }, amount: 3, variance: 1 },
-      { target: { kind: 'resource', key: 'tutorTrust' }, amount: 5 },
       { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 8 },
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -6 },
     ],
     tags: ['independence'],
+    pref: '정무',
   },
   {
     id: 'cede-affairs',
@@ -163,6 +172,7 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'resource', key: 'wellbeing' }, amount: 6 },
     ],
     tags: ['court', 'cede'],
+    pref: '정무',
   },
   {
     id: 'direct-decree',
@@ -178,6 +188,7 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -8 },
     ],
     tags: ['independence', 'reclaim'],
+    pref: '정무',
   },
   {
     id: 'rest',
@@ -195,6 +206,7 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'resource', key: 'tutorTrust' }, amount: 1 },
     ],
     tags: ['rest'],
+    pref: '휴식',
   },
   {
     /**
@@ -218,6 +230,7 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -6 },
     ],
     tags: ['rest', 'play'],
+    pref: '놀이',
   },
 
   // ── 궁 밖 (외출) ───────────────────────────────────────────

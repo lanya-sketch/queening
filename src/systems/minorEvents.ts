@@ -114,7 +114,11 @@ export function scheduleMinor(state: GameState, rng: Rng): MinorResult {
 
   const pool = eligibleHandEvents(state)
   if (pool.length === 0) return { beat: null, counters }
-  const chosen = pool[Math.floor(rng() * pool.length)] ?? pool[0]
+  // ★ [2] 계절 beat(month 조건)이 있으면 그 달엔 그것을 우선한다 — 봄·하지·수확·성탄이
+  //   달마다 상시 소소에 묻히지 않고 제 계절에 실제로 뜨게(수확철 풍작/흉작 민심 경로 포함).
+  const seasonal = pool.filter((e) => e.condition.month != null)
+  const src = seasonal.length ? seasonal : pool
+  const chosen = src[Math.floor(rng() * src.length)] ?? src[0]
   counters[COOLDOWN_KEY(chosen.id)] = MINOR.poolCooldown
   return { beat: { event: chosen, isAi: false }, counters }
 }

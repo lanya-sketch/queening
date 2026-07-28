@@ -188,11 +188,23 @@ export const DAILY_EVENTS: GameEvent[] = [
     effects: [res('wellbeing', 0.5, 0.5), stat('courtcraft', 0.3, 0.2)],
   },
   {
+    // ★ [2] 풍작 — 수확철 민심 안도. AI 없이도 people_relieved_ 가 쌓이는 경로(수치 영향 0·서술만).
     id: 'daily-harvest-feast',
     title: '수확제',
     text: '성 앞 광장에 추수를 기리는 잔치가 섰다. 곳간이 차는 계절이라, 백성의 얼굴에도 웃음이 돌았다.',
     condition: { month: 9 }, once: false, category: 'story',
     effects: [res('wellbeing', 0.6, 0.3), stat('rhetoric', 0.3, 0.2)],
+    setFlags: { people_relieved_harvest: true },
+  },
+  {
+    // ★ [2] 흉작 — 수확이 시원찮은 해. people_burdened_ 를 쌓는다(수치 영향 0·서술만).
+    //   month 9 에서 수확제와 함께 후보가 되어, 해마다 둘 중 하나가 갈려 뜬다.
+    id: 'daily-harvest-poor',
+    title: '마른 수확',
+    text: '곳간이 예년만 못했다. 광장의 잔치는 조촐했고, 겨울을 걱정하는 낯빛이 오갔다.',
+    condition: { month: 9 }, once: false, category: 'story',
+    effects: [res('wellbeing', -0.4, 0.3)],
+    setFlags: { people_burdened_harvest: true },
   },
   {
     id: 'daily-winter-mass',

@@ -56,7 +56,8 @@
     "verify:poison": "node tools/verify/poison.mjs",
     "verify:playfeedback": "node tools/verify/playfeedback.mjs",
     "verify:journal": "node tools/verify/journal.mjs",
-    "verify:places": "node tools/verify/places.mjs"
+    "verify:places": "node tools/verify/places.mjs",
+    "verify:parenting": "node tools/verify/parenting.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

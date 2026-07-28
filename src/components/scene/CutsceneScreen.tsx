@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { activityName, diaryLine } from '../../data/activityDiary'
+import { ACTIVITY_BY_ID } from '../../data/activities'
 import { monthLabel } from '../../data/config'
 import { TEMPERAMENTS } from '../../data/temperaments'
 import { CUTSCENE_DWELL_MS, useOptions } from '../../store/optionsStore'
 import { useGame } from '../../store/gameStore'
+import { monthlyWish, prefRelation } from '../../systems/parenting'
 import { resolveMonarchPortrait } from '../../systems/outfits'
 import type { FlagSet } from '../../types/game'
 
@@ -35,31 +37,41 @@ export function CutsceneScreen({ onDone }: { onDone: () => void }) {
   const speed = useOptions((s) => s.textSpeed)
   const report = game.lastTurnReport
   const diary = report?.diary ?? []
+  // ★ [2] 병(강제 휴식) 회복 월 — 고른 활동이 없으니 "앓아누웠다" 한 장면을 그린다.
+  const bedrest = Boolean(report?.forcedRest) && diary.length === 0
+  const count = bedrest ? 1 : diary.length
   const [i, setI] = useState(0)
 
   // 자동 진행 — dwell 후 다음 장면. 끝을 넘으면 요약으로.
   useEffect(() => {
-    if (i >= diary.length) {
+    if (i >= count) {
       onDone()
       return
     }
     const dwell = CUTSCENE_DWELL_MS[speed] ?? 1600
     const t = setTimeout(() => setI((n) => n + 1), dwell)
     return () => clearTimeout(t)
-  }, [i, diary.length, speed, onDone])
+  }, [i, count, speed, onDone])
 
-  if (!report || i >= diary.length) return null
+  if (!report || i >= count) return null
   const entry = diary[i]
-  const tempId = currentTemperament(game.flags)
-  const line = diaryLine(entry.activityId, {
-    tier: entry.tier,
-    wellbeing: entry.wellbeing,
-    durability: report.startDurability,
-    age: report.startAge,
-    luck: entry.luck,
-    temperamentId: tempId,
-    peopleMood: peopleMoodOf(game.flags),
-  })
+  // ★ [2] 선호 일치는 그 활동을 시킨 시점(report.date)의 wish 로 판정한다(현재 date 가 아니라).
+  const playedGame = { ...game, date: report.date }
+  const wish = monthlyWish(playedGame)
+  const line = bedrest
+    ? '결국 몸이 버티지 못했다. 이 달은 내내 자리보전을 했다. 곁에서 이마의 열을 짚어 줄 뿐이었다.'
+    : diaryLine(entry.activityId, {
+        tier: entry.tier,
+        wellbeing: entry.wellbeing,
+        durability: report.startDurability,
+        age: report.startAge,
+        luck: entry.luck,
+        temperamentId: currentTemperament(game.flags),
+        peopleMood: peopleMoodOf(game.flags),
+        preferenceMatch: prefRelation(ACTIVITY_BY_ID[entry.activityId]?.pref, playedGame, wish),
+      })
+  const headerActivity = bedrest ? '앓아누운 달' : activityName(entry.activityId)
+  const dateDay = bedrest ? 1 : entry.day
   const portrait = manifest.portraits
     ? resolveMonarchPortrait(manifest.portraits, game.monarchGender, report.startAge, game.currentOutfitId).fullSrc
     : null
@@ -73,7 +85,7 @@ export function CutsceneScreen({ onDone }: { onDone: () => void }) {
     >
       {portrait && (
         <img
-          key={entry.activityId + i}
+          key={(bedrest ? 'bedrest' : entry.activityId) + i}
           src={portrait}
           alt=""
           draggable={false}
@@ -83,15 +95,15 @@ export function CutsceneScreen({ onDone }: { onDone: () => void }) {
       )}
       <div key={i} className="mt-6 max-w-md text-center" style={{ animation: 'cutscene-fade .5s ease-out' }}>
         <p data-cutscene-date className="font-title text-sm tracking-wide text-gold-300">
-          즉위 {report.date.year}년 {monthLabel(report.date.month)} {entry.day}일
+          즉위 {report.date.year}년 {monthLabel(report.date.month)} {dateDay}일
         </p>
         <p data-cutscene-activity className="mt-1 font-title text-lg font-bold text-parchment">
-          {activityName(entry.activityId)}
+          {headerActivity}
         </p>
         <p data-cutscene-line className="mt-3 text-[15px] leading-relaxed text-parchment/80">{line}</p>
       </div>
       <p className="mt-8 text-[11px] tabular-nums text-faint">
-        {i + 1} / {diary.length} · 눌러서 넘기기
+        {i + 1} / {count} · 눌러서 넘기기
       </p>
       <style>{`@keyframes cutscene-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}`}</style>
     </div>

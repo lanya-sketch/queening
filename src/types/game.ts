@@ -230,6 +230,8 @@ export interface Activity {
   /** 미해금 활동을 붙일 자리. M1 데이터에는 아직 없다. */
   requires?: Condition
   tags?: string[]
+  /** ★ [2] 활동 선호 카테고리(PrefCategory 문자열). 기질 선호와 맞춰 신뢰가 오른다. */
+  pref?: string
 }
 
 /**
@@ -453,6 +455,8 @@ export interface TurnReport {
    *   선택지·씬이 있는 큰 이벤트는 여기 들어오지 않고 pendingEventIds 로 별도 화면에 뜬다.
    */
   inlineEventIds: string[]
+  /** ★ [2] 이 달이 병(강제 휴식) 회복 월이었는가 — 컷신이 "앓아누웠다"를 그린다. */
+  forcedRest?: boolean
 }
 
 export interface Delta {

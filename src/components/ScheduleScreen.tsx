@@ -6,6 +6,7 @@ import { difficultyStars, effectView } from '../systems/display'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
 import { resolveText } from '../systems/text'
 import { canVisit } from '../systems/visit'
+import { wishHint } from '../systems/parenting'
 import { useGame } from '../store/gameStore'
 import type { Activity, GameState } from '../types/game'
 import { EffectPill, LockedNote, Lozenge, Stars } from './ui/Chrome'
@@ -43,7 +44,7 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
 
   const unlocked = !activity.requires || matchesCondition(game, activity.requires)
   const affordable = activity.apCost <= game.actionPoints
-  const usable = unlocked && affordable
+  const usable = unlocked && affordable && !game.flags.forced_rest // ★ [2] 앓아누우면 못 고름
   const selected = planned.includes(activity.id)
   const tier = activityTierLabel(activity, game)
   const flagged = activity.tags?.includes('independence')
@@ -205,6 +206,13 @@ export function ScheduleScreen() {
         <p className="mt-3 text-[13.5px] text-muted">
           행동력만큼 활동을 고르고 이번 달을 넘기세요.
         </p>
+        {/* ★ [2] 아이를 살피는 결 — 이번 달 아이가 원하는 것을 수치 없이 한 줄로. */}
+        {!game.flags.forced_rest && (
+          <p data-wish-hint className="mt-2.5 flex items-center gap-2 text-[13px] italic text-gold-300/70">
+            <span aria-hidden className="not-italic text-gold-400">◦</span>
+            {wishHint(game)}
+          </p>
+        )}
       </header>
 
       {/* 이번 달의 계획 */}
@@ -284,9 +292,23 @@ export function ScheduleScreen() {
         )}
       </section>
 
+      {/* ★ [2] 병 — 앓아누운 달. 활동을 못 고르고 이번 달을 넘기면 몸을 추스른다. */}
+      {game.flags.forced_rest && (
+        <div
+          data-forced-rest
+          className="mb-6 rounded-panel border border-peril/40 bg-peril/10 p-4 lg:shrink-0"
+        >
+          <p className="font-title text-[15px] font-bold text-peril-soft">앓아누웠다</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-peril-soft/85">
+            결국 몸이 버티지 못했다. 이번 달은 아무것도 시키지 못하고, 곁에서 지켜볼 뿐이다.
+            달을 넘기면 조금 나아질 것이다.
+          </p>
+        </div>
+      )}
+
       {/* ★ 「이번 달, 어디로」 — AP 를 쓰지 않는 궁 안 이동(2-b-1). 활동 12장과 분리된 층.
-             이번 달 아직 안 나갔을 때만 뜬다. */}
-      {canVisit(game) && (
+             이번 달 아직 안 나갔을 때만 뜬다(앓아누우면 못 나간다). */}
+      {!game.flags.forced_rest && canVisit(game) && (
         <button
           data-goto-button
           onClick={() => setDestOpen(true)}

@@ -54,7 +54,7 @@ const BUILDS = [
   },
   {
     key: 'PUSH',
-    name: '무리형 — 놀이 없이 매달 수업 2 + 휴식 1 (심신 수지 확인용)',
+    name: '무리형 — 매달 수업 2 + 휴식 1 (의심 파국선만 놀이; 심신 수지·[2] 상태 손해 확인용)',
     pick: (s) => [...ALL_STATS].sort((a, b) => (s[a] ?? 0) - (s[b] ?? 0))[0],
     noPlay: true,
     forceTwoLessons: true,
@@ -83,7 +83,12 @@ function planTurn(panel, build, tally) {
 
   if (build.forceTwoLessons) {
     // 무리형: 수지를 무시하고 매달 수업 2 + 휴식 1 을 고집한다.
-    for (let i = 0; i < 2; i++) {
+    // ★ [2] 단, 의심이 파국 직전(≥88)이면 한 칸을 놀이로 돌려 목이 달아나지 않게 한다.
+    //   심신 부담(감기·병)은 [2] 페널티로 커졌지만, 그 대가가 **의심무방비 데드로 새면 안 된다** —
+    //   현실적 무리형은 위험한 의심만은 관리한다(완전 자멸이 아니라 성장 손해로 벌받는다).
+    const critical = suspicion >= 88
+    if (critical) push('놀이', 'play')
+    for (let i = 0; i < (critical ? 1 : 2); i++) {
       const stat = build.pick(s)
       push(LESSON[stat], 'lesson')
       s[stat] = (s[stat] ?? 0) + 6 // 같은 턴 중복 방지용 근사

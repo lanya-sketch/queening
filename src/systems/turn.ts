@@ -3,6 +3,10 @@ import { DURABILITY, GAME_CONFIG, INITIAL_RESOURCES, INITIAL_STATS, MONTH_SCALE 
 import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import { durabilityGain, growthFactor, wellbeingCostFactor } from './durability'
+import {
+  COLD_LEARN, COLD_WELLBEING, ILL_RECOVER, ILL_STRAIN, ILL_WELLBEING, preferenceTrust,
+} from './parenting'
+import { RISK_STRAIN, updateRisk } from './risk'
 import { initialAffection, initialCharacterGenders } from './romance'
 import type { Delta, DiaryEntry, Effect, GameDate, GameEvent, GameState } from '../types/game'
 
@@ -22,7 +26,6 @@ import { rollChance, tickCounters } from './chance'
 import { findTriggeredEvents, seenFlagId } from './eventEngine'
 import { activityEffects, activityTierLabel } from './activityTier'
 import { scheduleMinor } from './minorEvents'
-import { updateRisk } from './risk'
 import { deadEndReason } from './deadend'
 
 export function createInitialState(): GameState {
@@ -69,13 +72,14 @@ export function hasReachedEnd(state: GameState): boolean {
  *     스탯 증가(+) → growthFactor(높으면 상)
  *     심신 소모(−) → wellbeingCostFactor(낮으면 벌)
  */
-function scaleByDurability(effects: Effect[], durability: number): Effect[] {
+function scaleByDurability(effects: Effect[], durability: number, cold = false): Effect[] {
   const grow = growthFactor(durability)
   const cost = wellbeingCostFactor(durability)
   return effects.map((e) => {
     let factor = 1
     if (e.target.kind === 'stat') {
-      factor = MONTH_SCALE * (e.amount > 0 ? grow : 1)
+      // ★ [2] 감기(wellbeing<20)면 성장 효율 ×COLD_LEARN — "감기 기운에 집중하지 못했다"가 실제로 작동.
+      factor = MONTH_SCALE * (e.amount > 0 ? grow * (cold ? COLD_LEARN : 1) : 1)
     } else if (e.target.kind === 'resource' && e.target.key === 'wellbeing' && e.amount < 0) {
       factor = cost
     }
@@ -140,9 +144,16 @@ function mergeDeltas(into: Delta[], from: Delta[]): void {
  * 활동 효과 → 날짜/나이 진행 → 이벤트 조건 검사 및 적용 → 결과 리포트.
  */
 export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
-  const activities = state.plannedActivityIds
-    .map((id) => ACTIVITY_BY_ID[id])
-    .filter((a): a is NonNullable<typeof a> => Boolean(a))
+  // ★ [2] 병(강제 휴식) 회복 월 — forced_rest 면 활동 대신 몸을 추스른다(활동 잠금은 UI 에서).
+  const forcedRest = state.flags.forced_rest === true
+  const activities = forcedRest
+    ? []
+    : state.plannedActivityIds
+        .map((id) => ACTIVITY_BY_ID[id])
+        .filter((a): a is NonNullable<typeof a> => Boolean(a))
+
+  // ★ [2] 감기 — 턴 시작 심신이 낮으면(<20) 이번 달 성장 효율이 준다(scaleByDurability 에 전달).
+  const cold = (state.wellbeing ?? 100) < COLD_WELLBEING
 
   // 1. 활동 효과 — ★ 내구도 계수는 **활동에만** 적용한다(서사/이벤트 효과는 그대로).
   //   낮은 내구도 → 심신 소모 증가, 높은 내구도 → 성장 증가.
@@ -154,7 +165,7 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   //    diary 는 표현 근거(날짜·등급·심신·롤 운)만 나른다 — activityDeltas 가 밸런스를 그대로 쥔다.
   const prepared = activities.map((a) => ({
     activity: a,
-    scaled: scaleByDurability(activityEffects(a, state), state.durability),
+    scaled: scaleByDurability(activityEffects(a, state), state.durability, cold),
     tier: activityTierLabel(a, state),
   }))
   let next = state
@@ -175,6 +186,23 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   })
   for (const activity of activities) {
     if (activity.setFlags) next.flags = { ...next.flags, ...activity.setFlags }
+  }
+
+  // ★ [2] 병 회복 / 선호 신뢰.
+  if (forcedRest) {
+    // 강제 휴식 한 달 — 몸을 추스르고 flag 를 끈다(1달 제한). 성장은 없다(앓아누웠다).
+    const rec = applyEffects(next, [{ target: { kind: 'resource', key: 'wellbeing' }, amount: ILL_RECOVER }], rng)
+    next = rec.state
+    mergeDeltas(activityDeltas, rec.deltas)
+    next.flags = { ...next.flags, forced_rest: false }
+  } else {
+    // ★ 신뢰는 이제 "이 아이가 원하는 걸 해줬는가"(선호 일치)로만 오르내린다.
+    const trustDelta = preferenceTrust(state.plannedActivityIds, state)
+    if (trustDelta !== 0) {
+      const r = applyEffects(next, [{ target: { kind: 'resource', key: 'tutorTrust' }, amount: trustDelta }], rng)
+      next = r.state
+      mergeDeltas(activityDeltas, r.deltas)
+    }
   }
 
   // 2. 날짜 / 나이
@@ -240,6 +268,17 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   //   숨은 카운터라 UI 에 없고, surprises.ts 의 경고·데드 이벤트가 조건으로 읽는다.
   next.counters = { ...next.counters, ...updateRisk(next) }
 
+  // ★ [2] 병(강제 휴식) 판정 — 심신이 바닥(<8)이거나 파탄(strain)이 임박(≥8)하면 다음 달은 강제 휴식.
+  //   ★ 병이 파탄의 차단기다: strain 이 12(파탄)에 닿기 전에 앓아눕혀 회복·리셋시킨다. 그래서
+  //     신뢰가 낮아 파탄을 회피 못 하는 플레이(선호 무시+무리)도 데드로 강제되지 않는다.
+  //   회복 월(forcedRest)엔 방금 추슬렀으니 재검사하지 않는다 → 강제 휴식은 1달로 제한.
+  if (!forcedRest) {
+    const strain = next.counters?.[RISK_STRAIN] ?? 0
+    if ((next.wellbeing ?? 100) < ILL_WELLBEING || strain >= ILL_STRAIN) {
+      next.flags = { ...next.flags, forced_rest: true }
+    }
+  }
+
   // 3-c. 소소-비트 — **빈 달만** 채운다. 큰 이벤트가 뜬 달엔 굴리지 않고,
   //   굴려도 턴 상한과 별개라 서사를 굶기지 않는다. 데드엔딩이 섰으면 굴리지 않는다.
   if (next.age <= GAME_CONFIG.endAge && deadEndReason(next) === null) {
@@ -255,6 +294,8 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
           next = applied2.state
           mergeDeltas(eventDeltas, applied2.deltas)
         }
+        // ★ [2] 손 풀 소소도 setFlags 를 적용한다 — 수확철 풍작/흉작이 people flag 를 세운다(AI 없이).
+        if (!minor.beat.isAi && ev.setFlags) next.flags = { ...next.flags, ...ev.setFlags }
         triggered.push(ev)
       }
     }
@@ -288,6 +329,7 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
     // 인라인 것까지 포함해 "이번 달에 일어난 일" 전체를 결과 화면이 안다.
     triggeredEventIds: triggered.map((e) => e.id),
     inlineEventIds: inline.map((e) => e.id),
+    forcedRest, // ★ [2] 병 회복 월이면 컷신이 "앓아누웠다"를 그린다.
   }
 
   return next
