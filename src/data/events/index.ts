@@ -14,6 +14,7 @@ import { INCIDENT_EVENTS } from './incidents'
 import { DAILY_EVENTS } from './daily'
 import { SURPRISE_EVENTS } from './surprises'
 import { BANQUET_EVENTS } from './banquet'
+import { TREASON_EVENTS } from './treason'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
 import { OUTING_EVENTS } from './outings'
@@ -55,6 +56,7 @@ const RAW_EVENTS: GameEvent[] = [
   ...SURPRISE_EVENTS,
   ...OUTING_EVENTS,
   ...BANQUET_EVENTS,
+  ...TREASON_EVENTS,
 ]
 
 /** 스케줄러가 굴리는 소소 채널(메인 루프 밖). 렌더 등록용으로만 모은다. */

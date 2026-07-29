@@ -9,7 +9,7 @@ import type { GameState } from '../types/game'
  *   확장(장소당 더 많은 조각·회전 정교화)은 2-b-2.
  */
 
-export type PlaceId = 'library' | 'garden' | 'yard' | 'queen' | 'patrol' | 'sneak'
+export type PlaceId = 'library' | 'garden' | 'yard' | 'queen' | 'office' | 'patrol' | 'sneak'
 
 /** 조우 가능한 인물 — 5인 중 궁에 상주/왕래하는 넷. ④ 영웅은 제 서사로만 등장. */
 export type PresenceCharId = 'heir' | 'loyalist' | 'prince' | 'commander'
@@ -22,7 +22,7 @@ export interface PlaceDef {
   hint: string
   /** 이 장소가 발동하는 PLACE_EVENT id(왕대비궁 수색만 예외로 chamber-search). */
   eventId: string
-  kind: 'place' | 'queen' | 'outing-legal' | 'outing-sneak'
+  kind: 'place' | 'queen' | 'office' | 'outing-legal' | 'outing-sneak'
   /** 씬 첫 줄(장소 서술). */
   location: string
   /** 인물 조우 가중치(charId → weight). ③은 prince_present 일 때만 counted. */
@@ -110,6 +110,21 @@ export const PLACES: PlaceDef[] = [
     ],
   },
   {
+    // ★ [4] 섭정공 집무실 — 왕대비궁 패턴. 있을 땐 정무 이야기, 없을 땐(연판장 존재를 알면 부재↑) 수색.
+    id: 'office',
+    label: '섭정공 집무실',
+    hint: '정무가 처리되는 곳',
+    eventId: 'visit-office', // 재실(정무)·부재(???/미달). 수색은 office-search 로 분기.
+    kind: 'office',
+    minAge: 16,
+    location:
+      '섭정공의 집무실은 늘 서류로 차 있었다. 이 방에서 나라의 절반이 결정되고, 나머지 절반이 감춰졌다.',
+    lorePool: [
+      '문갑 하나가 다른 것들과 달리 자물쇠가 새것이었다. 최근에야 무언가를 넣기 시작한 서랍이었다.',
+      '벽에 걸린 영지 지도에 몇몇 가문의 문장이 붉은 실로 이어져 있었다. 무엇을 잇는 선인지는 적혀 있지 않았다.',
+    ],
+  },
+  {
     id: 'patrol',
     label: '순찰 (담 안팎)',
     hint: '겉을 본다 — 떳떳하게',
@@ -160,6 +175,25 @@ export const QUEEN = {
   lockedGate:
     '왕대비는 자리에 없었다. 서랍은 저기 있는데, 지금 손을 대면 들킬 위험이 너무 크다.\n' +
     '더 능숙해지고 나서라야 한다 — 왕대비궁에서 들키는 것은 되돌릴 수 없다.',
+} as const
+
+/**
+ * ★ [4] 섭정공 집무실 부재 시 서술 — "연판장 존재를 앎"(반란 경고·자객·적대) 전/후로 갈린다.
+ *   재실이면 정무 이야기, 부재+자격이면 수색(office-search)으로 분기.
+ */
+export const OFFICE = {
+  /** 재실 — 정무를 보는 섭정공. 상시 방문의 결(위화감·정보). */
+  audience:
+    '섭정공은 서류 더미에 파묻혀 있었다. {왕}을 보고 붓을 내려놓았다.\n' +
+    '"전하께서 여기까지 오실 일은 아닙니다." 정중했으나, 문갑 하나로 향하던 눈길은 정중하지 않았다.',
+  /** 부재 + 연판장 존재를 모름 — 「???」. 암시만. */
+  lockedBeforeClue:
+    '섭정공은 자리를 비우고 있었다. 문갑 하나에 새 자물쇠가 걸려 있었다.\n' +
+    '무언가 있다는 것은 알겠는데 — 아직, 저것을 뒤질 엄두가 나지 않았다.',
+  /** 부재 + 연판장 존재를 앎 + 자격 미달 — 잠김 + 힌트(수치 없음). */
+  lockedGate:
+    '섭정공은 자리에 없었다. 잠긴 문갑은 저기 있는데, 지금 손을 대면 들킬 위험이 너무 크다.\n' +
+    '더 능숙해지고 나서라야 한다 — 섭정공의 방에서 들키는 것은 되돌릴 수 없다.',
 } as const
 
 /** ③ 왕족은 궁에 머무는 동안(prince_present)만 조우 후보에 든다. */

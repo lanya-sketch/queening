@@ -66,6 +66,12 @@ export const PRIORITY: Record<string, number> = {
   // 엔딩 직전의 갈림길. 마일스톤 대역의 아래쪽 —
   // 진실 회수(90+)보다는 반드시 뒤에 와야 한다(증거를 얻은 뒤에 처분한다).
   'regent-disposal': 72,
+  // ★ [4] 모후 처분 — 섭정공 처분 바로 아래(어머니 축은 별개지만 같은 엔드게임 대역).
+  'queen-disposal': 71,
+  // ★ [4] 연판장 이름들 처리 — 처분과 이어지는 자리(섭정공 처분 아래). 공표/대숙청/분리/덮어둠.
+  'treason-names': 70,
+  // ★ [4] 자객의 입 — 암살 회피 뒤 연판장 획득 소문. 청산 후일담 위(정치 상단), 처분 아래.
+  'assassin-confession': 49.5,
 
   // ── 60–69 캐릭터: 결정적 씬(홀수) + 고유장치·등장(짝수)
   // ★ 결정적 씬은 로맨스 확정의 정점이라, 같은 계절에 고유장치와 겹치면
@@ -117,6 +123,8 @@ export const PRIORITY: Record<string, number> = {
   // (blood-oath-complete 는 처분보다 먼저 와야 해서 마일스톤 대역 73 으로 올렸다 — 위 참조.)
   // 탈출 성공 둘이 먼저 검사되고, 아무것도 안 걸리면 chamber-caught 가 받는다.
   // 이 세 줄의 순서가 곧 발각 판정이므로 값을 붙여 둔다.
+  // ★ [4] 섭정공 집무실 수색(연판장) — 방문이 enqueue(강제)라 우선순위 경쟁은 없으나 유일값으로.
+  'office-search': 58.5,
   'chamber-escape-hide': 58,
   'chamber-escape-talk': 57,
   'chamber-caught': 56,

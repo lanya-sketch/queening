@@ -32,16 +32,18 @@ export const DISPOSAL_EVENTS: GameEvent[] = [
     },
     choices: [
       {
-        // 명분 있는 심판 — 확증(혈서)이 있어야만 열린다.
+        // ★ [4] 명분 있는 심판 — 혈서(과거 죄)·연판장(현재 반역)·반란 진압(현행범) 중 하나면 열린다.
+        //   (purge_justified 는 turn.ts 가 매 턴 굳힌다. 구체적 명분은 엔딩 삽입이 갈라 읽는다.)
         id: 'just',
         label: '명분을 들어 심판한다',
-        requires: { flags: { blood_oath_complete: true } },
+        requires: { flags: { purge_justified: true } },
         setFlags: { regent_disposed: true, just_purge: true },
         effects: [{ target: { kind: 'resource', key: 'courtInfluence' }, amount: 5 }],
         hint: '증거가 있으니 궁정이 따를 것이다',
         resultText:
-          '{왕}은 어전에 반쪽씩 찢겼던 종이를 나란히 놓았다. 붉은 글씨가 문장이 되어 있었다.\n' +
-          '섭정공은 변명하지 않았다. 변명할 수 없는 종류의 물건이었기 때문이다.\n' +
+          '{왕}은 어전에 증거를 내놓았다. 문서든, 물증이든, 지난밤의 반란이든 — 무엇이든 ' +
+          '말이 아니라 사실이었다.\n' +
+          '섭정공은 변명하지 않았다. 변명할 수 없는 종류의 것이었기 때문이다.\n' +
           '그날 어전에 있던 누구도 이것을 찬탈이라 부르지 못했다.',
       },
       {

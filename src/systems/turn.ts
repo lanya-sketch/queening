@@ -257,7 +257,10 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   for (const key of Object.keys(clearedFlags)) {
     if (
       clearedFlags[key] &&
-      (key === 'went_out' || key === 'queen_chamber_open' || key.startsWith('visited_'))
+      (key === 'went_out' ||
+        key === 'queen_chamber_open' ||
+        key === 'office_search_open' || // ★ [4] 집무실 수색 게이트도 그 턴에만
+        key.startsWith('visited_'))
     ) {
       clearedFlags[key] = false
       flagsDirty = true
@@ -286,12 +289,14 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
 
   // ★ [3] 파생 flag — 조건(matchesCondition)이 못 세는 것들을 매 턴 flag 로 굳힌다.
   //   people_favor: 민심이 왕 편(안도 ≥ MIN). tide_turned: 담판 판세가 기욺(넷 중 둘).
+  const favor = reliefCount(next) >= PEOPLE_FAVOR_MIN
+  const strongStanding = (next.courtStanding ?? 0) >= STANDING_STRONG
   next.flags = {
     ...next.flags,
-    people_favor: reliefCount(next) >= PEOPLE_FAVOR_MIN,
+    people_favor: favor,
     tide_turned: tideHasTurned(next),
     // court_backing: 조정이 왕 편(권세 강함) — 반란 위기의 '조정으로 진압' 선택이 조건으로 읽는다.
-    court_backing: (next.courtStanding ?? 0) >= STANDING_STRONG,
+    court_backing: strongStanding,
     // ★ [3] 섭정 적대 래치 — 친정 후 반란 모의(의심)가 문턱을 넘은 적 있으면 결렬(밀려난 섭정공이 적대).
     //   끝까지 낮게 관리하면 중립. 한 번 켜지면 유지(래치). 비-bloodoath 라 ablation-robust(B1 근본해결).
     regent_hostile:
@@ -299,6 +304,14 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
       (isPostAutonomy(next) &&
         (next.regentSuspicion ?? 0) >= RISK.regentHostileLatch &&
         next.flags.regent_retired !== true),
+    // ★ [4] 처분 명분 — 혈서(과거 죄)·연판장(현재 반역)·반란 진압(현행범) 중 하나면 선제 처분이 정당하다.
+    //   증거가 '판단'을 '증명'으로 바꾼다. 아무것도 없이 치면 폭군.
+    purge_justified:
+      next.flags.blood_oath_complete === true ||
+      next.flags.collective_treason === true ||
+      next.flags.rebellion_crushed === true,
+    // ★ [4] 공표가 먹히는 판 — 밖(민심)이든 안(권세)이든 왕을 받치면 사람들이 왕의 말을 믿는다.
+    king_trusted: favor || strongStanding,
   }
 
   // 3-c. 소소-비트 — **빈 달만** 채운다. 큰 이벤트가 뜬 달엔 굴리지 않고,

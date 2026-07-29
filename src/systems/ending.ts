@@ -217,6 +217,12 @@ export function judgeEnding(state: GameState): EndingResult {
     'rebellion_crushed',
     // ★ [3] 섭정공 명예 퇴장 — 담판으로 피 없이 정리한 흔적("협상으로 마무리한 왕").
     'regent_retired',
+    // ★ [4] 연판장 확보 — 삽입이 정당 명분을 갈라 읽게(요약 라벨은 없어 화면엔 안 뜬다).
+    'collective_treason',
+    // ★ [4] 연판장 이름들 처리 — 대숙청 / 분리 / 공표(피 없이 무력화) / 덮어둠.
+    'nobles_purged_all', 'nobles_purged_leader', 'treason_denounced', 'treason_concealed',
+    // ★ [4] 모후 처분 — 처형 / 폐탑 유폐 / 방치.
+    'queen_executed', 'queen_confined', 'queen_left',
     // 숙청/관용/측실 결과 — 엔딩 @purge 삽입이 개별로 읽는다.
     'heir_executed', 'heir_spared', 'heir_concubine',
     'loyalist_scapegoat', 'loyalist_spared', 'loyalist_concubine',
@@ -261,6 +267,17 @@ export function judgeEnding(state: GameState): EndingResult {
   if (flag(state, 'prince_conquered')) {
     modifiers.push(romance.charId === 'prince' ? '사랑을 삼킴' : '무감정 정복')
   }
+
+  // ★ [4] 모후 처분 — 여론이 처형의 무게를 가른다(선택은 막지 않되 대가를 지운다).
+  if (flag(state, 'queen_executed')) {
+    modifiers.push('어머니를 벤 손')
+    if (!flag(state, 'people_favor')) modifiers.push('민심을 잃은 처형')
+  }
+  if (flag(state, 'queen_confined')) modifiers.push('폐탑의 어머니')
+
+  // ★ [4] 연판장 이름들 처리 — 대숙청(범위) / 공표(피 없이 판을 뒤집음).
+  if (flag(state, 'nobles_purged_all')) modifiers.push('대숙청')
+  if (flag(state, 'treason_denounced')) modifiers.push('피 없이 판을 뒤집음')
 
   return {
     tier,

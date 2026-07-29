@@ -33,6 +33,13 @@ const NATION_LABEL: Record<string, string> = {
   church_support: '교단의 지지',
   rebellion_crushed: '반란을 진압',
   regent_retired: '섭정공 명예 퇴장',
+  nobles_purged_all: '귀족 대숙청',
+  nobles_purged_leader: '주모자만 처분',
+  treason_denounced: '암살 모의 공표',
+  treason_concealed: '연판장을 덮음',
+  queen_executed: '모후 처형',
+  queen_confined: '모후 폐탑 유폐',
+  queen_left: '모후 방치',
 }
 
 export interface SummaryRow {

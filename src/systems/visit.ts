@@ -1,9 +1,10 @@
 import type { GameState, Scene, SceneLine } from '../types/game'
 import {
-  MEET_LINE, PLACE_BY_ID, QUEEN, princeAvailable,
+  MEET_LINE, OFFICE, PLACE_BY_ID, QUEEN, princeAvailable,
   type PlaceId, type PresenceCharId,
 } from '../data/places'
 import { chamberSearchEligible, CHAMBER } from '../data/events/bloodoath'
+import { knowsTreason, officeSearchEligible, OFFICE_SEARCH_OPEN } from '../data/events/treason'
 import { RISK_TUTOR } from './risk'
 import type { Rng } from './effects'
 
@@ -88,6 +89,13 @@ function rollQueenAbsent(game: GameState, rng: Rng): boolean {
   return rng() < p
 }
 
+/** ★ [4] 섭정공 집무실 부재 롤 — 연판장 존재를 알면 50% / 모르면 15%. (검증 override 는 forceAbsent 공유) */
+function rollOfficeAbsent(game: GameState, rng: Rng): boolean {
+  if (forceAbsent !== null) return forceAbsent
+  const p = knowsTreason(game) ? 0.5 : 0.15
+  return rng() < p
+}
+
 /** 로테이션용 한 조각 — flag-free(clue_* 안 세움). 소소 반복은 허용. */
 function pickLore(place: PlaceId, rng: Rng): string {
   const pool = PLACE_BY_ID[place].lorePool
@@ -133,6 +141,28 @@ function planQueen(game: GameState, rng: Rng, base: VisitPlan): VisitPlan {
   return { ...base, scene: { id: SCENE_PLACE_VISIT, lines: [N(loc), N(QUEEN.lockedGate)] } }
 }
 
+/** ★ [4] 섭정공 집무실 — 재실(정무)·부재(???/미달/수색)로 분기. 왕대비궁 planQueen 미러. */
+function planOffice(game: GameState, rng: Rng, base: VisitPlan): VisitPlan {
+  const absent = rollOfficeAbsent(game, rng)
+  const loc = PLACE_BY_ID.office.location
+  if (!absent) {
+    return { ...base, scene: { id: SCENE_PLACE_VISIT, lines: [N(loc), { speaker: 'regent', text: OFFICE.audience }] } }
+  }
+  // 부재.
+  if (!knowsTreason(game)) {
+    return { ...base, scene: { id: SCENE_PLACE_VISIT, lines: [N(loc), N(OFFICE.lockedBeforeClue)] } }
+  }
+  const elig = officeSearchEligible(game)
+  if (elig) {
+    // ★ 그 자리에서 수색 발동 — 게이트를 열고 office-search 를 enqueue.
+    return { eventId: elig, scene: null, setFlags: { ...base.setFlags, [OFFICE_SEARCH_OPEN]: true }, counters: base.counters }
+  }
+  if (game.flags.collective_treason) {
+    return { ...base, scene: { id: SCENE_PLACE_VISIT, lines: [N(loc), N('문갑은 이미 열렸던 자리가 되었다. 빈 서랍에는 먼지만 앉아 있었다.')] } }
+  }
+  return { ...base, scene: { id: SCENE_PLACE_VISIT, lines: [N(loc), N(OFFICE.lockedGate)] } }
+}
+
 /**
  * 방문 계획을 세운다(적용은 gameStore). 여기서 rng 를 다 뽑는다 — 결정론/검증이 갈아끼울 수 있게.
  */
@@ -143,6 +173,7 @@ export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan 
   const base: VisitPlan = { eventId: def.eventId, scene: null, setFlags, counters }
 
   if (def.kind === 'queen') return planQueen(game, rng, base)
+  if (def.kind === 'office') return planOffice(game, rng, base)
 
   if (def.kind === 'outing-legal') {
     setFlags.outing_legal = true
