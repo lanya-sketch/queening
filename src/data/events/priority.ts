@@ -33,8 +33,16 @@ export const PRIORITY: Record<string, number> = {
   'exposure-strike': 87,
   'strain-warning': 85,
   'exposure-warning': 83,
+  // ★ [3] 반란 — 위기는 최상단(진실 회수와 같은 90: 친정 후 옥좌가 걸린 일). 경고는 마일스톤
+  //   대역(75)으로 내려 다른 데드 경고와 동률을 피한다. 친정 후에만 조건이 열려 경쟁 자체가 드물다.
+  'rebellion-strike': 90,
+  // ★ [3] 암살 — 반란(90)과 같은 위기 대역, 반란보다 먼저 오지만(counter 9<15) 유일값으로 둔다.
+  'assassination-attempt': 89.5,
+  'rebellion-warning': 75,
   'regent-warning': 88,
   'adult-regent-rupture': 86,
+  // ★ [3] 판세 충족 담판(명예 퇴장) — 애매한 동맹(accord 84)보다 위. 결렬(86)과는 배타(tide_turned).
+  'adult-regent-accord-retire': 85.5,
   'adult-regent-accord': 84,
   'adult-coming-of-age': 82,
   // 튜터 해고 — 위기·경고(심신·의심 데드와 같은 대역). 굶으면 안 된다.
@@ -45,6 +53,10 @@ export const PRIORITY: Record<string, number> = {
   'debut-ball': 80,
   'hero-at-court': 78,
   'adult-inner-court': 76,
+  // ★ [3] 연례 가을 연회(10월) — 나이대별 배타라 서로 안 겹치고, 10월은 한산해 어김없이 뜬다.
+  'autumn-banquet-child': 73.5,
+  'autumn-banquet-youth': 73.6,
+  'autumn-banquet-court': 73.7,
   'teen-first-policy': 74,
   // ★ 혈서 확증은 처분보다 **먼저** 와야 한다 — 증거를 맞춘 뒤에 처분해야 "명분 있는 처분"
   //   선택지가 열린다. 둘째 반쪽을 19세에 얻으면 처분(72)과 같은 턴에 경쟁하는데, 예전엔

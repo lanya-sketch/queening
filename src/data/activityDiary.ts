@@ -23,6 +23,10 @@ export interface DiaryContext {
   peopleMood: 'relieved' | 'burdened' | 'mixed'
   /** ★ [2] 이 활동이 이 아이가 원하는 것이었는지(선호 일치). */
   preferenceMatch?: PrefRelation
+  /** ★ [3] 친정 이후인가 — 회유(명예 부여)의 뜻이 "힘 부족" vs "승자의 관대"로 갈린다. */
+  postAutonomy?: boolean
+  /** ★ [3] 권세 형세 — 연회에서 모브 귀족의 태도로 숨은 권세를 질적으로 드러낸다. */
+  standing?: 'low' | 'mid' | 'high'
 }
 
 interface Line {
@@ -34,6 +38,8 @@ interface Line {
   ageMin?: number
   temperament?: string
   mood?: 'relieved' | 'burdened' // 민심 조건(외출 서술용)
+  post?: boolean // ★ [3] 친정 이후 여부(회유 서술이 뜻이 갈림)
+  standing?: 'low' | 'mid' | 'high' // ★ [3] 권세 형세(연회의 모브 귀족 태도)
   text: string
 }
 
@@ -73,9 +79,12 @@ const LINES: Record<string, Line[]> = {
     { text: '연무장에서 목검을 잡았다. 아직은 흉내에 가깝다.' },
   ],
   'attend-banquet': [
-    { temperament: 'cunning', text: '누가 누구에게 웃는지, 그 웃음이 진짜인지 — 아이는 자리를 읽고 있었다.' },
     { wLow: true, text: '사람들의 말소리가 웅웅거렸다. 웃는 낯을 짓는 것만도 힘겨웠다.' },
-    { tier: '고급', text: '이제 아이가 좌중을 다룬다. 누구를 언제 세울지 안다.' },
+    // ★ [3] 권세 형세 — 모브 귀족이 왕을 어떻게 대하는지로 숨은 권세가 드러난다.
+    { standing: 'high', text: '말을 걸어오는 이가 줄을 이었다. 어느새 섭정공 곁이 눈에 띄게 헐거웠다 — 사람들은 힘이 어디로 가는지 안다.' },
+    { standing: 'mid', text: '몇몇이 다가와 안부를 물었다. 그래도 대부분은 여전히 섭정공 쪽에 서 있었다.' },
+    { standing: 'low', text: '누가 누구에게 인사하는지 지켜보았다. 아무도 이쪽을 오래 보지 않았다 — 궁정은 아직 숙부의 것이다.' },
+    { temperament: 'cunning', text: '누가 누구에게 웃는지, 그 웃음이 진짜인지 — 아이는 자리를 읽고 있었다.' },
     { text: '연회의 자리에 섰다. 어른들 틈에서 아직 어색하다.' },
   ],
   'royal-hunt': [
@@ -92,6 +101,12 @@ const LINES: Record<string, Line[]> = {
   ],
   play: [
     { text: '오랜만에 아이답게 놀았다. 이런 시간이 아이를 지킨다.' },
+  ],
+  // ★ [3] 회유(명예 부여) — 같은 행동인데 친정 전/후로 뜻이 뒤집힌다.
+  'honor-regent': [
+    { post: false, text: '숙부에게 예우를 더했다. 아직 힘이 부족하니, 누르기보다 손을 잡는 편이 낫다.' },
+    { post: true, text: '이미 이긴 자리에서 숙부에게 명예를 베풀었다. 승자가 패자에게 체면을 주는 것이다.' },
+    { text: '섭정공의 공을 조정 앞에서 세워 주었다. 실권은 그대로 왕의 것이되.' },
   ],
   // ── 궁 밖 — 합법(꾸민 얼굴) vs 몰래(맨얼굴). 민심 flag 를 읽어 "장부가 아니라 얼굴"을 본다.
   'patrol-town': [
@@ -122,6 +137,8 @@ function matches(l: Line, c: DiaryContext): boolean {
   if (l.ageMin !== undefined && c.age < l.ageMin) return false
   if (l.temperament && l.temperament !== c.temperamentId) return false
   if (l.mood && l.mood !== c.peopleMood) return false
+  if (l.post !== undefined && l.post !== (c.postAutonomy ?? false)) return false
+  if (l.standing && l.standing !== (c.standing ?? 'low')) return false
   return true
 }
 

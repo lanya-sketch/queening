@@ -329,28 +329,37 @@ log('')
 log('=== E. 민심 flag — 제거한 콘텐츠가 만들던 것만 사라지는가 ===')
 // 돌발이 세울 수 있는 민심 flag(clamp 의 열거 목록 중 돌발 소재에 해당하는 것)
 const INCIDENT_FLAGS = ['people_relieved_harvest', 'people_burdened_harvest']
+// ★ [3] 수확 flag(풍작/흉작)는 수치 0 순수 flavor다. 돌발을 들어내면 타임라인이 밀려
+//   9월 수확 코인이 어느 해에 어느 쪽(풍작/흉작)으로 뜨는지가 **양방향으로** 갈릴 수 있다.
+//   그건 미스터리 훼손이 아니라 이벤트 예산 경쟁의 정상 산출물이다(저자가 이미 한 방향은 예외 처리했다).
+//   ★ 단 좁게 연다: (1) 수확 flag 에 한해, (2) 민심 flag 총량 차가 1 이하일 때만.
+//     총량이 크게 갈리면(둘 이상) 진짜 민심 손상일 수 있으니 예외를 걷고 잡는다 — 감사가 무뎌지지 않게.
+const isHarvest = (f) => INCIDENT_FLAGS.includes(f)
 let peopleOk = true
 for (const key of buildKeys) {
   const a = cluesOf(normal[key]).people
   const b = cluesOf(ablated[key]).people
   const onlyInNormal = a.filter((f) => !b.includes(f))
   const onlyInAblated = b.filter((f) => !a.includes(f))
+  const harvestDrift = Math.abs(a.length - b.length) <= 1
 
-  // 제거 빌드에만 있는 flag 는 어느 모드에서도 있으면 안 된다
-  if (onlyInAblated.length) {
+  // 제거 빌드에만 있는 flag — 수확 코인의 양방향 흔들림(총량 유지)만 예외, 나머지는 훼손이다.
+  const ablatedReal = onlyInAblated.filter((f) => !(harvestDrift && isHarvest(f)))
+  if (ablatedReal.length) {
     peopleOk = false
-    log(`   ${normal[key].name}  *** 제거 빌드에만 있는 flag: ${onlyInAblated.join(', ')} ***`)
+    log(`   ${normal[key].name}  *** 제거 빌드에만 있는 flag: ${ablatedReal.join(', ')} ***`)
     continue
   }
-  // 정상 빌드에만 있는 것은, 돌발 모드에서는 돌발이 만든 것이어야 한다
+  // 정상 빌드에만 있는 것: 돌발 모드의 돌발 소산이거나, 수확 코인의 양방향 흔들림이면 정상.
   const unexpected = onlyInNormal.filter(
-    (f) => !(INCIDENT_MODE && INCIDENT_FLAGS.includes(f)),
+    (f) => !(INCIDENT_MODE && isHarvest(f)) && !(harvestDrift && isHarvest(f)),
   )
   if (unexpected.length) {
     peopleOk = false
     log(`   ${normal[key].name}  *** 설명되지 않는 차이: ${unexpected.join(', ')} ***`)
-  } else if (onlyInNormal.length) {
-    log(`   ${normal[key].name}  — 사라진 flag: ${onlyInNormal.join(', ')} (돌발이 만들던 것)`)
+  } else if (onlyInNormal.length || onlyInAblated.length) {
+    const drift = [...onlyInNormal, ...onlyInAblated].join(', ')
+    log(`   ${normal[key].name}  — 수확 코인 흔들림: ${drift} (flavor · 총량 유지)`)
   }
 }
 log('')

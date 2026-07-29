@@ -6,6 +6,7 @@ import { TEMPERAMENTS } from '../../data/temperaments'
 import { CUTSCENE_DWELL_MS, useOptions } from '../../store/optionsStore'
 import { useGame } from '../../store/gameStore'
 import { monthlyWish, prefRelation } from '../../systems/parenting'
+import { isPostAutonomy, standingMood } from '../../systems/rebellion'
 import { resolveMonarchPortrait } from '../../systems/outfits'
 import type { FlagSet } from '../../types/game'
 
@@ -69,6 +70,8 @@ export function CutsceneScreen({ onDone }: { onDone: () => void }) {
         temperamentId: currentTemperament(game.flags),
         peopleMood: peopleMoodOf(game.flags),
         preferenceMatch: prefRelation(ACTIVITY_BY_ID[entry.activityId]?.pref, playedGame, wish),
+        postAutonomy: isPostAutonomy(game),
+        standing: standingMood(game),
       })
   const headerActivity = bedrest ? '앓아누운 달' : activityName(entry.activityId)
   const dateDay = bedrest ? 1 : entry.day

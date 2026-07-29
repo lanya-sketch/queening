@@ -2,6 +2,7 @@ import type { Effect, GameEvent, ResourceKey } from '../../types/game'
 import { RISK } from '../config'
 import { DEAD_END } from '../../systems/deadend'
 import { RISK_STRAIN, RISK_EXPOSURE, RISK_TUTOR } from '../../systems/risk'
+import { RISK_REBELLION } from '../../systems/rebellion'
 
 /**
  * 깜짝 이벤트 + 조기 데드엔딩 (월 단위 전환 2단계).
@@ -189,6 +190,177 @@ export const SURPRISE_EVENTS: GameEvent[] = [
         setFlags: { [DEAD_END.tutor]: true },
         resultText:
           '스승은 문서를 받았다. 달리 할 수 있는 것이 없었다.',
+      },
+    ],
+  },
+
+  // ────────────────────────────────────────────────
+  // ★ [3] 반란 모의 — 경고 → 반란(진압/폐위). 친정 후에만(risk.ts 가 친정 후 의심을 여기로 쌓는다).
+  // ────────────────────────────────────────────────
+  {
+    id: 'rebellion-warning',
+    title: '술렁이는 조정',
+    text:
+      '밀려난 섭정공의 처소에 밤마다 사람이 든다고 했다. 옛 영주들의 이름이 그 방을 오간다.\n' +
+      '이겼다 여긴 자리 밑에서 다른 판이 짜이고 있었다. 아직 늦지 않았다 — 지금이라면.',
+    condition: { maxAge: 19, counters: { [RISK_REBELLION]: { min: RISK.rebellionWarn } } },
+    once: true,
+    category: 'story',
+    setFlags: { rebellion_warned: true },
+  },
+  {
+    // ★ [3] 암살 — 반란(세력)보다 먼저 오는 개인 노림. 반란 모의 중간(assassinAt)에 자객이 온다.
+    //   회피는 운이 아니라 대비 — 다섯 중 하나라도 갖추면 살고(증거까지 얻고), 아무것도 없으면 죽는다.
+    //   ★ 상태(의심·영향도)는 안 건드린다 — 반란 모의는 계속되고, 반란은 별도로 나중에 온다.
+    id: 'assassination-attempt',
+    title: '어둠 속의 칼',
+    text:
+      '반란이 판을 갖추기 전에, 밀려난 자는 더 조용한 길을 먼저 시험했다.\n' +
+      '깊은 밤 침소로 통하는 회랑에 낯선 그림자가 들었다. 칼끝이 달빛을 되쏘았다.',
+    condition: {
+      maxAge: 19,
+      counters: { [RISK_REBELLION]: { min: RISK.assassinAt } },
+      flags: { assassin_resolved: false },
+    },
+    once: true,
+    category: 'story',
+    choices: [
+      {
+        id: 'evade-martial',
+        label: '몸을 틀어 칼을 쳐낸다',
+        requires: { stats: { martial: { min: 40 } } },
+        setFlags: { assassin_resolved: true, assassin_evaded: true, assassin_evidence: true },
+        hint: '자객을 제압한다',
+        resultText:
+          '{왕}의 손이 먼저 움직였다. 짧은 다툼 끝에 자객은 제압되어 바닥에 눌렸다.\n' +
+          '그 품에서 나온 밀지 한 장 — 누가 이 칼을 보냈는지, 글씨가 말해 주고 있었다.',
+      },
+      {
+        id: 'evade-courtcraft',
+        label: '낌새를 미리 읽어 자리를 비운다',
+        requires: { stats: { courtcraft: { min: 45 } } },
+        setFlags: { assassin_resolved: true, assassin_evaded: true, assassin_evidence: true },
+        hint: '함정을 피한다',
+        resultText:
+          '{왕}은 그날따라 침소를 비웠다. 궁의 공기가 달랐고, 그것을 읽는 눈이 있었다.\n' +
+          '빈 방에 든 자객은 위병들에게 붙잡혔고, 그가 지녔던 문서가 남았다.',
+      },
+      {
+        id: 'evade-military',
+        label: '경호가 앞을 막는다',
+        requires: { flags: { military_route_open: true } },
+        setFlags: { assassin_resolved: true, assassin_evaded: true, assassin_evidence: true },
+        hint: '군이 지킨다',
+        resultText:
+          '왕을 따르는 군의 경호가 회랑을 지키고 있었다. 자객은 문턱도 넘지 못했다.\n' +
+          '사로잡힌 자의 입은 끝내 열리지 않았지만, 그 몸에 새겨진 문장이 대신 말했다.',
+      },
+      {
+        id: 'evade-tutor',
+        label: '스승이 먼저 알아챈다',
+        requires: { resources: { tutorTrust: { min: 60 } } },
+        setFlags: { assassin_resolved: true, assassin_evaded: true, assassin_evidence: true },
+        hint: '곁을 지킨 이가 막는다',
+        resultText:
+          '가장 오래 곁을 지킨 이가 그 밤의 이상을 먼저 알아챘다. 당신은 아이를 다른 방으로 옮겼다.\n' +
+          '헛되이 든 칼은 자객과 함께 붙잡혔고, 그가 지녔던 밀지가 남았다.',
+      },
+      {
+        id: 'evade-standing',
+        label: '궁정의 눈이 접근을 막는다',
+        requires: { flags: { court_backing: true } },
+        setFlags: { assassin_resolved: true, assassin_evaded: true, assassin_evidence: true },
+        hint: '조정이 지킨다',
+        resultText:
+          '조정에 왕의 눈이 너무 많았다. 낯선 그림자는 회랑에 들기도 전에 여럿의 눈에 걸렸다.\n' +
+          '사람을 모은 왕은, 그 사람들 덕에 이 밤을 알기도 전에 넘겼다. 붙잡힌 자가 증거를 남겼다.',
+      },
+      {
+        id: 'succumb',
+        label: '막을 것이 없다',
+        setFlags: { [DEAD_END.assassination]: true, assassin_resolved: true },
+        resultText:
+          '칼을 막을 손도, 낌새를 읽을 눈도, 앞을 가릴 사람도 없었다.\n' +
+          '실권은 왕을 왕좌에 앉혔지만, 왕을 지켜 주지는 못했다. 회랑의 달빛만이 그 밤을 보았다.',
+      },
+    ],
+  },
+  {
+    id: 'rebellion-strike',
+    title: '들이닥친 밤',
+    text:
+      '기어이 그 밤이 왔다. 성문이 안에서 열리고, 낯익은 문장을 단 병사들이 회랑으로 밀려들었다.\n' +
+      '밀려났던 자가 마지막 판을 걸었다. 실권 위에 세운 옥좌를, 무엇으로 지킬 것인가.',
+    condition: {
+      maxAge: 19,
+      counters: { [RISK_REBELLION]: { min: RISK.rebellionDead } },
+      flags: { rebellion_averted: false },
+    },
+    once: true,
+    category: 'story',
+    // ★ 낮추는 수단이 여럿 — 하나라도 갖췄으면 진압한다(막으면 엔딩에 흔적). 아무것도 없으면 폐위.
+    choices: [
+      {
+        id: 'suppress-military',
+        label: '군을 풀어 반란을 짓밟는다',
+        requires: { flags: { military_route_open: true } },
+        effects: [res('regentSuspicion', -30), zeroCounter(RISK_REBELLION)],
+        setFlags: { rebellion_averted: true, rebellion_crushed: true },
+        hint: '반란을 진압한다',
+        resultText:
+          '왕의 군이 회랑을 메웠다. 반란은 새벽을 넘기지 못했다.\n'
+          + '군을 쥐고 있던 왕에게, 이런 밤은 오히려 명분이 되었다.',
+      },
+      {
+        id: 'suppress-people',
+        label: '백성을 불러 성문을 되막는다',
+        requires: { flags: { people_favor: true } },
+        effects: [res('regentSuspicion', -30), zeroCounter(RISK_REBELLION)],
+        setFlags: { rebellion_averted: true, rebellion_crushed: true },
+        hint: '반란을 진압한다',
+        resultText:
+          '종이 울리자 저잣거리가 성문 앞을 메웠다. 귀족의 병사들은 백성의 벽 앞에 멈췄다.\n'
+          + '왕을 지킨 것은 왕의 군이 아니라 왕의 백성이었다.',
+      },
+      {
+        id: 'suppress-commons',
+        label: '하원을 불러 왕의 편에 세운다',
+        requires: { flags: { house_commons_defended: true } },
+        effects: [res('regentSuspicion', -30), zeroCounter(RISK_REBELLION)],
+        setFlags: { rebellion_averted: true, rebellion_crushed: true },
+        hint: '반란을 진압한다',
+        resultText:
+          '선왕이 남긴 하원이 왕의 뒤에 섰다. 반란은 명분을 잃고 흩어졌다.\n'
+          + '아버지가 세운 것이 아들을 지켰다.',
+      },
+      {
+        id: 'suppress-standing',
+        label: '조정을 움직여 반란을 고립시킨다',
+        requires: { flags: { court_backing: true } },
+        effects: [res('regentSuspicion', -30), zeroCounter(RISK_REBELLION)],
+        setFlags: { rebellion_averted: true, rebellion_crushed: true },
+        hint: '반란을 진압한다',
+        resultText:
+          '조정이 왕에게 등을 돌리지 않았다. 반란에 가담할 귀족은 손에 꼽혔고, 밀려난 자는 ' +
+          '함께 일어설 사람을 찾지 못했다.\n왕이 쌓은 것은 군대가 아니라 사람이었고, 그것이 이 밤을 넘겼다.',
+      },
+      {
+        id: 'fight',
+        label: '몸소 칼을 들고 맞선다',
+        requires: { stats: { martial: { min: 40 } } },
+        effects: [res('regentSuspicion', -25), zeroCounter(RISK_REBELLION), res('wellbeing', -15)],
+        setFlags: { rebellion_averted: true, rebellion_crushed: true },
+        hint: '반란을 진압한다',
+        resultText:
+          '왕이 직접 칼을 잡았다. 짧고 사나운 밤이 지나고, 왕은 제 손으로 옥좌를 지켰다.',
+      },
+      {
+        id: 'succumb',
+        label: '막을 것이 없다',
+        setFlags: { [DEAD_END.rebellion]: true },
+        resultText:
+          '군도, 백성도, 등을 맡길 이도 없었다. 왕은 홀로 옥좌에 앉아 있었고, 문이 열렸다.\n'
+          + '실권 하나로 오른 자리를, 실권 하나로는 지킬 수 없었다.',
       },
     ],
   },

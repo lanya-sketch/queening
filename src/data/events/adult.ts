@@ -108,11 +108,13 @@ export const ADULT_EVENTS: GameEvent[] = [
       '"신은 전하께서 애송이가 아니라는 것을 압니다. 그것이 신이 전하께 ' +
       '드릴 수 있는 전부입니다."',
     // 이미 갈라섰다면 담판의 자리가 없다. ★ 달 분산 — 겨울 문턱의 결판(결렬과 배타).
+    // ★ [3] 친정 전에만(declared_rule:false) — 친정 후엔 게이지가 「반란 모의」라 협상의 자리가 아니다.
+    //   판세 미달(tide_turned:false) — 판이 아직 안 기울어 섭정공이 자리를 지킨다. 여기선 애매한 동맹뿐.
     condition: {
       minAge: 18,
       month: 11,
       resources: { regentRapport: { min: 50 }, regentSuspicion: { max: 45 } },
-      flags: { regent_hostile: false },
+      flags: { regent_hostile: false, declared_rule: false, tide_turned: false },
     },
     effects: [{ target: { kind: 'resource', key: 'regentRapport' }, amount: 10 }],
     setFlags: { regent_won_over: true },
@@ -130,7 +132,8 @@ export const ADULT_EVENTS: GameEvent[] = [
         resultText:
           '{왕}이 잔을 들었다. 두 사람은 그날 밤 아무 약속도 문서로 남기지 않았고, ' +
           '그것이 이 궁에서 가장 확실한 종류의 약속이었다.\n' +
-          '섭정공은 이 아이가 자신을 필요로 한다고 믿고 있다. 절반은 사실이다.',
+          '섭정공은 이 아이가 자신을 필요로 한다고 믿고 있다. 절반은 사실이다. ' +
+          '그는 여전히 섭정이고, 그 자리는 비워지지 않았다.',
       },
       {
         id: 'defer',
@@ -146,6 +149,59 @@ export const ADULT_EVENTS: GameEvent[] = [
     ],
   },
   {
+    // ★ [3] 판세 충족 담판 — 판이 기울어(tide_turned) 섭정공이 명예직을 받고 물러난다.
+    //   왕 개인의 힘이 아니라 하원·민심·신망·권세가 그를 고립시켜서다. 피 없는 마무리 = 「공존」.
+    id: 'adult-regent-accord-retire',
+    title: '명예로운 퇴장',
+    text:
+      '섭정공이 사람을 물리고 당신들을 불렀다. 이번에는 포도주도 없었다.\n' +
+      '"전하. 하원이 전하 편에 서고, 백성이 전하의 이름을 부릅니다. ' +
+      '조정에서 신의 곁이 헐거워진 지도 오래입니다."\n' +
+      '그가 처음으로, 아주 천천히 고개를 숙였다.\n' +
+      '"신이 더 버티면 이 나라가 피를 봅니다. 신은 그것을 바라지 않습니다. ' +
+      '명예로이 물러나게 해 주십시오. 작위와 예우면 족합니다."',
+    condition: {
+      minAge: 18,
+      month: 11,
+      resources: { regentRapport: { min: 50 }, regentSuspicion: { max: 45 } },
+      flags: { regent_hostile: false, declared_rule: false, tide_turned: true },
+    },
+    effects: [{ target: { kind: 'resource', key: 'regentRapport' }, amount: 10 }],
+    setFlags: { regent_won_over: true },
+    priority: 45,
+    choices: [
+      {
+        id: 'retire',
+        label: '작위를 내리고 물러나게 한다',
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 12 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -20 },
+          { target: { kind: 'stat', key: 'courtcraft' }, amount: 6 },
+        ],
+        setFlags: { regent_alliance: true, regent_retired: true },
+        resultText:
+          '{왕}이 그를 일으켜 세웠다. 다음 날, 섭정공은 대공(大公)의 작위와 변경의 영지를 받아 ' +
+          '스스로 섭정의 인장을 내려놓았다. 궁을 나서는 그의 뒤로 젊은 왕이 서 있었다.\n' +
+          '피 한 방울 흘리지 않았고, 그것이 이 마무리의 값이었다. 왕은 이제 자기 이름으로 ' +
+          '나라를 다스린다 — 힘으로 쥔 것이 아니라, 협상으로 정리한 자리다.',
+      },
+      {
+        id: 'press',
+        label: '작위 없이 완전히 밀어낸다',
+        effects: [
+          { target: { kind: 'resource', key: 'courtInfluence' }, amount: 8 },
+          { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 10 },
+        ],
+        setFlags: { regent_hostile: true },
+        hint: '체면을 세워 주지 않으면 등을 돌린다',
+        resultText:
+          '"명예로이? 아니오." {왕}의 목소리는 낮았다. "물러나되, 아무것도 가져가지 못합니다."\n' +
+          '섭정공은 잠시 {왕}을 바라보다가 일어섰다. 고개는 숙이지 않았다.\n' +
+          '"그리 배우셨군요." 문이 닫혔다. 밀려난 자는 빈손이었고, 빈손인 자는 잃을 것이 없다.',
+      },
+    ],
+  },
+  {
     id: 'adult-regent-rupture',
     title: '결렬',
     text:
@@ -156,11 +212,14 @@ export const ADULT_EVENTS: GameEvent[] = [
       '{왕}이 처음으로 당신 앞에서 목소리를 높였다. "과인이 지킵니다."',
     // 회유가 이미 성사됐다면 이 장면(처음 갈라서는 순간)은 성립하지 않는다.
     // 동맹이 깨지는 서사는 별도 이벤트로 다룰 자리다. ★ 달 분산 — 담판과 같은 달(배타).
+    // ★ [3] 친정 전에만(declared_rule:false) — 친정 후엔 게이지가 「반란 모의」가 되고,
+    //   밀려난 섭정공의 처리는 처분(B)의 영역이다. 이 게이트가 ablation B1(섭정 라벨)의 근본 해결:
+    //   친정 후 「반란 모의」 값을 「섭정 의심」 문턱으로 읽던 relabel 미완성을 메운다.
     condition: {
       minAge: 18,
       month: 11,
       resources: { regentSuspicion: { min: 70 } },
-      flags: { regent_won_over: false },
+      flags: { regent_won_over: false, declared_rule: false },
     },
     effects: [
       { target: { kind: 'resource', key: 'courtInfluence' }, amount: -10 },

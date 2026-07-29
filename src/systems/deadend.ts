@@ -18,6 +18,12 @@ export const DEAD_END = {
   exposure: `${DEAD_END_PREFIX}의심무방비`,
   // ★ 세 번째 축 — 왕이 아니라 튜터(플레이어)가 쫓겨난다. 외출 발각 등으로 tutorRisk 누적.
   tutor: `${DEAD_END_PREFIX}해고`,
+  // ★ [3] 넷째 축 — 친정 후 반란을 못 막아 폐위된다. 성격이 다르다: 앞의 셋은 못 이룬 것이고
+  //   이건 실권 70을 찍고도 지키지 못한 것(성공했다가 무너진 것)이라 가장 아플 수 있다.
+  rebellion: `${DEAD_END_PREFIX}폐위`,
+  // ★ [3] 다섯째 축 — 반란(세력)보다 먼저 오는 암살(개인). 반란 모의가 차오르는 중,
+  //   아무 대비(무예·궁정처세·신뢰·⑤·권세)도 없는 왕에게 칼이 온다. 스탯으로 막는 데드.
+  assassination: `${DEAD_END_PREFIX}암살`,
 } as const
 
 /** dead_end:* flag 가 서 있으면 그 이유를, 없으면 null. */

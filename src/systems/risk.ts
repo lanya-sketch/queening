@@ -1,5 +1,6 @@
 import { RISK } from '../data/config'
 import type { GameState } from '../types/game'
+import { isPostAutonomy, RISK_REBELLION, STANDING_STRONG } from './rebellion'
 
 /**
  * 조기 데드엔딩 위험 누적 (월 단위 전환 2단계).
@@ -55,12 +56,24 @@ export function updateRisk(state: GameState): Record<string, number> {
     if (strain !== 0) patch[RISK_STRAIN] = 0
   }
 
-  // ── 의심 무방비
+  // ── 의심 무방비 (★ [3] 친정 전에만 — 친정 후엔 같은 게이지가 '반란 모의'가 되어 아래 축이 대신 읽는다)
   const exposure = counters[RISK_EXPOSURE] ?? 0
-  if ((state.regentSuspicion ?? 0) >= RISK.exposureSuspicion && !isDefended(state)) {
+  if ((state.regentSuspicion ?? 0) >= RISK.exposureSuspicion && !isDefended(state) && !isPostAutonomy(state)) {
     patch[RISK_EXPOSURE] = exposure + 1
   } else if (exposure !== 0) {
     patch[RISK_EXPOSURE] = 0
+  }
+
+  // ── 반란 모의 (★ [3] 친정 후) — 같은 의심 게이지가 반란 모의가 된다. 밀려난 섭정공의 반격.
+  //   의심을 높게(≥rebellionSuspicion) 오래 방치하면 실제 반란으로 번진다. 의심이 내리면 리셋.
+  //   ★ 권세가 강하면(조정이 왕 편) 반란이 힘을 못 얻어 문턱이 높아진다 — 느리게 끓는다.
+  const rebellion = counters[RISK_REBELLION] ?? 0
+  const rebellionThreshold =
+    RISK.rebellionSuspicion + ((state.courtStanding ?? 0) >= STANDING_STRONG ? RISK.rebellionStandingGuard : 0)
+  if (isPostAutonomy(state) && (state.regentSuspicion ?? 0) >= rebellionThreshold) {
+    patch[RISK_REBELLION] = rebellion + 1
+  } else if (rebellion !== 0) {
+    patch[RISK_REBELLION] = 0
   }
 
   // ── 튜터 해고 (__risk:tutor)

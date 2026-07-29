@@ -30,6 +30,15 @@ function roll(effect: Effect, rng: Rng): number {
   return effect.amount + (rng() * 2 - 1) * effect.variance
 }
 
+/**
+ * ★ [3] 권세 계수 — 「직접 재가」의 실권 전환율. 권세 50 = 현행(×1.0).
+ *   f = 0.5 + 권세/100 → 권세 0 ×0.5(사람이 없어 재가가 안 먹힘), 100 ×1.5(조정을 쥠).
+ *   연령 상한이 여전히 하드 리밋이라 권세로 친정을 앞당길 수는 없다(균형은 곡선으로 실측).
+ */
+export function standingFactor(state: GameState): number {
+  return 0.5 + (state.courtStanding ?? 0) / 100
+}
+
 function read(state: GameState, target: EffectTarget): number {
   if (target.kind === 'stat') return state.stats[target.key]
   if (target.kind === 'affection') {
@@ -93,8 +102,13 @@ export function applyEffects(
 
   for (const effect of effects) {
     const before = read(next, effect.target)
-    const after = clamp(effect.target, before + roll(effect, rng), next)
+    // ★ [3] 권세 계수 — scaleBy:'standing' 이면 양에 f(권세)를 곱한다(재가의 실권 전환).
+    const rolled = effect.scaleBy === 'standing' ? roll(effect, rng) * standingFactor(next) : roll(effect, rng)
+    const after = clamp(effect.target, before + rolled, next)
     write(next, effect.target, after)
+
+    // ★ [3] 권세는 숨은 지표라 델타를 보고하지 않는다(적용은 하되 결과창엔 안 뜬다).
+    if (effect.target.kind === 'resource' && effect.target.key === 'courtStanding') continue
 
     const label = targetLabel(effect.target, next)
     totals.set(label, (totals.get(label) ?? 0) + (after - before))

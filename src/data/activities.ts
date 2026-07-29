@@ -15,8 +15,10 @@ import type { Activity, ActivityTier, Effect, StatKey } from '../types/game'
  */
 const stat = (key: StatKey, amount: number, variance?: number): Effect =>
   ({ target: { kind: 'stat', key }, amount, ...(variance ? { variance } : {}) })
-const res = (key: 'wellbeing' | 'tutorTrust' | 'regentSuspicion' | 'regentRapport' | 'courtInfluence',
-  amount: number): Effect => ({ target: { kind: 'resource', key }, amount })
+const res = (
+  key: 'wellbeing' | 'tutorTrust' | 'regentSuspicion' | 'regentRapport' | 'courtInfluence' | 'courtStanding',
+  amount: number,
+): Effect => ({ target: { kind: 'resource', key }, amount })
 
 /**
  * 수업 3등급 공통 틀. 스탯이 오를수록 같은 카드가 강해지고 비싸진다.
@@ -104,8 +106,10 @@ export const ACTIVITIES: Activity[] = [
     tierStat: 'courtcraft',
     // ★ 대비 쌍(#19) + 의심↔신망 대립(2-E): 궁정을 익힐수록 몸은 무뎌지고,
     //   섭정은 아이가 사람을 사귀는 것을 반기지 않는다(신망 −1).
+    // ★ [3] 연회는 권세를 능동적으로 쌓는 자리 — 귀족들 사이에 서면 왕 편이 는다(+4).
+    //   tierStat 활동은 tier.effects 가 base effects 를 대체하므로 권세는 각 등급에 넣는다.
     tiers: lessonTiers('courtcraft', stat('martial', -1)).map((t) => ({
-      ...t, effects: [...t.effects, res('regentRapport', -1)],
+      ...t, effects: [...t.effects, res('regentRapport', -1), res('courtStanding', 4)],
     })),
     tags: ['court'],
     pref: '궁정처세',
@@ -140,6 +144,8 @@ export const ACTIVITIES: Activity[] = [
       //   안전한 길만 걸으면 실권은 정체가 아니라 조금씩 뒤로 간다.
       { target: { kind: 'resource', key: 'courtInfluence' }, amount: -1 },
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -5 },
+      // ★ [3] 조정에서의 존재감 — 곁에 앉아 정무를 보는 것만으로 왕 편이 조금 는다(+3).
+      { target: { kind: 'resource', key: 'courtStanding' }, amount: 3 },
     ],
     tags: ['court'],
     pref: '정무',
@@ -155,6 +161,8 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'stat', key: 'courtcraft' }, amount: 3, variance: 1 },
       { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 8 },
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -6 },
+      // ★ [3] 변경 영주들과 직접 선을 대는 일 — 왕을 따르는 세력이 는다(+3).
+      { target: { kind: 'resource', key: 'courtStanding' }, amount: 3 },
     ],
     tags: ['independence'],
     pref: '정무',
@@ -170,6 +178,8 @@ export const ACTIVITIES: Activity[] = [
       { target: { kind: 'resource', key: 'regentRapport' }, amount: 3 },
       { target: { kind: 'resource', key: 'courtInfluence' }, amount: -4 },
       { target: { kind: 'resource', key: 'wellbeing' }, amount: 6 },
+      // ★ [3] 정무를 넘길수록 조정이 섭정공 쪽으로 기운다 — 왕 편이 줄어든다(−6).
+      { target: { kind: 'resource', key: 'courtStanding' }, amount: -6 },
     ],
     tags: ['court', 'cede'],
     pref: '정무',
@@ -182,12 +192,38 @@ export const ACTIVITIES: Activity[] = [
     apCost: 2,
     requires: { minAge: 14, stats: { statecraft: { min: 35 } } },
     effects: [
-      { target: { kind: 'resource', key: 'courtInfluence' }, amount: 3 },
+      // ★ [3] 재가의 실권 전환은 권세에 달렸다 — f(권세)=0.5+권세/100 (권세 50 = 현행 +3).
+      //   조정에 왕 편이 있어야 왕의 서명이 실제로 먹힌다. 없으면 종잇장이다.
+      { target: { kind: 'resource', key: 'courtInfluence' }, amount: 3, scaleBy: 'standing' },
       { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 5 },
       { target: { kind: 'stat', key: 'statecraft' }, amount: 2 },
       { target: { kind: 'resource', key: 'wellbeing' }, amount: -8 },
+      // 재가 자체가 존재감을 남긴다 — 권세도 조금 오른다(+2).
+      { target: { kind: 'resource', key: 'courtStanding' }, amount: 2 },
     ],
     tags: ['independence', 'reclaim'],
+    pref: '정무',
+  },
+  {
+    /**
+     * ★ [3] 회유 — 신망을 올리되 **영향도를 깎지 않는** 유일한 반복 경로.
+     *   "권력은 내 것이되 당신의 공은 인정한다." 작위·예우로 체면을 세워 밀려나도 등 돌리지 않게 한다.
+     *   친정 전엔 공존(45~69+회유)으로 가는 길, 친정 후엔 반란 모의를 달래는 수단.
+     *   서술의 뜻(힘 부족 vs 승자의 관대)은 컷신이 친정 여부로 가른다(activityDiary).
+     */
+    id: 'honor-regent',
+    name: '명예를 베푼다',
+    description:
+      '섭정공에게 작위와 예우를 더한다. 실권은 내주지 않되, 그의 공을 조정 앞에서 인정한다. ' +
+      '체면이 서면 등을 돌릴 이유가 준다 — 힘으로 누르는 것과는 다른 길이다.',
+    apCost: 1,
+    requires: { minAge: 14 },
+    effects: [
+      { target: { kind: 'resource', key: 'regentRapport' }, amount: 5 },
+      { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -3 },
+      { target: { kind: 'resource', key: 'wellbeing' }, amount: -2 },
+    ],
+    tags: ['court'],
     pref: '정무',
   },
   {

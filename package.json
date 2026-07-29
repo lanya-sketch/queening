@@ -57,7 +57,8 @@
     "verify:playfeedback": "node tools/verify/playfeedback.mjs",
     "verify:journal": "node tools/verify/journal.mjs",
     "verify:places": "node tools/verify/places.mjs",
-    "verify:parenting": "node tools/verify/parenting.mjs"
+    "verify:parenting": "node tools/verify/parenting.mjs",
+    "verify:rebellion": "node tools/verify/rebellion.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.3",

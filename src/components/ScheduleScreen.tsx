@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ACTIVITIES, ACTIVITY_BY_ID } from '../data/activities'
-import { MONTH_SCALE } from '../data/config'
+import { GAME_CONFIG, MONTH_SCALE } from '../data/config'
 import { activityEffects, activityTierLabel } from '../systems/activityTier'
 import { difficultyStars, effectView } from '../systems/display'
 import { describeCondition, matchesCondition } from '../systems/eventEngine'
@@ -32,7 +32,7 @@ const GROUPS: { label: string; hint: string; ids: string[] }[] = [
   {
     label: '치세와 정무',
     hint: '권력의 소재를 건드린다',
-    ids: ['attend-council', 'secret-correspondence', 'cede-affairs', 'direct-decree'],
+    ids: ['attend-council', 'secret-correspondence', 'cede-affairs', 'direct-decree', 'honor-regent'],
   },
   // ★ '궁 밖'(순찰/잠행)은 활동 카드에서 빠졌다 — 「이번 달, 어디로」(AP-프리 궁 안 이동)에 통합(2-b-1).
   { label: '쉼', hint: '아무것도 하지 않는다', ids: ['rest', 'play'] },
@@ -44,7 +44,10 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
 
   const unlocked = !activity.requires || matchesCondition(game, activity.requires)
   const affordable = activity.apCost <= game.actionPoints
-  const usable = unlocked && affordable && !game.flags.forced_rest // ★ [2] 앓아누우면 못 고름
+  // ★ [3-C] 스탯 상한 — tierStat 이 100 에 닿은 수업은 눌러도 성장 0이고 대가만 낸다.
+  //   카드를 잠가 AP 낭비를 막고 "다른 것을 키우자"를 유도한다.
+  const maxed = activity.tierStat != null && (game.stats[activity.tierStat] ?? 0) >= GAME_CONFIG.statMax
+  const usable = unlocked && affordable && !game.flags.forced_rest && !maxed // ★ [2] 앓아누우면 못 고름
   const selected = planned.includes(activity.id)
   const tier = activityTierLabel(activity, game)
   const flagged = activity.tags?.includes('independence')
@@ -56,6 +59,7 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
         data-tier={tier ?? ''}
         data-selected={selected ? 'true' : 'false'}
         data-locked={unlocked ? 'false' : 'true'}
+        data-maxed={maxed ? 'true' : 'false'}
         disabled={!usable}
         onClick={() => addActivity(activity.id)}
         className="relative h-full w-full overflow-hidden rounded-panel border p-4 text-left transition-transform duration-200 active:translate-y-px"
@@ -118,6 +122,18 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
         </p>
 
         {unlocked ? (
+          maxed ? (
+            <div
+              data-maxed-note
+              className="mt-3.5 border-t pt-3"
+              style={{ borderColor: 'rgba(212,176,106,.12)' }}
+            >
+              <p className="text-[13px] font-medium text-gold-300">통달 · 더 배울 것이 없습니다</p>
+              <p className="mt-1 text-[11.5px] leading-relaxed text-muted">
+                이 자질은 끝까지 익혔습니다. 다른 것을 키우세요.
+              </p>
+            </div>
+          ) : (
           <>
             {/* ★ 수치 없음 — ▲▼ + 정도. 등급이 오르면 이 목록이 통째로 바뀐다. */}
             <div
@@ -125,7 +141,12 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
               style={{ borderColor: 'rgba(212,176,106,.12)' }}
             >
               {activityEffects(activity, game)
-                .filter((effect) => effect.target.kind !== 'counter')
+                // ★ [3] 권세는 숨은 지표 — 카드에 수치를 안 띄운다(연회·「기록」의 질적 서술로만).
+                .filter(
+                  (effect) =>
+                    effect.target.kind !== 'counter' &&
+                    !(effect.target.kind === 'resource' && effect.target.key === 'courtStanding'),
+                )
                 .map((effect, i) => (
                   <EffectPill key={i} {...effectView(effect, MONTH_SCALE, game)} />
                 ))}
@@ -158,6 +179,7 @@ function ActivityCard({ activity, game }: { activity: Activity; game: GameState 
               </p>
             )}
           </>
+          )
         ) : (
           <LockedNote>{describeCondition(activity.requires).join(', ')} 필요</LockedNote>
         )}

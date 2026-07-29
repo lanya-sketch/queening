@@ -213,6 +213,10 @@ export function judgeEnding(state: GameState): EndingResult {
     'scroll_offered',
     'legitimacy_sacred',
     'church_support',
+    // ★ [3] 반란 진압 — 친정 후 반란을 막아 낸 흔적("반란을 진압한 왕").
+    'rebellion_crushed',
+    // ★ [3] 섭정공 명예 퇴장 — 담판으로 피 없이 정리한 흔적("협상으로 마무리한 왕").
+    'regent_retired',
     // 숙청/관용/측실 결과 — 엔딩 @purge 삽입이 개별로 읽는다.
     'heir_executed', 'heir_spared', 'heir_concubine',
     'loyalist_scapegoat', 'loyalist_spared', 'loyalist_concubine',

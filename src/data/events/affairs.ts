@@ -250,6 +250,8 @@ export const AFFAIR_EVENTS: GameEvent[] = [
               { target: { kind: 'resource', key: 'regentRapport' }, amount: -14 },
               { target: { kind: 'resource', key: 'tutorTrust' }, amount: 12 },
               { target: { kind: 'resource', key: 'wellbeing' }, amount: -10 },
+              // ★ [3] 하원을 지키면 왕당파가 결집한다 — 권세가 오른다(+8).
+              { target: { kind: 'resource', key: 'courtStanding' }, amount: 8 },
             ],
             hint: '말이 아직 서지 않는다',
             resultText:
@@ -265,6 +267,8 @@ export const AFFAIR_EVENTS: GameEvent[] = [
               { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 25 },
               { target: { kind: 'resource', key: 'regentRapport' }, amount: -10 },
               { target: { kind: 'resource', key: 'tutorTrust' }, amount: 12 },
+              // ★ [3] 하원을 지키면 왕당파가 결집한다 — 권세가 오른다(+8).
+              { target: { kind: 'resource', key: 'courtStanding' }, amount: 8 },
             ],
             setFlags: { people_relieved_commons: true },
             resultText:
@@ -286,6 +290,8 @@ export const AFFAIR_EVENTS: GameEvent[] = [
           { target: { kind: 'resource', key: 'regentSuspicion' }, amount: 12 },
           { target: { kind: 'resource', key: 'regentRapport' }, amount: -4 },
           { target: { kind: 'stat', key: 'courtcraft' }, amount: 4 },
+          // ★ [3] 귀족을 구슬려 지키면 왕당파가 는다 — 권세가 오른다(+8).
+          { target: { kind: 'resource', key: 'courtStanding' }, amount: 8 },
         ],
         setFlags: { house_commons_defended: true, people_relieved_commons: true },
         resultText:

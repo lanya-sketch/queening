@@ -1,5 +1,5 @@
 import { ACTIVITY_BY_ID } from '../data/activities'
-import { DURABILITY, GAME_CONFIG, INITIAL_RESOURCES, INITIAL_STATS, MONTH_SCALE } from '../data/config'
+import { DURABILITY, GAME_CONFIG, INITIAL_RESOURCES, INITIAL_STATS, MONTH_SCALE, RISK } from '../data/config'
 import { DEFAULT_MONARCH_NAME } from '../data/lexicon'
 import { DEFAULT_OUTFIT_ID } from '../data/outfits'
 import { durabilityGain, growthFactor, wellbeingCostFactor } from './durability'
@@ -7,6 +7,7 @@ import {
   COLD_LEARN, COLD_WELLBEING, ILL_RECOVER, ILL_STRAIN, ILL_WELLBEING, preferenceTrust,
 } from './parenting'
 import { RISK_STRAIN, updateRisk } from './risk'
+import { isPostAutonomy, PEOPLE_FAVOR_MIN, reliefCount, STANDING_STRONG, tideHasTurned } from './rebellion'
 import { initialAffection, initialCharacterGenders } from './romance'
 import type { Delta, DiaryEntry, Effect, GameDate, GameEvent, GameState } from '../types/game'
 
@@ -277,6 +278,27 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
     if ((next.wellbeing ?? 100) < ILL_WELLBEING || strain >= ILL_STRAIN) {
       next.flags = { ...next.flags, forced_rest: true }
     }
+  }
+
+  // ★ [3] 권세 자연 감소 — 가만있으면 잊힌다(−1/월). 연회·정무로 쌓지 않으면 서서히 마른다.
+  //   결정론적(정상·제거 동일)이라 ablation 에 영향 없다. 바닥 0.
+  next.courtStanding = Math.max(0, (next.courtStanding ?? 0) - 1)
+
+  // ★ [3] 파생 flag — 조건(matchesCondition)이 못 세는 것들을 매 턴 flag 로 굳힌다.
+  //   people_favor: 민심이 왕 편(안도 ≥ MIN). tide_turned: 담판 판세가 기욺(넷 중 둘).
+  next.flags = {
+    ...next.flags,
+    people_favor: reliefCount(next) >= PEOPLE_FAVOR_MIN,
+    tide_turned: tideHasTurned(next),
+    // court_backing: 조정이 왕 편(권세 강함) — 반란 위기의 '조정으로 진압' 선택이 조건으로 읽는다.
+    court_backing: (next.courtStanding ?? 0) >= STANDING_STRONG,
+    // ★ [3] 섭정 적대 래치 — 친정 후 반란 모의(의심)가 문턱을 넘은 적 있으면 결렬(밀려난 섭정공이 적대).
+    //   끝까지 낮게 관리하면 중립. 한 번 켜지면 유지(래치). 비-bloodoath 라 ablation-robust(B1 근본해결).
+    regent_hostile:
+      next.flags.regent_hostile === true ||
+      (isPostAutonomy(next) &&
+        (next.regentSuspicion ?? 0) >= RISK.regentHostileLatch &&
+        next.flags.regent_retired !== true),
   }
 
   // 3-c. 소소-비트 — **빈 달만** 채운다. 큰 이벤트가 뜬 달엔 굴리지 않고,

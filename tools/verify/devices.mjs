@@ -98,10 +98,12 @@ log('=== A. ★★ M3 예약 — 판정이 앞당겨지지 않았는가 ===')
 log('')
 
 const reservation = await page.evaluate(() => {
-  // ③ 공동왕조·⑤ 군사노선은 여전히 M3 엔딩 판정 전용(중반에 안 읽힌다).
+  // ③ 공동왕조는 여전히 M3 엔딩 판정 전용(중반에 안 읽힌다).
   // ★ queen_poison_path 는 「모후의 약」 중반 전개(events/poison.ts)가 회수해 이제 소비된다
   //   — 예약이 아니라 판정된 flag 라 이 목록에서 뺀다(검증은 verify:poison).
-  const RESERVED = ['union_possible', 'military_route_open']
+  // ★ [3] military_route_open(⑤ 군사노선)도 뺀다 — 이제 반란 위기의 「군을 풀어 진압」
+  //   (surprises.ts rebellion-strike/suppress-military)이 조건으로 읽어 소비한다. 예약이 아니라 판정.
+  const RESERVED = ['union_possible']
   /**
    * ★ `flag: false` 로 읽는 것은 **자기 재발동 방지 가드**다(한 번 열렸으면 또 열지 않는다).
    *   판정이란 열린 경로를 **전제로 분기하는 것**, 즉 `flag: true` 로 읽는 것이다.
@@ -135,7 +137,7 @@ log('A1 ★ 예약 flag 로 분기하는 이벤트 0건 — true 로 읽는 곳 
   reservation.readers.length === 0 ? '없음' : reservation.readers.join(', '),
   ok(reservation.readers.length === 0))
 log('A2 예약 flag 가 실제로 심어짐 (기록은 되고 있음):',
-  ok(reservation.writers.length >= 2))
+  ok(reservation.writers.length >= 1))
 log('   → 지금은 "경로가 열렸다"까지만이고, 동등/복속·왕주도/군부종속은 갈리지 않는다.')
 
 // ─────────────────────────────────────────────────────────────

@@ -205,21 +205,22 @@ export function Lozenge({ size = 6, dim = false }: { size?: number; dim?: boolea
  * (하네스가 읽는 자리. 화면에는 안 보인다).
  */
 export function Gauge({ view, hint }: { view: GaugeView; hint?: string }) {
-  const { key, label, value, band, pct, color, capPct } = view
+  const { key, label, value, band, pct, color, capPct, neutralized } = view
   return (
     <div
       data-gauge={key}
       data-value={value.toFixed(2)}
       data-band={band.label}
-      className="select-none"
+      data-neutralized={neutralized ? 'true' : undefined}
+      className={`select-none${neutralized ? ' opacity-45' : ''}`}
     >
       <div className="mb-1.5 flex items-baseline justify-between gap-2">
         <span className="text-[13px] text-parchment/85">{label}</span>
         <span
           className="text-[12px]"
-          style={{ color: band.peril ? 'var(--color-peril-soft)' : 'var(--color-gold-300)' }}
+          style={{ color: band.peril && !neutralized ? 'var(--color-peril-soft)' : 'var(--color-gold-300)' }}
         >
-          {band.label}
+          {neutralized ? '—' : band.label}
         </span>
       </div>
       <div className="relative h-1.5 overflow-hidden rounded-sm bg-white/6">
@@ -241,7 +242,11 @@ export function Gauge({ view, hint }: { view: GaugeView; hint?: string }) {
           />
         )}
       </div>
-      {hint && <p className="mt-1 text-[10.5px] text-faint">{hint}</p>}
+      {neutralized ? (
+        <p data-gauge-neutralized className="mt-1 text-[10.5px] text-faint">{neutralized}</p>
+      ) : (
+        hint && <p className="mt-1 text-[10.5px] text-faint">{hint}</p>
+      )}
     </div>
   )
 }

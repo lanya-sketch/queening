@@ -76,6 +76,8 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
     ...state,
     characterGenders: Object.fromEntries(CHARACTERS.map((c) => [c.id, c.gender])),
   }),
+  // v9 -> v10 : ★ [3] 권세 지표 도입. 옛 세이브는 허수아비 출발점(10)에서 시작한다.
+  9: (state) => ({ ...state, courtStanding: state.courtStanding ?? INITIAL_RESOURCES.courtStanding }),
 }
 
 function migrate(state: any, fromVersion: number): GameState | null {

@@ -183,6 +183,20 @@ export const ENDING_INSERTS: EndingInsert[] = [
     lines: [line('하원은 살아남았다. {왕}이 그것을 지켰고, 백성은 그 사실을 오래 기억했다.')],
   },
   {
+    // ★ [3] 반란 진압 — 친정 후 밀려난 섭정공의 반란을 막아 낸 왕.
+    anchor: 'nation',
+    match: (r) => has(r, 'rebellion_crushed'),
+    priority: 38,
+    lines: [line('밀려난 자는 마지막으로 칼을 들었고, {왕}은 그 밤을 넘겼다. 반란을 진압한 왕 — 옥좌는 이제 누구의 의심도 사지 않았다.')],
+  },
+  {
+    // ★ [3] 섭정공 명예 퇴장 — 담판으로 피 없이 정리한 왕(협상의 마무리).
+    anchor: 'nation',
+    match: (r) => has(r, 'regent_retired'),
+    priority: 39,
+    lines: [line('섭정공은 대공의 작위를 받아 스스로 인장을 내려놓았다. 피 한 방울 없이 물러난 섭정 — {왕}은 힘이 아니라 협상으로 옥좌를 정리한 군주로 남았다.')],
+  },
+  {
     anchor: 'nation',
     match: (r) => has(r, 'house_commons_dissolved'),
     priority: 20,

@@ -51,10 +51,12 @@ export const RESOURCE_META: Record<ResourceKey, { label: string; bar: string }> 
   regentSuspicion: { label: '섭정 의심', bar: 'bg-red-500' },
   regentRapport: { label: '섭정 신망', bar: 'bg-indigo-400' },
   actionPoints: { label: '행동력', bar: 'bg-ink-600' },
+  // ★ [3] 권세 — 숨은 지표(GaugeKey 제외라 막대는 안 뜬다). 델타도 가려진다(effects.ts).
+  courtStanding: { label: '권세', bar: 'bg-amber-500' },
 }
 
 /**
  * 선택지 미리보기에서 수치를 가리는 게이지.
  * "내 능력은 계산하되 섭정의 속마음은 나중에 안다" — 고른 뒤에는 결과로 공개된다.
  */
-export const HIDDEN_GAUGES: ResourceKey[] = ['regentSuspicion', 'regentRapport']
+export const HIDDEN_GAUGES: ResourceKey[] = ['regentSuspicion', 'regentRapport', 'courtStanding']

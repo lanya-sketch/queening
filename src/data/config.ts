@@ -23,7 +23,7 @@ export const GAME_CONFIG = {
 
   saveKey: 'queening.save',
   /** 올릴 때마다 systems/save.ts 의 MIGRATIONS 에 변환을 추가할 것. */
-  saveVersion: 9,
+  saveVersion: 10,
 } as const
 
 /** 달 표시. 1..12. */
@@ -139,6 +139,22 @@ export const RISK = {
   exposureWarn: 8,
   exposureDead: 15,
 
+  // ★ [3] 반란 모의 — 친정(선포+영향도70) 이후, 같은 의심 게이지가 '반란 모의'가 된다.
+  //   밀려난 섭정공이 반격을 준비. 의심을 높게(≥85) 오래 방치했을 때만 실제 반란으로 번진다 —
+  //   느슨하게 잡아, 민심/군사/회유/하원 중 하나만 갖춰도 위기에서 진압할 수 있게 한다.
+  //   친정을 찍은 것 자체가 위험해지면 게임 주축이 무너지므로, 관리형은 거의 안 닿는다.
+  /** 반란 모의 — 친정 후 의심이 이 이상이면 __risk:rebellion 이 쌓인다. */
+  rebellionSuspicion: 85,
+  rebellionWarn: 5,
+  /** ★ [3] 암살 — 반란 모의가 이만큼 차면 자객이 온다(반란 15 보다 먼저). 경고 5 → 암살 9 → 반란 15. */
+  assassinAt: 9,
+  rebellionDead: 15,
+  /** ★ [3] 권세가 강하면(조정이 왕 편) 반란 문턱이 이만큼 오른다 — 가담자가 없어 느리게 끓는다. */
+  rebellionStandingGuard: 15,
+  /** ★ [3] 친정 후 반란 모의(의심)가 이 이상 오르면 섭정공이 적대로 돌아선다(regent_hostile 래치).
+   *   끝까지 이 밑으로 관리하면 중립(수용). 비-bloodoath 라 ablation-robust. */
+  regentHostileLatch: 60,
+
   // ★ 튜터 해고 — 세 번째 데드엔딩(왕이 아니라 **내가** 쫓겨난다). 여러 경로가 __risk:tutor 에
   //   누적되되 이번 라운드는 **외출 발각만** 값을 넣는다(나머지는 자리만). 문턱은 느슨하게 —
   //   몰래 몇 번 다녀선 안 닿고, 반복해서 들키거나 흔적을 오래 쌓아야 닿는다.
@@ -176,6 +192,8 @@ export const INITIAL_RESOURCES = {
   regentRapport: 0,
   /** 11세 허수아비에서 출발한다. */
   courtInfluence: 10,
+  /** ★ [3] 권세 — 궁정 안의 왕 편. 영향도와 같은 허수아비 출발점(10). */
+  courtStanding: 10,
 } as const
 
 /**

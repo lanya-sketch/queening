@@ -27,9 +27,13 @@ export type ResourceKey =
   | 'regentSuspicion'
   | 'regentRapport'
   | 'actionPoints'
+  | 'courtStanding'
 
-/** 플레이어에게 수치를 미리 보여주지 않는 게이지. 선택지 미리보기에서 가려진다. */
-export type GaugeKey = Exclude<ResourceKey, 'actionPoints'>
+/**
+ * 사이드바 막대로 보이는 게이지. ★ [3] courtStanding(권세)는 숨은 지표라 제외한다 —
+ * 내구도처럼 막대가 없고 연회·「기록」의 질적 서술로만 드러난다.
+ */
+export type GaugeKey = Exclude<ResourceKey, 'actionPoints' | 'courtStanding'>
 
 export type EffectTarget =
   | { kind: 'stat'; key: StatKey }
@@ -150,6 +154,11 @@ export interface Effect {
   amount: number
   /** ±편차. 지정 시 amount 에 [-variance, +variance] 정수를 더한다. */
   variance?: number
+  /**
+   * ★ [3] 권세 계수 — 'standing' 이면 이 효과의 양에 f(권세)=0.5+권세/100 을 곱한다.
+   *   「직접 재가」의 영향도 획득에만 붙인다: 조정에 사람이 있어야 왕의 서명이 실권이 된다.
+   */
+  scaleBy?: 'standing'
 }
 
 export type FlagSet = Record<string, boolean>
@@ -191,7 +200,9 @@ export interface Condition {
   minAge?: number
   maxAge?: number
   stats?: Partial<Record<StatKey, { min?: number; max?: number }>>
-  resources?: Partial<Record<GaugeKey, { min?: number; max?: number }>>
+  // ★ [3] courtStanding(권세)도 조건으로 읽을 수 있게 — 연회 형세 insights 가 숨은 권세 구간을 가른다.
+  //   (요구조건 UI 로는 안 쓴다; describeCondition 에 노출되는 자리엔 넣지 않는다.)
+  resources?: Partial<Record<GaugeKey | 'courtStanding', { min?: number; max?: number }>>
   /** 계절 타이머 검사. 없는 카운터는 0 으로 본다. */
   counters?: Record<string, { min?: number; max?: number }>
   /** 캐릭터별 호감도 검사. 키는 charId. 없으면 startingAffection 으로 본다. */
@@ -527,6 +538,13 @@ export interface GameState {
   regentRapport: number
   /** 군주가 실제로 국정을 장악한 정도. 허수아비(10)에서 시작한다. */
   courtInfluence: number
+  /**
+   * ★ [3] 권세(權勢) — 궁정 안에 왕 편이 얼마나 있는가. 숨은 지표(내구도처럼 막대 없음).
+   *   민심(밖)·신망(위)·영향도(제도)가 못 메우던 "안"의 빈칸. 연회에서 모브 귀족의 태도로,
+   *   「기록」의 '조정의 형세'로 질적으로만 드러난다. 「직접 재가」의 실권 전환 계수이자
+   *   담판 판세·반란 방어의 조건. 10(허수아비)에서 출발.
+   */
+  courtStanding: number
   actionPoints: number
   /** 현재 입고 있는 착장 id. 매니페스트에 없으면 기본 착장으로 되돌린다. */
   currentOutfitId: string

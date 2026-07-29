@@ -148,6 +148,24 @@ export const GALLERY: GalleryItem[] = [
     scene: '궁문이 닫혔다. 안에서는 아무 소리도 나지 않았다.',
     summary: '섭정공의 눈 밖에 나 가정교사의 소임을 빼앗겼다. 왕은 멀쩡한데, 남겨두고 떠났다.',
   },
+  {
+    // ★ [3] 넷째 파국 — 이겼다가 무너진 것. 실권 70을 찍고도 반란을 못 지켰다.
+    id: 'dead-rebellion',
+    title: '지키지 못한 옥좌',
+    group: '파국',
+    match: (_r, dead) => dead === '폐위',
+    scene: '열린 성문 안으로 옛 문장을 단 병사들이 들었고 — 지켜 줄 것이 없었다.',
+    summary: '친정을 이뤘으나 밀려난 섭정공의 반란을 막지 못했다. 가장 높이 올랐다가 가장 멀리 떨어졌다.',
+  },
+  {
+    // ★ [3] 다섯째 파국 — 반란보다 먼저 온 칼. 아무 대비도 없이 친정만 했다.
+    id: 'dead-assassination',
+    title: '달빛만이 본 밤',
+    group: '파국',
+    match: (_r, dead) => dead === '암살',
+    scene: '반란이 판을 갖추기도 전에, 더 조용한 칼이 먼저 왔다.',
+    summary: '친정을 이뤘으나 무예도 사람도 곁에 두지 않았다. 반란이 오기 전, 어둠 속의 칼이 먼저 닿았다.',
+  },
 ]
 
 export const GALLERY_TOTAL = GALLERY.length

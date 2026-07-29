@@ -31,6 +31,8 @@ const NATION_LABEL: Record<string, string> = {
   scroll_offered: '정통성의 두루마리',
   legitimacy_sacred: '신성한 정통성',
   church_support: '교단의 지지',
+  rebellion_crushed: '반란을 진압',
+  regent_retired: '섭정공 명예 퇴장',
 }
 
 export interface SummaryRow {

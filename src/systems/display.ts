@@ -3,7 +3,8 @@ import { targetLabel } from './effects'
 import { LESSON_TIER_MIN } from '../data/activities'
 import { GAME_CONFIG, DURABILITY } from '../data/config'
 import { RESOURCE_META, STAT_META } from '../data/stats'
-import type { Effect, GameState, ResourceKey, StatKey } from '../types/game'
+import { isPostAutonomy } from './rebellion'
+import type { Effect, GameState, GaugeKey, ResourceKey, StatKey } from '../types/game'
 
 /**
  * ★ 표시 방식 (UI 리디자인 1단계, 실플레이 피드백 #8·#9).
@@ -43,7 +44,7 @@ const STAT_BANDS: Band[] = [
   { min: 90, label: '통달' },
 ]
 
-const RESOURCE_BANDS: Record<Exclude<ResourceKey, 'actionPoints'>, Band[]> = {
+const RESOURCE_BANDS: Record<GaugeKey, Band[]> = {
   /**
    * ★ 국정 영향도 — 경계가 곧 엔딩 tier 경계다.
    *   20 미만 = 허수아비:완전 / 45 = 공존 진입 / 70 = 친정 진입.
@@ -134,6 +135,8 @@ export interface GaugeView {
   color: string
   /** 지금 나이에 닿을 수 있는 한계(0~100). 막대 위에 금으로 그린다. */
   capPct?: number
+  /** ★ [3] 무력화 — 섭정공 은퇴 등으로 이 게이지의 위협이 사라졌음을 UI 로 알린다(흐리게 + 사유). */
+  neutralized?: string
 }
 
 const STAT_COLOR: Record<StatKey, string> = {
@@ -170,14 +173,23 @@ export function statGauge(key: StatKey, state: GameState): GaugeView {
  */
 export function resourceGauge(key: ResourceKey, state: GameState, cap?: number): GaugeView {
   const value = state[key] as number
+  // ★ [3] 친정 이후 — 같은 게이지의 성격이 뒤집힌다. 「섭정 의심」이 「반란 모의」로 읽힌다.
+  const label =
+    key === 'regentSuspicion' && isPostAutonomy(state) ? '반란 모의' : RESOURCE_META[key].label
+  // ★ [3] 섭정공 명예 퇴장 — 섭정 관련 게이지(의심/반란 모의·신망)는 위협이 사라져 무력화된다.
+  const neutralized =
+    state.flags.regent_retired === true && (key === 'regentSuspicion' || key === 'regentRapport')
+      ? '섭정공 은퇴 — 위협 소멸'
+      : undefined
   return {
     key,
-    label: RESOURCE_META[key].label,
+    label,
     value,
     band: resourceBand(key, value),
     pct: Math.max(0, Math.min(100, value)),
     color: RESOURCE_COLOR[key] ?? 'var(--color-gold-400)',
     ...(cap !== undefined ? { capPct: Math.max(0, Math.min(100, cap)) } : {}),
+    ...(neutralized ? { neutralized } : {}),
   }
 }
 
