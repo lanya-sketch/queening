@@ -288,6 +288,11 @@ export function judgeEnding(state: GameState): EndingResult {
     // ★ [9-C1] 참칭 전쟁 결과 — 삽입이 승/패를 읽는다(패배 tier 는 배드 후보가 따로 처리).
     'war_won',
     'war_lost',
+    // ★ [9-C2] ③ 전쟁 처분 결과 — 귀순 존치 / 황실 인척 / 혈통 끊음 / 유폐. 삽입이 개별로 읽는다.
+    'prince_fate_ally',
+    'prince_fate_absorbed',
+    'prince_fate_executed',
+    'prince_fate_spared',
     // ★ [3] 반란 진압 — 친정 후 반란을 막아 낸 흔적("반란을 진압한 왕").
     'rebellion_crushed',
     // ★ [3] 섭정공 명예 퇴장 — 담판으로 피 없이 정리한 흔적("협상으로 마무리한 왕").

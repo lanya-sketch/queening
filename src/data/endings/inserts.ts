@@ -320,6 +320,31 @@ export const ENDING_INSERTS: EndingInsert[] = [
     priority: 37,
     lines: [line('국경에서 {왕}의 군대가 부서졌다. 스스로 칭한 관을 지킬 명분도, 세력도 되지 못했다. 삼켜진 것이 아니라, 다 걸고 도전했다가 무너진 것이었다.')],
   },
+  // ★ [9-C2] ③ 전쟁 처분 — 승리 뒤 그 왕족을 어찌했는가(사람의 층, 정복 modifier의 땅과 공존). 전쟁 삽입 뒤에 온다.
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'prince_fate_ally'),
+    priority: 36.5,
+    lines: [line('한때 제국의 왕족이었던 이는, 이제 {황제}의 제후 왕으로 제 옛 땅을 다스린다. 삼켜지지 않고, 신하로서 남았다. 지우지 않은 지배가 더 오래간다는 것을, 새 황제는 알고 있었다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'prince_fate_absorbed'),
+    priority: 36.4,
+    lines: [line('제국의 왕족이었던 이의 혈통은, 사라진 제 나라 대신 새 황실 안으로 이어졌다. 정복이 아니라 잇는 방식으로, 두 왕가가 하나가 되었다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'prince_fate_executed'),
+    priority: 36.3,
+    lines: [line('제국 왕실의 마지막 혈통은 {황제}의 손에 지워졌다. 옛 왕가의 이름은 끝났고, 새 제국의 첫 장은 그 위에서 시작됐다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'prince_fate_spared'),
+    priority: 36.2,
+    lines: [line('적국의 왕족은 죽지 않았다. 다만 다시는 군을 들 수 없는 자리에 갇혔다. 살아 있는 옛 왕족이 언젠가 무엇이 될지는, 아무도 알지 못한다.')],
+  },
   {
     anchor: 'nation',
     match: (r) => has(r, 'crown_centralized'),

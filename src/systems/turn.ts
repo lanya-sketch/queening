@@ -349,6 +349,13 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
       next.flags.rebellion_crushed === true,
     // ★ [4] 공표가 먹히는 판 — 밖(민심)이든 안(권세)이든 왕을 받치면 사람들이 왕의 말을 믿는다.
     king_trusted: favor || strongStanding,
+    // ★ [9-C2] ③ 전쟁 처분 게이트 — ③과 한 번이라도 얽혔는가(호감·정복·공동왕조·연인 확정 중 하나).
+    //   참칭 승리 시에만 처분 이벤트가 뜨는데, 만난 적도 없는 익명의 왕족은 대상이 아니게 막는다.
+    prince_in_play:
+      (next.affection?.prince ?? 0) > 0 ||
+      next.flags.prince_conquered === true ||
+      next.flags.union_possible === true ||
+      next.flags['romance_confirmed:prince'] === true,
   }
 
   // ★ [7] 친정 후 외출 안전(#26) — 실권이 있으면 궁 밖에 나가도 눈치 볼 필요가 준다(발각 없음).

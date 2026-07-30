@@ -17,8 +17,9 @@ import type { GameState } from '../types/game'
 /** 처분(섭정공) — 청산과 성격이 다르나(실권 장악), 치세 중 못 쳤으면 결산 맨 앞에서 한 번 더. */
 const DISPOSAL = DISPOSAL_EVENTS.find((e) => e.id === 'regent-disposal')
 
-/** 청산 이벤트 id → charId (heir-reckoning → heir). */
-const charOfReckoning = (id: string): string => id.replace(/-reckoning$/, '')
+/** 청산 이벤트 id → charId (heir-reckoning → heir). ★ [9-C2] prince 전쟁 처분(prince-war-*)은 모두 'prince'. */
+const charOfReckoning = (id: string): string =>
+  id.startsWith('prince-war-') ? 'prince' : id.replace(/-reckoning$/, '')
 
 /**
  * 다음에 보여줄 결산 이벤트 id(없으면 null = 엔딩으로).

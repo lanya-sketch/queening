@@ -93,6 +93,10 @@ export const PRIORITY: Record<string, number> = {
   // ★ [9-C1] 참칭 전쟁 결과 (20세 클라이맥스) — 선포보다 뒤(선포 후 벌어지는 일)
   'war-victory': 43.2,
   'war-defeat': 43.3,
+  // ★ [9-C2] ③ 전쟁 처분 (결산 체인, 청산 대역 46 빈 소수) — 상호배타라 값만 유일하면 됨
+  'prince-war-defector': 46.5,
+  'prince-war-captive': 46.3,
+  'prince-war-vassal': 46.1,
   // ★ [9-A] 신앙·성물 (성검 자리·대주교·두루마리) + 제국 쇠락 서사(background)
   'empty-altar': 47.1,
   'archbishop-audience': 46.1,

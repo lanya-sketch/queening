@@ -179,6 +179,121 @@ export const RECKONING_EVENTS: GameEvent[] = [
       },
     ],
   },
+
+  // ── ★★ [9-C2] ③ 전쟁 처분 — 참칭 전쟁 승리(war_won)가 처분 조건을 만든다.
+  //   여태 손댈 수 없던 외국 왕족이, 제국을 꺾은 순간 귀순자·포로·이미 굴복시킨 신하 중 하나가 된다.
+  //   게이트 prince_in_play(turn.ts): 한 번도 안 얽힌 ③이면 이벤트 없음(익명의 적). 셋은 상호배타.
+  //   ★ 측실 개념 재사용 안 함 — ③은 대등한 상대였다. 제후·인척·동맹 같은 정치 관계로만.
+  //   {황제}/{폐하}: war_won 이면 emperor flag 가 서 있어 승리 호칭이 자연스럽다.
+  {
+    // A. 귀순 — 호감 45↑(공존선). 그가 제 황실이 아니라 새 제국을 택해 걸어 들어왔다.
+    id: 'prince-war-defector',
+    title: '국경을 넘어온 왕족',
+    text:
+      '제국이 꺾인 자리에서, 그가 왔다. 한때 사냥철마다 예고 없이 들르던 제국의 왕족이,\n' +
+      '이번엔 제 나라의 깃발을 내려놓고 국경을 넘었다. 무너지는 제 황실이 아니라, ' +
+      '새로 선 이 제국을 택한 것이다.\n' +
+      '{폐하}는 정해야 한다 — 스스로 걸어 들어온 이 왕족을, 무엇으로 둘 것인가.',
+    condition: {
+      minAge: 19,
+      flags: { war_won: true, prince_in_play: true, prince_conquered: false, prince_war_settled: false },
+      affection: { prince: { min: 45 } },
+    },
+    insights: [
+      {
+        requires: { flags: { 'romance_confirmed:prince': true } },
+        text:
+          '그는 연인이었다. 두 왕관을 나눠 쓰자던 사람이, 이제 한쪽 왕관이 사라진 자리에 ' +
+          '홀로 서서 {폐하}를 바라본다. 그의 나라는 없어졌고, 그는 여기 있다.',
+      },
+    ],
+    choices: [
+      {
+        id: 'ally',
+        label: '대등한 제후로 세운다',
+        setFlags: { prince_war_settled: true, prince_fate_ally: true },
+        hint: '혈통을 인정해 새 제국의 제후 왕으로 — 삼키지 않고 곁에 세운다',
+        resultText:
+          '{황제}는 그를 제후로 세웠다. 제국의 왕족이었던 이가, 새 제국의 신하 왕으로 제 땅을 다스린다.\n' +
+          '삼킬 수도 있었으나 그러지 않았다. 스스로 걸어 들어온 이에게는, 자리로 답했다.',
+      },
+      {
+        id: 'absorb',
+        label: '황실 인척으로 들인다',
+        setFlags: { prince_war_settled: true, prince_fate_absorbed: true },
+        hint: '사라진 그의 혈통을 새 황실에 잇는다 — 두 왕가가 하나로',
+        resultText:
+          '{황제}는 그를 황실 안으로 들였다. 사라진 제 나라 대신, 새로 선 제국의 혈통 안에 그의 이름이 남았다.\n' +
+          '정복이 아니라, 잇는 방식으로 두 왕가가 하나가 되었다.',
+      },
+    ],
+  },
+  {
+    // B. 포로 — 호감 44↓. 끝까지 제 황실 편에 서서 싸우다 사로잡힌 적국 왕족.
+    id: 'prince-war-captive',
+    title: '사로잡힌 왕족',
+    text:
+      '제국이 꺾인 자리에서, 그가 끌려왔다. 한때 사냥철마다 들르던 제국의 왕족은 끝까지 ' +
+      '제 황실 편에 서서 칼을 들었고, 국경의 전장에서 사로잡혔다.\n' +
+      '이제 그는 적국의 왕족이자, {폐하}의 포로다.\n' +
+      '{폐하}는 정해야 한다 — 이 사로잡힌 왕족을 어찌할 것인가.',
+    condition: {
+      minAge: 19,
+      flags: { war_won: true, prince_in_play: true, prince_conquered: false, prince_war_settled: false },
+      affection: { prince: { max: 44 } },
+    },
+    choices: [
+      {
+        id: 'execute',
+        label: '처형한다',
+        setFlags: { prince_war_settled: true, prince_fate_executed: true },
+        hint: '적국 왕실의 마지막 불씨를 끈다 — 되돌릴 수 없다',
+        resultText:
+          '명이 내려졌고, 그것은 실행되었다. 제국 왕실의 이름 하나가, 새 제국의 첫 장에서 지워졌다.',
+      },
+      {
+        id: 'spare',
+        label: '유폐하되 살려 둔다',
+        setFlags: { prince_war_settled: true, prince_fate_spared: true },
+        hint: '죽이지 않되 힘을 거둔다 — 살아 있는 왕족은 언젠가의 불씨일 수도',
+        resultText:
+          '{황제}는 그를 죽이지 않았다. 다만 다시는 군을 들 수 없는 자리에 가두었다.\n' +
+          '적국의 왕족을 살려 둔 것이 관용일지 화근일지는, 시간이 정할 일이다.',
+      },
+    ],
+  },
+  {
+    // C. 정복됨 — 전쟁 전에 이미 그 땅을 삼켰다(prince_conquered). 굴복한 사람을 끝까지 볼 것인가 남길 것인가.
+    id: 'prince-war-vassal',
+    title: '이미 무릎 꿇은 자',
+    text:
+      '그의 나라는 이미 {황제}의 것이었다. 전쟁이 나기 전에, 그 땅을 삼켰다.\n' +
+      '이제 제국마저 꺾인 자리에서, 한때 왕족이었던 그는 완전히 {황제}의 손안에 있다.\n' +
+      '{폐하}는 정해야 한다 — 이미 굴복한 이 사람을, 끝까지 볼 것인가 남길 것인가.',
+    condition: {
+      minAge: 19,
+      flags: { war_won: true, prince_conquered: true, prince_war_settled: false },
+    },
+    choices: [
+      {
+        id: 'annex',
+        label: '완전히 병합해 끝을 본다',
+        setFlags: { prince_war_settled: true, prince_fate_executed: true },
+        hint: '혈통을 지운다 — 삼킨 땅에 옛 이름도 남기지 않는다',
+        resultText:
+          '{황제}는 끝을 보았다. 삼킨 땅에서 옛 왕가의 이름은 지워졌고, 그 자리엔 새 제국의 문장만 남았다.',
+      },
+      {
+        id: 'keep',
+        label: '신하 왕으로 존치한다',
+        setFlags: { prince_war_settled: true, prince_fate_ally: true },
+        hint: '굴복한 혈통을 남겨 신하 왕으로 둔다 — 지우지 않고 다스리게 한다',
+        resultText:
+          '{황제}는 그를 남겼다. 굴복한 왕족은 신하 왕이 되어, 제 옛 땅을 {황제}의 이름 아래 다스린다.\n' +
+          '지울 수도 있었으나 남겼다. 다스리게 하는 것이, 지우는 것보다 오래가는 지배임을 알았다.',
+      },
+    ],
+  },
 ]
 
 /**
