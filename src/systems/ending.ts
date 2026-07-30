@@ -63,6 +63,64 @@ export function nationalPower(state: GameState): number {
   )
 }
 
+/**
+ * ★★ [9-C1] 참칭 전쟁 판정.
+ *
+ * 핵심 설계: **명분은 "이길 수 있냐"가 아니라 "어떤 적과 싸우냐"를 바꾼다.**
+ *   - 우리 전력 = 국력(nationalPower) + ⑤군사노선 + 권세/2 + 민심.
+ *   - 제국 전력 = 잔존 기본(쇠락했으나 여전히 큼)에서 **명분이 깎아 낸다**:
+ *       · 성물(legitimacy_sacred) → 제국의 정통성이 흔들려 내부가 분열(−).
+ *       · 교권(church_support)     → 교회가 제국 편에 서지 않아 고립(−).
+ *       · ③정복(prince_conquered)  → 그 세력을 흡수해 제국이 약해짐(−).
+ *       · **명분이 하나도 없으면** 제국이 명분을 독점 → 다른 나라도 제국 편, **우리가 고립(+)**.
+ *
+ * → 성물·교권이면 약해진 제국과 싸우고, 국력만이면 강해진 제국과 고립돼 싸운다.
+ *   ★ 그래도 명분 없이 국력이 압도적이면 이긴다("칼로 선 황제"). 판정은 순수 비교다.
+ */
+export const WAR = {
+  /** 제국 잔존 전력 — 쇠락 서사를 거쳤어도 대국이라 여전히 크다. */
+  empireBase: 130,
+  /** 성물 → 제국 정통성 도전, 내부 분열. */
+  relicIsolate: 30,
+  /** 교권 → 교회 중립/우리 편, 제국 고립. */
+  churchIsolate: 25,
+  /** ③정복 → 적 세력 흡수. */
+  conquestAbsorb: 20,
+  /** 명분 전무 → 제국이 명분 독점, 우리가 고립돼 더 강한 적과 싸움. */
+  forceIsolate: 25,
+  /** ⑤ 군사노선 — 왕이 이끄는 군의 전력 보탬. */
+  militaryBonus: 25,
+  /** 민심 — 총력전을 버티는 후방. */
+  peopleBonus: 20,
+} as const
+
+/** 우리 전력 — 국력 + ⑤ + 권세 + 민심. */
+export function warStrength(state: GameState): number {
+  return (
+    nationalPower(state) +
+    (flag(state, 'military_route_open') ? WAR.militaryBonus : 0) +
+    Math.floor((state.courtStanding ?? 0) / 2) +
+    (flag(state, 'people_favor') ? WAR.peopleBonus : 0)
+  )
+}
+
+/** 제국 전력 — 잔존 기본에서 명분이 깎고, 명분이 없으면 오히려 는다(우리 고립). */
+export function empireStrength(state: GameState): number {
+  const relic = flag(state, 'legitimacy_sacred')
+  const church = flag(state, 'church_support')
+  let s = WAR.empireBase
+  if (relic) s -= WAR.relicIsolate
+  if (church) s -= WAR.churchIsolate
+  if (flag(state, 'prince_conquered')) s -= WAR.conquestAbsorb
+  if (!relic && !church) s += WAR.forceIsolate // 명분 전무 → 우리 고립
+  return s
+}
+
+/** 참칭 전쟁의 승패. 명분·국력·⑤·민심·권세·③를 다 읽는 순수 함수(난수 없음). */
+export function warOutcome(state: GameState): 'won' | 'lost' {
+  return warStrength(state) >= empireStrength(state) ? 'won' : 'lost'
+}
+
 interface BadCandidate {
   tier: EndingTier
   /** 유예 게이트를 통과하는가. */
@@ -76,6 +134,12 @@ interface BadCandidate {
 function badCandidates(state: GameState, power: number): BadCandidate[] {
   const T = ENDING_THRESHOLDS
   const out: BadCandidate[] = []
+
+  // ★ [9-C1] 참칭 실패 — 다 걸고 잃은 파국. 어떤 위기보다 압도적인 결말이라 **최우선**이고,
+  //   유예가 없다(전쟁에서 졌으면 되돌릴 저울이 없다). 20세 엔딩 tier 로 성립한다(조기 데드 아님).
+  if (flag(state, 'war_lost')) {
+    out.push({ tier: '배드:참칭실패', canReprieve: false, reprieveGrants: null, label: '참칭 전쟁' })
+  }
 
   if (flag(state, 'queen_poison_path') && !flag(state, 'queen_poison_averted')) {
     out.push({
@@ -221,6 +285,9 @@ export function judgeEnding(state: GameState): EndingResult {
     // ★ [9-B] 선포 결과 — 신성국(친정 변종) / 참칭(전쟁은 [9-C]에서 판정).
     'holy_kingdom',
     'empire_claimed',
+    // ★ [9-C1] 참칭 전쟁 결과 — 삽입이 승/패를 읽는다(패배 tier 는 배드 후보가 따로 처리).
+    'war_won',
+    'war_lost',
     // ★ [3] 반란 진압 — 친정 후 반란을 막아 낸 흔적("반란을 진압한 왕").
     'rebellion_crushed',
     // ★ [3] 섭정공 명예 퇴장 — 담판으로 피 없이 정리한 흔적("협상으로 마무리한 왕").
@@ -265,6 +332,13 @@ export function judgeEnding(state: GameState): EndingResult {
   // ★ [9-B] 신성국 — 친정 위에서 교황의 관을 받아 전쟁 없이 독립한 왕. 친정이 전제(교황과 협상하려면
   //   왕이 실권을 쥐어야). 성물이 있으면 개혁까지 지킨 "관도 받고 개혁도 지킨" 왕(서술이 가른다).
   if (flag(state, 'holy_kingdom') && influence >= T.autonomy) modifiers.push('관을 받은 왕')
+
+  // ★ [9-C1] 참칭 전쟁 승리 — 명분이 "어떤 황제냐"의 결을 가른다(호칭은 엔딩 텍스트에서 emperor flag 가 처리).
+  if (flag(state, 'war_won')) {
+    if (flag(state, 'legitimacy_sacred')) modifiers.push('하늘이 인정한 황제')
+    else if (flag(state, 'church_support')) modifiers.push('교황이 관을 씌운 황제')
+    else modifiers.push('칼로 선 황제')
+  }
 
   // ★ 숙청 수식 — 새 지표 없이 실행된 숙청의 수로 조합한다.
   const purges = purgeCount(state)

@@ -33,6 +33,8 @@ const NATION_LABEL: Record<string, string> = {
   church_support: '교단의 지지',
   holy_kingdom: '교황의 관을 받은 신성국',
   empire_claimed: '스스로 황제를 칭함',
+  war_won: '전쟁으로 제위를 얻음',
+  war_lost: '참칭 전쟁에서 패함',
   rebellion_crushed: '반란을 진압',
   regent_retired: '섭정공 명예 퇴장',
   nobles_purged_all: '귀족 대숙청',

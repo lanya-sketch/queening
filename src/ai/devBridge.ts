@@ -23,7 +23,7 @@ import {
   setIncidentPressure, setIncidentsAblated, setMinorEnabled, resetMinorTuning,
 } from '../systems/minorEvents'
 import { durabilityBase, growthFactor, wellbeingCostFactor } from '../systems/durability'
-import { ENDING_THRESHOLDS, judgeEnding } from '../systems/ending'
+import { ENDING_THRESHOLDS, judgeEnding, warOutcome, warStrength, empireStrength } from '../systems/ending'
 import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { resolveCharacterPortrait, resolveMonarchPortrait, validateManifest } from '../systems/outfits'
@@ -89,6 +89,11 @@ export function installDevBridge(): void {
     },
     endingThresholds() {
       return ENDING_THRESHOLDS
+    },
+    /** ★ [9-C1] 참칭 전쟁 판정 — 명분 4조합·국력이 승패를 어떻게 가르는지 검증용. */
+    warOutcome(state?: Record<string, unknown>) {
+      const s = (state ?? useGame.getState().game) as never
+      return { outcome: warOutcome(s), ours: warStrength(s), enemy: empireStrength(s) }
     },
     /** 내구도 계수 — 초반 혹독/후반 가속 곡선 검증용. */
     durabilityInfo(durability: number) {

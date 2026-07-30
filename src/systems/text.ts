@@ -63,6 +63,13 @@ export function resolveText(text: string, game: GameState): string {
         return monarch.title
       case '전하':
         return monarch.address
+      // ★ [9-C1] 황제 호칭 — 참칭 전쟁 승리 엔딩 삽입에서만 쓰는 전용 토큰(성별 반영: 황제/여제, 폐하).
+      //   {왕}(왕/여왕)을 건드리지 않으므로 기존 텍스트의 조사(은/이/을)가 안전하다. 승리 삽입 한정이라
+      //   자연히 엔딩에서만 나타난다.
+      case '황제':
+        return monarch.emperorTitle
+      case '폐하':
+        return monarch.emperorAddress
       case '그':
         return monarch.third
       case '왕자':

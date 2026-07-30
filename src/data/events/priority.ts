@@ -90,6 +90,9 @@ export const PRIORITY: Record<string, number> = {
   // ★ [9-B] 교권 동맹 + 선포 결정 (엔딩 직전 대외 결단)
   'church-alliance': 44.1,
   'proclamation': 43.1,
+  // ★ [9-C1] 참칭 전쟁 결과 (20세 클라이맥스) — 선포보다 뒤(선포 후 벌어지는 일)
+  'war-victory': 43.2,
+  'war-defeat': 43.3,
   // ★ [9-A] 신앙·성물 (성검 자리·대주교·두루마리) + 제국 쇠락 서사(background)
   'empty-altar': 47.1,
   'archbishop-audience': 46.1,

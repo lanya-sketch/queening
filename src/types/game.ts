@@ -491,6 +491,8 @@ export interface Delta {
 export type EndingTier =
   | '친정' | '공존' | '허수아비'
   | '배드:꼭두각시' | '배드:군부종속' | '배드:제국복속'
+  // ★ [9-C1] 참칭하다 전쟁에서 패함 — 삼켜진(제국복속)과 결이 다른, 다 걸고 잃은 파국.
+  | '배드:참칭실패'
 
 export type EndingDisposal = '정당' | '폭군' | '회유' | '못함'
 

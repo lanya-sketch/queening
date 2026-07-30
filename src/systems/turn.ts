@@ -10,6 +10,7 @@ import { RISK_STRAIN, updateRisk } from './risk'
 import { isPostAutonomy, PEOPLE_FAVOR_MIN, reliefCount, STANDING_STRONG, tideHasTurned } from './rebellion'
 import { initialAffection, initialCharacterGenders } from './romance'
 import { CONNECTED_MONTH } from './visit'
+import { warOutcome } from './ending'
 import { JEALOUSY_CD, JEALOUSY_COOLDOWN, jealousyRivalFlag, planJealousy } from '../data/events/jealousy'
 
 /** ★ [5] 그 달 깊이 만난 인물(X) flag prefix — 질투 달래기의 '다른 쪽' 대상. */
@@ -356,6 +357,20 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   next.flags = {
     ...next.flags,
     outing_safe: isPostAutonomy(next) && next.flags.regent_hostile !== true,
+  }
+
+  // ★★ [9-C1] 참칭 전쟁 판정 — 스스로 황제를 칭한(empire_claimed) 왕에게 20세에 제국이 온다.
+  //   warOutcome 이 명분·국력·⑤·민심·권세·③를 다 읽어 승/패를 낸다(난수 없음, 한 번만).
+  //   여기서 flag 만 굳히고, 서사(전쟁 장면)는 war-victory/war-defeat 이벤트가 다음 달에 자동 발동해 드러낸다.
+  //   승리 시 emperor flag → 엔딩 텍스트의 {왕} 토큰이 황제/여제로 해석된다(엔딩 한정).
+  if (next.flags.empire_claimed === true && next.age >= 20 && next.flags.war_resolved !== true) {
+    const won = warOutcome(next) === 'won'
+    next.flags = {
+      ...next.flags,
+      war_resolved: true,
+      [won ? 'war_won' : 'war_lost']: true,
+      ...(won ? { emperor: true } : {}),
+    }
   }
 
   // ★ [5] 질투 — 문어발의 대가(제한이 아니라 대가). 이 달 깊은 만남이 있었고 다른 연애 대상도

@@ -27,6 +27,7 @@
     "verify:endgame": "node tools/verify/endgame.mjs",
     "verify:faith": "node tools/verify/faith.mjs",
     "verify:empire": "node tools/verify/empire.mjs",
+    "verify:war": "node tools/verify/war.mjs",
     "verify:round-a": "node tools/verify/round-a.mjs",
     "verify:ending-scene": "node tools/verify/ending-scene.mjs",
     "verify:hard-exclusive": "node tools/verify/hard-exclusive.mjs",

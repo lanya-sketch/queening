@@ -20,9 +20,17 @@ export interface Terms {
   third: string
 }
 
-export const MONARCH_TERMS: Record<Gender, Terms> = {
-  male: { title: '왕', address: '전하', child: '왕자', third: '그' },
-  female: { title: '여왕', address: '전하', child: '왕녀', third: '그녀' },
+/** ★ [9-C1] 군주 전용 — 참칭 승리 엔딩의 황제 호칭({황제}/{폐하} 토큰). 캐릭터 Terms 엔 없다. */
+export interface MonarchTerms extends Terms {
+  /** 참칭 승리 후 호칭. 황제 / 여제. 승리 엔딩 삽입의 {황제} 토큰이 이걸로. */
+  emperorTitle: string
+  /** 황제의 경칭. 폐하. {폐하} 토큰이 이걸로. */
+  emperorAddress: string
+}
+
+export const MONARCH_TERMS: Record<Gender, MonarchTerms> = {
+  male: { title: '왕', address: '전하', child: '왕자', third: '그', emperorTitle: '황제', emperorAddress: '폐하' },
+  female: { title: '여왕', address: '전하', child: '왕녀', third: '그녀', emperorTitle: '여제', emperorAddress: '폐하' },
 }
 
 /**
