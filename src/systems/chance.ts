@@ -111,7 +111,10 @@ export function tickCounters(counters: Record<string, number>): Record<string, n
   for (const [key, value] of Object.entries(counters)) {
     // ★ `__pity:`(쌓인 헛탕)·`__risk:`(쌓인 방치)·`__bond:`([5] 질투 leaning/wavered 기록)는
     //   타이머가 아니라 누적기라 매 턴 깎으면 안 된다. 나머지(체류·쿨다운)만 규칙 하나로 준다.
-    if (key.startsWith('__pity:') || key.startsWith('__risk:') || key.startsWith('__bond:')) {
+    if (
+      key.startsWith('__pity:') || key.startsWith('__risk:') ||
+      key.startsWith('__bond:') || key.startsWith('__faith:') // ★ [9-A] 대예배당 방문 누적(두루마리)
+    ) {
       next[key] = value
       continue
     }

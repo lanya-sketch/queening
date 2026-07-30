@@ -87,6 +87,13 @@ export const PRIORITY: Record<string, number> = {
   'decisive-hero': 61,
   'prince-arrival': 60,
   'prince-duel': 59, // ★ [7] ③ 겨루기 — 체류 중 한 번
+  // ★ [9-A] 신앙·성물 (성검 자리·대주교·두루마리) + 제국 쇠락 서사(background)
+  'empty-altar': 47.1,
+  'archbishop-audience': 46.1,
+  'scroll-by-faith': 45.1,
+  'empire-decline-1': 9.4,
+  'empire-decline-2': 9.5,
+  'empire-decline-3': 9.6,
 
 
   // ── 60.x  13~15세 관계 이벤트 (teenBonds) — 로맨스 아님, 첫인상의 결이 바뀌는 구간.

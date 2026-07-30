@@ -228,6 +228,8 @@ export function StatusPanel() {
             <Gauge view={resourceGauge('courtInfluence', game, courtInfluenceCap(game.age))} />
             <Gauge view={resourceGauge('wellbeing', game)} />
             <Gauge view={resourceGauge('tutorTrust', game, tutorTrustCap(game.age))} />
+            {/* ★ [9-A] 신앙 — 성년(16세, 대예배당·미사가 의미를 갖는 시점) 이후에 보인다. */}
+            {game.age >= 16 && <Gauge view={resourceGauge('faith', game)} />}
           </div>
 
           <SectionHead tone="peril" className="mb-3.5 mt-6">

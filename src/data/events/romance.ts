@@ -1,4 +1,5 @@
 import { ROMANCE_UNLOCK_FLAG } from '../characters'
+import { FAITH } from '../config'
 import type { GameEvent } from '../../types/game'
 
 /**
@@ -48,8 +49,14 @@ export const ROMANCE_EVENTS: GameEvent[] = [
           '소문과 실물이 만나는 자리였다. 아, 그 사람이 이 사람이구나.',
       },
     ],
-    // 17세 가을(10월) — 수확철 논공행상 자리. 18세 게이트보다 앞서 자연스럽다.
-    condition: { minAge: 17, month: 10 },
+    // ★ [9-A] 17~19세 가을(10월) — 논공행상 자리. 단 **신앙 게이트**: 신앙이 얕은 궁은 성물의
+    //   자리로 인정받지 못해 성검이 본산으로 가고 ④도 오지 않는다(faith ≥ heroAt). hero_at_court:false 로
+    //   한 번만. 못 채우면 「빈 제단」(faith.ts)이 그 사실을 알린다.
+    condition: {
+      minAge: 17, month: 10,
+      flags: { hero_at_court: false, sword_to_church: false },
+      resources: { faith: { min: FAITH.heroAt } },
+    },
     priority: 33,
     setFlags: { hero_at_court: true },
   },

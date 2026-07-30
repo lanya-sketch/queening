@@ -35,6 +35,8 @@ const MAX_ABS: Record<AiDeltaTarget, number> = {
   courtInfluence: 0,
   regentSuspicion: 3,
   regentRapport: 3,
+  // ★ [9-A] 신앙도 코드 전용(미사·헌금·의례) — AI 자유대화가 건드리지 못한다.
+  faith: 0,
 }
 
 /** 한 응답에서 받아들일 델타 개수 상한. */

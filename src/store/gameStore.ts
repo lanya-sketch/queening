@@ -8,6 +8,7 @@ import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '..
 import { applyEffects } from '../systems/effects'
 import { resolvedChoice } from '../systems/activityTier'
 import { resolveJealousyChoice } from '../data/events/jealousy'
+import { FAITH } from '../data/config'
 import { matchesCondition, seenFlagId } from '../systems/eventEngine'
 import { deadEndReason } from '../systems/deadend'
 import { nextEndgameEvent } from '../systems/endgame'
@@ -191,12 +192,24 @@ export const useGame = create<GameStore>()((set, get) => ({
     if (!event) return
     // 조립 씬(장소)이면 고정 슬롯에 얹는다. chamber-search 는 제 씬을 쓰므로 null.
     if (plan.scene) SCENE_BY_ID[SCENE_PLACE_VISIT] = plan.scene
+    // ★ [9-A] 대예배당 방문 — 두루마리 누적 카운터(항상) + 신앙 소폭(그 달 1회, 자유 이동 남발 방지).
+    const chapelCounters: Record<string, number> = {}
+    const chapelFlags: Record<string, boolean> = {}
+    let faith = game.faith
+    if (place === 'chapel') {
+      chapelCounters['__faith:chapel_visits'] = (game.counters?.['__faith:chapel_visits'] ?? 0) + 1
+      if (game.flags.chapel_faith_this_month !== true) {
+        faith = Math.min(100, faith + FAITH.chapelGain)
+        chapelFlags.chapel_faith_this_month = true
+      }
+    }
     set({
       game: {
         ...game,
+        faith,
         // 방문 flag + 이벤트 기본 setFlags(예: chamber-search 의 queen_chamber_searched)를 함께 적용.
-        flags: { ...game.flags, ...plan.setFlags, ...event.setFlags },
-        counters: { ...(game.counters ?? {}), ...plan.counters },
+        flags: { ...game.flags, ...plan.setFlags, ...event.setFlags, ...chapelFlags },
+        counters: { ...(game.counters ?? {}), ...plan.counters, ...chapelCounters },
         pendingEventIds: [plan.eventId],
         phase: 'event',
       },

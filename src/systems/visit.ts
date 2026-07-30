@@ -8,6 +8,7 @@ import { knowsTreason, officeSearchEligible, OFFICE_SEARCH_OPEN } from '../data/
 import { encounterFor } from '../data/events/encounters'
 import { RISK_TUTOR } from './risk'
 import { isPostAutonomy } from './rebellion'
+import { FAITH } from '../data/config'
 import type { Rng } from './effects'
 
 /**
@@ -199,7 +200,14 @@ function planOffice(game: GameState, rng: Rng, base: VisitPlan): VisitPlan {
 function planChapel(game: GameState, rng: Rng, base: VisitPlan): VisitPlan {
   const loc = PLACE_BY_ID.chapel.location
   if (!heroAvailable(game)) {
-    return { ...base, scene: { id: SCENE_PLACE_VISIT, lines: [N(loc), N(CHAPEL.beforeHero)] } }
+    // ★ [9-A] 성검 떠남(빈 제단) / 성검만(입궁 전) — 신앙 깊으면 사제 태도 한 줄 얹는다.
+    const lines = [N(loc)]
+    if (game.flags.sword_to_church === true) lines.push(N(CHAPEL.swordGone))
+    else {
+      lines.push(N(CHAPEL.beforeHero))
+      if ((game.faith ?? 0) >= FAITH.scrollFaith) lines.push(N(CHAPEL.devoutTone))
+    }
+    return { ...base, scene: { id: SCENE_PLACE_VISIT, lines } }
   }
   const alreadyMet = game.flags[metMonthFlag('hero')] === true
   const connectedAlready = game.flags[CONNECTED_MONTH] === true

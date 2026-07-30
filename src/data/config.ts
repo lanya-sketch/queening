@@ -23,7 +23,7 @@ export const GAME_CONFIG = {
 
   saveKey: 'queening.save',
   /** 올릴 때마다 systems/save.ts 의 MIGRATIONS 에 변환을 추가할 것. */
-  saveVersion: 11,
+  saveVersion: 12,
 } as const
 
 /** 달 표시. 1..12. */
@@ -194,6 +194,32 @@ export const INITIAL_RESOURCES = {
   courtInfluence: 10,
   /** ★ [3] 권세 — 궁정 안의 왕 편. 영향도와 같은 허수아비 출발점(10). */
   courtStanding: 10,
+  /** ★ [9-A] 신앙 — 미사·대예배당·헌금으로 쌓는다. 0(무심함)에서 출발. */
+  faith: 0,
+} as const
+
+/**
+ * ★ [9-A] 신앙 문턱·적립량. 성검·④ 등장(heroAt)과 두루마리 믿음 경로(scrollFaith·chapelVisits).
+ *   미사(큰폭)·연회 헌금·부활절이 주 적립처. 대예배당 방문은 두루마리 누적 카운터만 올린다.
+ */
+export const FAITH = {
+  /** ④ 성검 등장 최소 신앙(독실함 구간). 그 아래면 성검이 본산으로, ④가 오지 않는다. */
+  heroAt: 40,
+  /** 두루마리 믿음 경로 — 신앙 상위(경건함). 사랑 경로(④ 로맨스)와 같은 물건을 어렵게 얻는 길. */
+  scrollFaith: 65,
+  /** 두루마리 믿음 경로 — 대예배당 방문 누적(연쇄 발견의 근거). */
+  chapelVisitsForScroll: 4,
+  /**
+   * 성탄 미사·부활절은 **수동 적립**(계절 이벤트라 저절로 뜬다)이라 작게 둔다 — 이것만으로는
+   * ④ 문턱(40)에 못 닿게. 신앙은 **능동 투자**(헌금·대예배당)로 쌓아야 성물에 닿는다.
+   */
+  massGain: 3,
+  /** 연회 헌금 신앙 +(권세 대가) — 능동 투자의 주 경로. */
+  almsGain: 8,
+  /** 부활절 계절 신앙 +(수동, 작게). */
+  easterGain: 2,
+  /** 대예배당 방문 신앙 +(그 달 1회만 — 자유 이동이라 남발 방지). 방문 누적은 두루마리 카운터로 별도. */
+  chapelGain: 3,
 } as const
 
 /**

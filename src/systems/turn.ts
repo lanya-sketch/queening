@@ -293,6 +293,7 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
         key === 'outing_deep_look' || // ★ [7] 잠행 깊은 시찰 신호 — 종합 뒤 소거
         key === 'connected_this_month' || // ★ [5] 이 달의 깊은 만남(소득 1회) — 다음 달 리셋
         key.startsWith('met_month:') || // ★ [5] 소득 1회(그 달 만난 인물) — 다음 달 리셋
+        key === 'chapel_faith_this_month' || // ★ [9-A] 대예배당 신앙 월 1회 게이트 — 다음 달 리셋
         key.startsWith(CONNECTED_WITH_PREFIX) || // ★ [5] 그 달 만난 상대(X) — 질투 해소 뒤 소거
         key.startsWith(JEALOUSY_RIVAL_PREFIX) || // ★ [5] 질투 rival flag — 다음 턴 소거(해소는 이번 턴 event 상)
         key.startsWith('visited_'))

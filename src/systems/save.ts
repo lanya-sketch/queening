@@ -88,6 +88,8 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
     }
     return { ...state, affection: aff }
   },
+  // v11 -> v12 : ★ [9-A] 신앙(信仰) 지표 도입. 옛 세이브는 0(무심함)에서 시작한다.
+  11: (state) => ({ ...state, faith: state.faith ?? INITIAL_RESOURCES.faith }),
 }
 
 function migrate(state: any, fromVersion: number): GameState | null {

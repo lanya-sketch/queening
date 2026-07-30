@@ -17,6 +17,7 @@ import { BANQUET_EVENTS } from './banquet'
 import { TREASON_EVENTS } from './treason'
 import { ENCOUNTER_EVENTS } from './encounters'
 import { JEALOUSY_EVENTS } from './jealousy'
+import { FAITH_EVENTS } from './faith'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
 import { OUTING_EVENTS, OUTING_VISIT_EVENTS } from './outings'
@@ -59,6 +60,7 @@ const RAW_EVENTS: GameEvent[] = [
   ...OUTING_EVENTS,
   ...BANQUET_EVENTS,
   ...TREASON_EVENTS,
+  ...FAITH_EVENTS,
 ]
 
 /** 스케줄러가 굴리는 소소 채널(메인 루프 밖). 렌더 등록용으로만 모은다. */

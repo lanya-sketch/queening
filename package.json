@@ -25,6 +25,7 @@
     "verify:incidents": "node tools/verify/incidents.mjs",
     "verify:ending": "node tools/verify/ending.mjs",
     "verify:endgame": "node tools/verify/endgame.mjs",
+    "verify:faith": "node tools/verify/faith.mjs",
     "verify:round-a": "node tools/verify/round-a.mjs",
     "verify:ending-scene": "node tools/verify/ending-scene.mjs",
     "verify:hard-exclusive": "node tools/verify/hard-exclusive.mjs",

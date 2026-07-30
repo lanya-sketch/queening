@@ -53,6 +53,8 @@ export const RESOURCE_META: Record<ResourceKey, { label: string; bar: string }> 
   actionPoints: { label: '행동력', bar: 'bg-ink-600' },
   // ★ [3] 권세 — 숨은 지표(GaugeKey 제외라 막대는 안 뜬다). 델타도 가려진다(effects.ts).
   courtStanding: { label: '권세', bar: 'bg-amber-500' },
+  // ★ [9-A] 신앙 — 보이는 게이지(GaugeKey 포함, HIDDEN 아님). 왕 본인이 아는 것.
+  faith: { label: '신앙', bar: 'bg-violet-400' },
 }
 
 /**

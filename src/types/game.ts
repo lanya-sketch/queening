@@ -28,6 +28,7 @@ export type ResourceKey =
   | 'regentRapport'
   | 'actionPoints'
   | 'courtStanding'
+  | 'faith'
 
 /**
  * 사이드바 막대로 보이는 게이지. ★ [3] courtStanding(권세)는 숨은 지표라 제외한다 —
@@ -551,6 +552,13 @@ export interface GameState {
    *   담판 판세·반란 방어의 조건. 10(허수아비)에서 출발.
    */
   courtStanding: number
+  /**
+   * ★ [9-A] 신앙(信仰) — 왕이 얼마나 독실한가. 권세와 달리 **보이는 게이지**다(왕 본인이 아는 것).
+   *   제국이 교권 다툼으로 무너지는 판에서 신앙은 정치 자원이 된다: 성검·④ 등장 조건,
+   *   두루마리(믿음 경로), 사제 태도, 대주교의 순간. [9-B]에서 모후 여론·교권 지지로 더 쓰인다.
+   *   미사·대예배당·연회 헌금으로 쌓인다. 0 에서 출발.
+   */
+  faith: number
   actionPoints: number
   /** 현재 입고 있는 착장 id. 매니페스트에 없으면 기본 착장으로 되돌린다. */
   currentOutfitId: string

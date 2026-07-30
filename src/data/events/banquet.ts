@@ -1,4 +1,5 @@
 import type { GameEvent } from '../../types/game'
+import { FAITH } from '../config'
 
 /**
  * ★ [3] 연례 가을 연회 — 해마다 10월(수확제 9월 뒤·담판 11월 전), AP 0(강제 발동).
@@ -88,6 +89,16 @@ export const BANQUET_EVENTS: GameEvent[] = [
         effects: [{ target: { kind: 'resource', key: 'wellbeing' }, amount: 4 }],
         resultText: '{왕}은 무리에서 한 발 떨어져 방을 읽기만 했다. 서두를 것 없다는 얼굴이었다.',
       },
+      {
+        // ★ [9-A] 교회 헌금 — 신앙을 쌓되 권세를 지불한다.
+        id: 'alms',
+        label: '대성당에 헌금한다',
+        effects: [
+          { target: { kind: 'resource', key: 'faith' }, amount: FAITH.almsGain },
+          { target: { kind: 'resource', key: 'courtStanding' }, amount: -2 },
+        ],
+        resultText: '{왕}은 대성당에 헌금을 내렸다. 사제들은 축복했고, 곁의 어른들은 재물을 아까워했다.',
+      },
     ],
   },
   {
@@ -131,6 +142,18 @@ export const BANQUET_EVENTS: GameEvent[] = [
         resultText:
           '{왕}은 좌중이 다 듣는 앞에서 섭정공의 처결 하나를 정면으로 물었다. 방이 조용해졌다. ' +
           '물러서지 않는 젊은 왕을 보고, 눈치 빠른 자들은 그날 밤 자리를 옮겼다. 그리고 섭정공은 기억했다.',
+      },
+      {
+        // ★ [9-A] 교회 헌금 — 신앙을 쌓되 권세를 지불한다(귀족은 교회로 흐르는 재물을 아까워한다).
+        id: 'alms',
+        label: '대성당에 크게 헌금한다',
+        effects: [
+          { target: { kind: 'resource', key: 'faith' }, amount: FAITH.almsGain },
+          { target: { kind: 'resource', key: 'courtStanding' }, amount: -2 },
+        ],
+        resultText:
+          '{왕}은 대성당에 적잖은 헌금을 내렸다. 사제들은 왕의 이름을 축복에 올렸고, ' +
+          '귀족들은 곳간에서 나가는 재물을 아까워하는 낯이었다.',
       },
     ],
   },

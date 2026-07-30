@@ -88,6 +88,17 @@ const RESOURCE_BANDS: Record<GaugeKey, Band[]> = {
     { min: GAME_CONFIG.regentSuspicionWarning, label: '경계함', peril: true },
     { min: 90, label: '노려봄', peril: true },
   ],
+  /**
+   * ★ [9-A] 신앙 — 40(독실함)이 ④ 성검 등장선(FAITH_HERO_MIN). 그 아래면 성검이 본산으로 가고
+   *   ④가 오지 않는다. 게이지가 미리 보여 플레이어가 "신앙이 얕구나, 미사에 가야겠다"를 안다.
+   */
+  faith: [
+    { min: 0, label: '무심함' },
+    { min: 20, label: '예를 갖춤' },
+    { min: 40, label: '독실함' },
+    { min: 65, label: '경건함' },
+    { min: 85, label: '성인에 가까움' },
+  ],
 }
 
 /** 스탯은 다섯이 같은 구간표를 쓴다(등급 문턱이 스탯별로 다르지 않으므로). */

@@ -1,4 +1,5 @@
 import type { Effect, GameEvent, ResourceKey, StatKey } from '../../types/game'
+import { FAITH } from '../config'
 
 /**
  * 일상 소소 사건 풀 (월 단위 전환 2단계).
@@ -175,10 +176,10 @@ export const DAILY_EVENTS: GameEvent[] = [
   //   month 단일 조건이 자연스럽다. 규모는 작게(±0.5~1) — "그 계절이구나" 정도.
   {
     id: 'daily-spring-thaw',
-    title: '봄맞이',
-    text: '성 밖 들녘에서 파종이 시작됐다는 전갈이 올라왔다. 언 땅이 풀리고, 궁에도 볕이 길어졌다.',
+    title: '부활절 미사',
+    text: '언 땅이 풀리는 절기, 대성당에서 부활을 기리는 미사가 열렸다. 왕도 그 자리에 섰다.',
     condition: { month: 3 }, once: false, category: 'story',
-    effects: [res('wellbeing', 1, 0.3)],
+    effects: [res('wellbeing', 1, 0.3), res('faith', FAITH.easterGain)],
   },
   {
     id: 'daily-midsummer-bonfire',
@@ -211,7 +212,7 @@ export const DAILY_EVENTS: GameEvent[] = [
     title: '성탄 미사',
     text: '한 해의 끝, 대성당의 종이 울리고 미사가 열렸다. 왕도 그 자리에 서서 백성과 같은 기도를 올렸다.',
     condition: { month: 12 }, once: false, category: 'story',
-    effects: [res('wellbeing', 1, 0.3), stat('courtcraft', 0.3, 0.2)],
+    effects: [res('wellbeing', 1, 0.3), stat('courtcraft', 0.3, 0.2), res('faith', FAITH.massGain)],
   },
   {
     id: 'daily-festival-noise',
