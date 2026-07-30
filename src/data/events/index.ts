@@ -19,7 +19,7 @@ import { ENCOUNTER_EVENTS } from './encounters'
 import { JEALOUSY_EVENTS } from './jealousy'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
-import { OUTING_EVENTS } from './outings'
+import { OUTING_EVENTS, OUTING_VISIT_EVENTS } from './outings'
 import { PLACE_EVENTS } from './places'
 import { RELATIONS16_EVENTS } from './relations16'
 import { ROMANCE_EVENTS } from './romance'
@@ -95,5 +95,5 @@ export const MINOR_EVENTS: GameEvent[] = MINOR_POOL.map((event) => ({
  *   방문 resolver(조우)·endTurn 파생(질투)이 직접 enqueue 한다.
  */
 export const EVENT_BY_ID: Record<string, GameEvent> = Object.fromEntries(
-  [...EVENTS, ...MINOR_EVENTS, ...PLACE_EVENTS, ...ENCOUNTER_EVENTS, ...JEALOUSY_EVENTS].map((e) => [e.id, e]),
+  [...EVENTS, ...MINOR_EVENTS, ...PLACE_EVENTS, ...OUTING_VISIT_EVENTS, ...ENCOUNTER_EVENTS, ...JEALOUSY_EVENTS].map((e) => [e.id, e]),
 )

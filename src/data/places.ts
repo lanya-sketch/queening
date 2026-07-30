@@ -149,9 +149,9 @@ export const PLACES: PlaceDef[] = [
   },
   {
     id: 'patrol',
-    label: '순찰 (담 안팎)',
-    hint: '겉을 본다 · 떳떳하게',
-    eventId: 'visit-patrol',
+    label: '시찰 (담 밖)',
+    hint: '준비된 길 · 꾸민 얼굴 · 안전',
+    eventId: 'patrol-outing', // ★ [7] 합법 시찰 — 깊이 선택(민심 flag 없음)
     kind: 'outing-legal',
     minAge: 11,
     location:
@@ -164,8 +164,8 @@ export const PLACES: PlaceDef[] = [
   {
     id: 'sneak',
     label: '잠행 (평복)',
-    hint: '속을 본다 · 들키면 위험',
-    eventId: 'visit-sneak',
+    hint: '날것의 맨얼굴 · 두루 볼수록 위험',
+    eventId: 'sneak-outing', // ★ [7] 불법 잠행 — 깊이 선택(발각 위험 + 실제 민심)
     kind: 'outing-sneak',
     minAge: 13,
     location:

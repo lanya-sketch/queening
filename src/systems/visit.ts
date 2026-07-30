@@ -7,6 +7,7 @@ import { chamberSearchEligible, CHAMBER } from '../data/events/bloodoath'
 import { knowsTreason, officeSearchEligible, OFFICE_SEARCH_OPEN } from '../data/events/treason'
 import { encounterFor } from '../data/events/encounters'
 import { RISK_TUTOR } from './risk'
+import { isPostAutonomy } from './rebellion'
 import type { Rng } from './effects'
 
 /**
@@ -40,13 +41,20 @@ export interface VisitPlan {
   counters: Record<string, number>
 }
 
-/** ★ [5] 궁 밖 외출 월 1회. 궁 안 이동은 자유(횟수 제한 없음). */
+/**
+ * ★ [5]/[7] 궁 밖 외출 횟수. 평시 월 1회, ★ 친정(isPostAutonomy) 후엔 월 2회(#26 — 실권이
+ *   있으면 눈치 볼 필요가 준다). 궁 안 이동은 자유(횟수 제한 없음).
+ */
 export function outingsPerMonth(game: GameState): number {
-  return game.flags[OUTING_MONTH] === true ? 0 : 1
+  const cap = isPostAutonomy(game) ? 2 : 1
+  const used = (game.flags[OUTING_MONTH] === true ? 1 : 0) + (game.flags[OUTING_MONTH_2] === true ? 1 : 0)
+  return Math.max(0, cap - used)
 }
 
 /** ★ [5] 궁 밖 외출은 그 달에 나갔으면 잠긴다(큰 결심·위험). 궁 안 이동은 자유. */
 export const OUTING_MONTH = 'outing_this_month'
+/** ★ [7] 친정 후 두 번째 외출 게이트. transient(다음 달 리셋). */
+export const OUTING_MONTH_2 = 'outing_this_month_2'
 /** ★ [5] 소득 1회 — 그 달 이미 만난 인물. 재방문해도 조우 대화·호감도 없이 짧은 인사만. */
 export const metMonthFlag = (charId: string) => `met_month:${charId}`
 /**
@@ -66,7 +74,7 @@ export function canVisit(game: GameState, place?: PlaceId): boolean {
   if (game.phase !== 'schedule') return false
   if (!place) return true
   const kind = PLACE_BY_ID[place]?.kind
-  if (kind === 'outing-legal' || kind === 'outing-sneak') return game.flags[OUTING_MONTH] !== true
+  if (kind === 'outing-legal' || kind === 'outing-sneak') return outingsPerMonth(game) > 0
   return true // 궁 안은 자유
 }
 
@@ -222,21 +230,22 @@ export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan 
   if (def.kind === 'office') return planOffice(game, rng, base)
   if (place === 'chapel') return planChapel(game, rng, base) // ★ [5-b] ④ 억류(확실 조우)
 
+  // ★ [7] 이 달 몇 번째 외출인가 — 첫 번은 OUTING_MONTH, (친정 후) 두 번째는 OUTING_MONTH_2.
+  const outingSlot = game.flags[OUTING_MONTH] === true ? OUTING_MONTH_2 : OUTING_MONTH
   if (def.kind === 'outing-legal') {
-    // ★ [5] 궁 밖은 월 1회 — OUTING_MONTH 를 세워 이 달 추가 외출을 막는다.
+    // ★ [7] 합법 시찰 — 준비된 곳(꾸민 얼굴). 안전하나 얕다. 제 씬 + 깊이 선택(민심 flag 는 없다).
     setFlags.outing_legal = true
-    setFlags[OUTING_MONTH] = true
-    return { ...base, scene: buildPlaceScene(place, null, pickLore(place, rng)) }
+    setFlags[outingSlot] = true
+    return { ...base, eventId: def.eventId, scene: null, setFlags, counters }
   }
   if (def.kind === 'outing-sneak') {
-    // ★ went_out 을 세워 기존 발각(outing-caught) 체인을 그대로 탄다 — 턴 종료에 판정·소거.
+    // ★ [7] 불법 잠행 — 날것(맨얼굴). went_out 으로 발각(outing-caught) 체인을 탄다.
+    //   제 씬 + 깊이 선택(두루 볼수록 발각 위험↑ + 실제 민심 flag). 흔적(__risk:tutor)은 그대로.
     setFlags.went_out = true
     setFlags.outing_sneak = true
-    setFlags[OUTING_MONTH] = true
-    // ★ 흔적 — 몰래 다닐 때마다 __risk:tutor 가 +1(예전 sneak 활동의 역할). 튜터 해고 데드의 공급원.
-    //   (__risk: 는 누적기라 tickCounters 가 안 깎는다 — 여기서 현재값+1 로 세운다.)
+    setFlags[outingSlot] = true
     counters[RISK_TUTOR] = (game.counters?.[RISK_TUTOR] ?? 0) + 1
-    return { ...base, scene: buildPlaceScene(place, null, pickLore(place, rng)) }
+    return { ...base, eventId: def.eventId, scene: null, setFlags, counters }
   }
 
   // 일반 장소(서고/정원/연무장) — 인물 유동 조우.

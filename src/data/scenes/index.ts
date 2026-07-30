@@ -6,6 +6,7 @@ import { RELATIONS16_SCENES } from './relations16'
 import { POISON_SCENES } from './poison'
 import { ENCOUNTER_SCENES } from '../events/encounters'
 import { JEALOUSY_SCENES } from '../events/jealousy'
+import { OUTING_SCENES } from '../events/outings'
 
 /**
  * 대사 씬 (M2b-3a~).
@@ -69,6 +70,24 @@ export const SCENES: Scene[] = [
         text:
           '무례한 말인데, 무례하려고 한 말은 아니었다. 그는 정말로 관심이 없었다.\n' +
           '{왕}은 그 점이 이 궁에서 가장 낯설다는 것을 알아차렸다.',
+      },
+    ],
+  },
+  {
+    // ★ [7] ③ 겨루기 — 오만한 왕족이 먼저 청한다. 맞서는 자에게만 눈길을 준다.
+    id: 'scene-prince-duel',
+    lines: [
+      {
+        speaker: 'narration',
+        text: '{이름:prince}이 연무장 한켠에서 목검 하나를 던지듯 건넸다.',
+      },
+      {
+        speaker: 'prince',
+        text: '"겨뤄 볼 텐가? 이 궁에서 그나마 덜 지루한 게 너라서 말이지."',
+      },
+      {
+        speaker: 'narration',
+        text: '무예로 맞설 수도, 말판 위 병략으로 맞설 수도 있었다. 다만 굽히는 것만은, 이 사람에게 최악이었다.',
       },
     ],
   },
@@ -356,6 +375,7 @@ export const SCENES: Scene[] = [
   ...POISON_SCENES,
   ...ENCOUNTER_SCENES,
   ...JEALOUSY_SCENES,
+  ...OUTING_SCENES,
 ]
 
 export const SCENE_BY_ID: Record<string, Scene> = Object.fromEntries(

@@ -267,6 +267,19 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
   //   대상: went_out · visited_this_month · visited_<place> · queen_chamber_open.
   //   (인물 조우 pity 인 `__seen:<id>` 는 counter 라 위 tickCounters 가 매 턴 감소시킨다 — 여기서 안 만짐.)
   //   ★ [5] connected_with:* 와 jealousy_rival:* 도 그 달(→다음 달 질투 해소)까지만 — 여기서 소거.
+  // ★ [7] 잠행(불법) 깊은 시찰 — 맨얼굴의 실제 민심을 종합한다. 부담이 이미 있으면 그것을 확인하고(정보),
+  //   없으면 안도를(민심 flag). 위험(발각)을 감수하고 두루 돌아본 왕만 진짜 판세를 안다.
+  //   ★ 합법 시찰은 이 flag 를 세우지 않는다(꾸민 얼굴 — 분위기일 뿐). 불법·깊게만 실제 민심.
+  if (next.flags.outing_deep_look === true) {
+    const anyBurden = Object.keys(next.flags).some(
+      (k) => k.startsWith('people_burdened_') && next.flags[k],
+    )
+    next.flags = {
+      ...next.flags,
+      [anyBurden ? 'people_burdened_visit' : 'people_relieved_visit']: true,
+    }
+  }
+
   const clearedFlags = { ...next.flags }
   let flagsDirty = false
   for (const key of Object.keys(clearedFlags)) {
@@ -276,6 +289,8 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
         key === 'queen_chamber_open' ||
         key === 'office_search_open' || // ★ [4] 집무실 수색 게이트도 그 턴에만
         key === 'outing_this_month' || // ★ [5] 궁 밖 월 1회 게이트 — 다음 달 리셋
+        key === 'outing_this_month_2' || // ★ [7] 친정 후 두 번째 외출 게이트 — 다음 달 리셋
+        key === 'outing_deep_look' || // ★ [7] 잠행 깊은 시찰 신호 — 종합 뒤 소거
         key === 'connected_this_month' || // ★ [5] 이 달의 깊은 만남(소득 1회) — 다음 달 리셋
         key.startsWith('met_month:') || // ★ [5] 소득 1회(그 달 만난 인물) — 다음 달 리셋
         key.startsWith(CONNECTED_WITH_PREFIX) || // ★ [5] 그 달 만난 상대(X) — 질투 해소 뒤 소거
@@ -332,6 +347,14 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
       next.flags.rebellion_crushed === true,
     // ★ [4] 공표가 먹히는 판 — 밖(민심)이든 안(권세)이든 왕을 받치면 사람들이 왕의 말을 믿는다.
     king_trusted: favor || strongStanding,
+  }
+
+  // ★ [7] 친정 후 외출 안전(#26) — 실권이 있으면 궁 밖에 나가도 눈치 볼 필요가 준다(발각 없음).
+  //   단 반란 국면(regent_hostile)이면 밀려난 섭정이 노려 위험이 돌아온다(outing-caught 재발동).
+  //   regent_hostile 이 이 위 블록에서 갱신되므로 그 뒤에 읽는다.
+  next.flags = {
+    ...next.flags,
+    outing_safe: isPostAutonomy(next) && next.flags.regent_hostile !== true,
   }
 
   // ★ [5] 질투 — 문어발의 대가(제한이 아니라 대가). 이 달 깊은 만남이 있었고 다른 연애 대상도

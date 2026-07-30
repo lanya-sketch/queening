@@ -86,6 +86,8 @@ export const PRIORITY: Record<string, number> = {
   'prince-departure': 62,
   'decisive-hero': 61,
   'prince-arrival': 60,
+  'prince-duel': 59, // ★ [7] ③ 겨루기 — 체류 중 한 번
+
 
   // ── 60.x  13~15세 관계 이벤트 (teenBonds) — 로맨스 아님, 첫인상의 결이 바뀌는 구간.
   //   캐릭터 대역 안(현안보다 위)에 둬야 month 게이트가 걸린 그달에 어김없이 뜬다 —
