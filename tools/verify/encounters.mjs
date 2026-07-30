@@ -217,6 +217,128 @@ log('F 이벤트-only 최종 호감도(13→18세):', JSON.stringify(F))
 log('F1 ★ ②loyalist·⑤commander 가 이벤트-only 로 ①heir 보다 앞선다:',
   ok(F.loyalist >= F.heir && F.commander >= F.heir))
 
+// ── G. ③④⑤ 조우 델타 + 캐릭터별 정답 ──
+log('')
+log('=== G. ③④⑤ 조우 델타 + 캐릭터별 정답 ===')
+log('G1 ★ ③prince 밴드 정답 +12(드물되 큼):', await encDelta('prince', 10, 'enc-prince-b0', 'right'), ok(await encDelta('prince', 10, 'enc-prince-b0', 'right') === 12))
+log('G2 ★ ③prince 필러 정답 +5:', await encDelta('prince', 30, 'enc-prince-filler', 'right'), ok(await encDelta('prince', 30, 'enc-prince-filler', 'right') === 5))
+log('G3 ★ ③ 굽힘/치켜세움 → 오답(−):', await encDelta('prince', 10, 'enc-prince-b0', 'wrong'), ok(await encDelta('prince', 10, 'enc-prince-b0', 'wrong') < 0))
+log('G4 ★ ④hero 밴드 정답 +8:', await encDelta('hero', 10, 'enc-hero-b0', 'right'), ok(await encDelta('hero', 10, 'enc-hero-b0', 'right') === 8))
+log('G5 ★ ④ 치켜세움 → 오답(−):', await encDelta('hero', 10, 'enc-hero-b0', 'wrong'), ok(await encDelta('hero', 10, 'enc-hero-b0', 'wrong') < 0))
+log('G6 ★ ⑤commander 밴드 정답 +8:', await encDelta('commander', 10, 'enc-commander-b0', 'right'), ok(await encDelta('commander', 10, 'enc-commander-b0', 'right') === 8))
+log('G7 ★ ⑤ 격 허물기 → 오답(−):', await encDelta('commander', 10, 'enc-commander-b0', 'wrong'), ok(await encDelta('commander', 10, 'enc-commander-b0', 'wrong') < 0))
+
+// ── H. ④ hero 대예배당 확실 조우 (presence 확률 없음) ──
+log('')
+log('=== H. ④ 대예배당 억류 — 입궁 후 확실 조우 ===')
+const chapel = await page.evaluate(() => {
+  const q = window.__queeningAi
+  // 입궁 전: 성검만 봉헌 — hero 조우 없음.
+  q.setGame({ phase: 'schedule', age: 18, flags: { romance_unlocked: true }, counters: {}, affection: {}, pendingEventIds: [] })
+  const before = q.visit('chapel')
+  q.setGame({ phase: 'schedule', pendingEventIds: [] })
+  // 입궁 후: 확실히 hero 조우.
+  q.setGame({ phase: 'schedule', age: 18, flags: { romance_unlocked: true, hero_at_court: true }, counters: {}, affection: {}, pendingEventIds: [] })
+  const after = q.visit('chapel')
+  return { before, after }
+})
+log('H1 ★ 입궁 전 — hero 조우 없음(성검만):', chapel.before, ok(chapel.before === 'visit-chapel'))
+log('H2 ★ 입궁 후 — 확실히 hero 조우:', chapel.after, ok(String(chapel.after).indexOf('enc-hero') === 0))
+
+// ── K. ★★ ④ hero 24개월 도달 (대예배당 확실 조우, 18→20세) ──
+log('')
+log('=== K. ★★ ④ 24개월 도달 (확실 조우) ===')
+const K = await page.evaluate((MONTHS) => {
+  const q = window.__queeningAi
+  q.setDeterministic(true); q.setMinorEnabled(false)
+  q.setGame({
+    phase: 'schedule', age: 18, date: { year: 1000, month: 1 },
+    affection: {}, counters: {},
+    flags: { romance_unlocked: true, romance_settled: false, hero_at_court: true },
+    plannedActivityIds: [], pendingEventIds: [],
+  })
+  let reached = null
+  for (let m = 0; m < MONTHS; m++) {
+    const enc = q.connect('hero') // 대예배당 = 확실 → connect 로 실현(매달 확실히 만남)
+    if (enc) q.choose(enc, 'right')
+    q.stepTurn([])
+    if ((q.state.affection.hero ?? 0) >= 70 && reached == null) reached = m + 1
+  }
+  return { aff: Math.round(q.state.affection.hero ?? 0), reached }
+}, 24)
+log('K 결과 — hero 24개월 호감도:', K.aff, '| 70도달월:', K.reached)
+log('K1 ★★ ④ 24개월 안에 70 도달:', ok(K.reached != null && K.reached <= 24))
+
+// ── L. ★★ ③ 델타 충분성 (결정론, connect 기반) — "만나기만 하면 +12로 닿는가" ──
+log('')
+log('=== L. ★★ ③ 델타 충분성 (드물되 큰 델타로 닿는가) ===')
+const L = await page.evaluate((MONTHS) => {
+  const q = window.__queeningAi
+  q.setDeterministic(true); q.setMinorEnabled(false)
+  q.setGame({
+    phase: 'schedule', age: 16, date: { year: 1000, month: 1 },
+    affection: {}, counters: {},
+    flags: { romance_unlocked: true, romance_settled: false, prince_present: true }, plannedActivityIds: [], pendingEventIds: [],
+  })
+  let reached = null, encs = 0
+  for (let m = 0; m < MONTHS; m++) {
+    const enc = q.connect('prince')
+    if (enc) { encs++; q.choose(enc, 'right') }
+    q.stepTurn([])
+    if ((q.state.affection.prince ?? 0) >= 70 && reached == null) reached = encs
+  }
+  return { aff: Math.round(q.state.affection.prince ?? 0), reached }
+}, 20)
+log('L1 ★★ ③ +12 델타로 70 도달 — 필요 조우 수:', L.reached, ok(L.reached != null && L.reached <= 12))
+
+// ── I. ③ 실제 기회 실측 (실 rng, 사냥 유도) — 참고 보고(변동 큼, 하드 판정 아님) ──
+log('')
+log('=== I. ③ 실제 기회 실측 (실 rng, 참고) ===')
+const P = await page.evaluate((MONTHS) => {
+  const q = window.__queeningAi
+  q.setDeterministic(false); q.setMinorEnabled(false)
+  q.setGame({
+    phase: 'schedule', age: 16, date: { year: 1000, month: 1 },
+    affection: {}, counters: {},
+    flags: { romance_unlocked: true, romance_settled: false }, plannedActivityIds: [], pendingEventIds: [],
+  })
+  let present = 0, earlyPresent = 0, reached = null, encs = 0
+  for (let m = 0; m < MONTHS; m++) {
+    const r = q.stepTurn(['royal-hunt', 'royal-hunt', 'royal-hunt'])
+    if (r.flags.prince_present === true) {
+      present++
+      if (m < 12) earlyPresent++
+      for (const place of ['yard', 'library', 'garden']) {
+        q.setGame({ phase: 'schedule', flags: { ...q.state.flags, connected_this_month: false } })
+        const enc = q.visit(place)
+        if (enc && enc.indexOf('enc-prince') === 0) { encs++; q.choose(enc, 'right'); break }
+        q.setGame({ phase: 'schedule', pendingEventIds: [] })
+      }
+    }
+    q.setGame({ phase: 'schedule', pendingEventIds: [] })
+    if ((q.state.affection.prince ?? 0) >= 70 && reached == null) reached = m + 1
+  }
+  return { MONTHS, present, earlyPresent, encs, aff: Math.round(q.state.affection.prince ?? 0), reached }
+}, 48)
+log(`I1 (참고) ③ 체류: 초반12개월 ${(P.earlyPresent / 12 * 100).toFixed(0)}% → 전체 ${(P.present / P.MONTHS * 100).toFixed(0)}% | 조우 ${P.encs}회 | 최종 ${P.aff} | 70도달 ${P.reached ?? '미달'} (실 rng·변동 큼)`)
+log('I2 ③ 실 플레이서 조우 기회가 생긴다(참고):', ok(P.encs >= 1))
+
+// ── J2. 질투 델타 ③④⑤ (트위스트 표 1:1) ──
+log('')
+log('=== J2. 질투 델타 ③④⑤ (트위스트) ===')
+// ③ prince (hurt 3): soothe 무난 +1 / honest 통함 −1 / deflect 역효과 −(3+1)=−4
+log('J8 ③ 달랜다(무난) +1 / 솔직히(통함) −1 / 넘어간다(경멸) −4:',
+  JSON.stringify([(await jDelta('prince', 40, 'heir', 40, 'soothe')).dY, (await jDelta('prince', 40, 'heir', 40, 'honest')).dY, (await jDelta('prince', 40, 'heir', 40, 'deflect')).dY]),
+  ok((await jDelta('prince', 40, 'heir', 40, 'soothe')).dY === 1 && (await jDelta('prince', 40, 'heir', 40, 'honest')).dY === -1 && (await jDelta('prince', 40, 'heir', 40, 'deflect')).dY === -4))
+// ④ hero (hurt 3): soothe 무난 0 / honest 통함 −1 / deflect 무난 −3
+log('J9 ④ 달랜다(안 믿음) 0 / 솔직히(차라리) −1 / 넘어간다(역시) −3:',
+  JSON.stringify([(await jDelta('hero', 40, 'heir', 40, 'soothe')).dY, (await jDelta('hero', 40, 'heir', 40, 'honest')).dY, (await jDelta('hero', 40, 'heir', 40, 'deflect')).dY]),
+  ok((await jDelta('hero', 40, 'heir', 40, 'soothe')).dY === 0 && (await jDelta('hero', 40, 'heir', 40, 'honest')).dY === -1 && (await jDelta('hero', 40, 'heir', 40, 'deflect')).dY === -3))
+// ⑤ commander (hurt 3): soothe 역효과 −3 / honest 통함 −1 / deflect 무난 −3
+log('J10 ⑤ 달랜다(격 깨짐) −3 / 솔직히(예에 맞음) −1 / 넘어간다 −3:',
+  JSON.stringify([(await jDelta('commander', 40, 'heir', 40, 'soothe')).dY, (await jDelta('commander', 40, 'heir', 40, 'honest')).dY, (await jDelta('commander', 40, 'heir', 40, 'deflect')).dY]),
+  ok((await jDelta('commander', 40, 'heir', 40, 'soothe')).dY === -3 && (await jDelta('commander', 40, 'heir', 40, 'honest')).dY === -1 && (await jDelta('commander', 40, 'heir', 40, 'deflect')).dY === -3))
+
 // ── E. AI 호감도 ±1 ──
 log('')
 log('=== E. AI 자유대화 호감도 ±1 ===')

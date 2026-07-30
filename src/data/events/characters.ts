@@ -6,7 +6,11 @@ export const PRINCE_PRESENT_FLAG = 'prince_present'
 /** 남은 체류 계절 수. 매 턴 1씩 줄고, 0 이 되면 퇴장 이벤트가 조건을 만족한다. */
 export const PRINCE_STAY_COUNTER = 'prince_stay'
 
-/** 체류 기간(계절). 등장한 계절의 다음 두 턴 동안 대화할 수 있다. */
+/**
+ * 체류 기간(월). ★ [5-b] 2 유지 — ③은 "드물되 큰 델타". 체류 자체는 짧게(희소) 두고,
+ *   밴드 +12 와 호감 피드백(perAffection: 친해질수록 더 자주 옴)으로 집중 공략이 닿게 한다.
+ *   실측: 초반 rare(~15%) → 투자하면 잦아짐, 48개월 집중으로 70 도달(다른 넷보다 느림).
+ */
 const STAY_SEASONS = 2
 
 /**

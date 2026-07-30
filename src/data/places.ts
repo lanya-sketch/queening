@@ -9,10 +9,14 @@ import type { GameState } from '../types/game'
  *   확장(장소당 더 많은 조각·회전 정교화)은 2-b-2.
  */
 
-export type PlaceId = 'library' | 'garden' | 'yard' | 'queen' | 'office' | 'patrol' | 'sneak'
+export type PlaceId = 'library' | 'garden' | 'yard' | 'queen' | 'office' | 'patrol' | 'sneak' | 'chapel'
 
-/** 조우 가능한 인물 — 5인 중 궁에 상주/왕래하는 넷. ④ 영웅은 제 서사로만 등장. */
-export type PresenceCharId = 'heir' | 'loyalist' | 'prince' | 'commander'
+/**
+ * 조우 가능한 인물. ①②⑤ 상주 · ③ 왕래(prince_present) · ④ 대예배당 억류(hero_at_court).
+ * ★ [5-b] ④ 영웅은 성검과 함께 대예배당에 "모셔진" 형태로 억류돼, 왕이 찾아가면 항상 있다
+ *   (presence 확률이 아니라 확실). 그래서 다른 넷과 달리 자리가 고정이다.
+ */
+export type PresenceCharId = 'heir' | 'loyalist' | 'prince' | 'commander' | 'hero'
 
 export interface PlaceDef {
   id: PlaceId
@@ -45,6 +49,9 @@ export const MEET_LINE: Record<PresenceCharId, string> = {
     '{이름:prince}이 벽에 기대 있었다. 궁에 머무는 동안은 어디에든 있고, 어디에도 매이지 않았다.',
   commander:
     '{이름:commander}이 병사들 사이에 있었다. {왕}을 보고 짧게 목례할 뿐, 하던 일을 멈추지 않았다.',
+  // ★ [5-b] ④ 영웅은 성검 곁에 억류돼 있다 — 자리를 뜰 수 없는 사람. 무릎은 꿇지 않는다.
+  hero:
+    '{이름:hero}이 성검이 봉헌된 제단 아래 앉아 있었다. 지키는 병사가 둘, 그러나 지켜지는 것이 사람인지 검인지는 분명치 않았다.',
 }
 
 export const PLACES: PlaceDef[] = [
@@ -125,6 +132,22 @@ export const PLACES: PlaceDef[] = [
     ],
   },
   {
+    // ★ [5-b] 대예배당 — ④ 영웅이 성검과 함께 억류된 곳. 궁 안(자유 이동)이나 사람보다 성물의 자리.
+    //   입궁(hero_at_court) 전에는 검만 봉헌돼 있고, 후에는 영웅이 그 아래 있다(확실 조우).
+    id: 'chapel',
+    label: '대예배당',
+    hint: '성검이 봉헌된 곳',
+    eventId: 'visit-chapel',
+    kind: 'place',
+    location:
+      '대예배당은 궁에서 가장 높은 천장을 이고 있었다. 제단 위에 성검이 놓여 있었고, 촛불은 사람이 아니라 그 검을 위해 타올랐다.',
+    lorePool: [
+      '교단의 사제들이 성검 앞에 번갈아 무릎을 꿇었다. 검을 벤 자보다 검을 더 오래 우러렀다.',
+      '제단 아래에는 늘 병사 둘이 섰다. 지키는 것인지 가두는 것인지, 그 자세로는 알 수 없었다.',
+      '스테인드글라스에 초대 왕이 마왕을 베는 그림이 있었다. 그 손에 들린 검이, 지금 저 제단 위의 것이었다.',
+    ],
+  },
+  {
     id: 'patrol',
     label: '순찰 (담 안팎)',
     hint: '겉을 본다 — 떳떳하게',
@@ -200,3 +223,17 @@ export const OFFICE = {
 export function princeAvailable(game: GameState): boolean {
   return game.flags.prince_present === true
 }
+
+/**
+ * ★ [5-b] ④ 영웅은 입궁(hero_at_court) 후 대예배당에 억류돼 확실히 만난다.
+ *   presence 확률이 아니라 "거기 가면 항상 있다" — 24개월 창이 짧은 대신 확실.
+ */
+export function heroAvailable(game: GameState): boolean {
+  return game.flags.hero_at_court === true
+}
+
+/** ★ [5-b] 대예배당 — 입궁 전(성검만 봉헌) 서술. 후에는 영웅과 조우(visit.ts planChapel). */
+export const CHAPEL = {
+  beforeHero:
+    '제단 위 성검만이 촛불을 받고 있었다. 아직 그것을 가져온 자는 궁에 이르지 않았다 — 소문만 저잣거리를 돌 뿐.',
+} as const

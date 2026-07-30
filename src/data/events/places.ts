@@ -20,6 +20,7 @@ export const PLACE_EVENTS: GameEvent[] = [
   { id: 'visit-yard', title: '연무장', sceneId: SCENE, text: '', condition: {} },
   { id: 'visit-queen', title: '왕대비궁', sceneId: SCENE, text: '', condition: {} },
   { id: 'visit-office', title: '섭정공 집무실', sceneId: SCENE, text: '', condition: {} },
+  { id: 'visit-chapel', title: '대예배당', sceneId: SCENE, text: '', condition: {} }, // ★ [5-b] ④ 억류
   { id: 'visit-patrol', title: '순찰', sceneId: SCENE, text: '', condition: {} },
   { id: 'visit-sneak', title: '잠행', sceneId: SCENE, text: '', condition: {} },
 ]

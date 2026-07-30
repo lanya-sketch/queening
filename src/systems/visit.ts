@@ -1,6 +1,6 @@
 import type { GameState, Scene, SceneLine } from '../types/game'
 import {
-  MEET_LINE, OFFICE, PLACE_BY_ID, QUEEN, princeAvailable,
+  CHAPEL, MEET_LINE, OFFICE, PLACE_BY_ID, QUEEN, heroAvailable, princeAvailable,
   type PlaceId, type PresenceCharId,
 } from '../data/places'
 import { chamberSearchEligible, CHAMBER } from '../data/events/bloodoath'
@@ -185,6 +185,30 @@ function planOffice(game: GameState, rng: Rng, base: VisitPlan): VisitPlan {
 }
 
 /**
+ * ★ [5-b] 대예배당 — ④ 영웅은 억류돼 **확실히** 있다(presence 롤 없음). 입궁(hero_at_court) 전에는
+ *   성검만 봉헌돼 있다. 소득 1회(met_month/connected) 규칙은 일반 장소와 같게 탄다.
+ */
+function planChapel(game: GameState, rng: Rng, base: VisitPlan): VisitPlan {
+  const loc = PLACE_BY_ID.chapel.location
+  if (!heroAvailable(game)) {
+    return { ...base, scene: { id: SCENE_PLACE_VISIT, lines: [N(loc), N(CHAPEL.beforeHero)] } }
+  }
+  const alreadyMet = game.flags[metMonthFlag('hero')] === true
+  const connectedAlready = game.flags[CONNECTED_MONTH] === true
+  if (!alreadyMet) {
+    const setFlags = { ...base.setFlags, [metMonthFlag('hero')]: true }
+    const enc = connectedAlready ? null : encounterFor('hero', game)
+    if (enc) {
+      setFlags[CONNECTED_MONTH] = true
+      setFlags[connectedWithFlag('hero')] = true
+      return { eventId: enc, scene: null, setFlags, counters: base.counters }
+    }
+    return { ...base, setFlags, scene: buildPlaceScene('chapel', 'hero', pickLore('chapel', rng)) }
+  }
+  return { ...base, scene: buildPlaceScene('chapel', null, pickLore('chapel', rng)) }
+}
+
+/**
  * 방문 계획을 세운다(적용은 gameStore). 여기서 rng 를 다 뽑는다 — 결정론/검증이 갈아끼울 수 있게.
  */
 export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan {
@@ -196,6 +220,7 @@ export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan 
 
   if (def.kind === 'queen') return planQueen(game, rng, base)
   if (def.kind === 'office') return planOffice(game, rng, base)
+  if (place === 'chapel') return planChapel(game, rng, base) // ★ [5-b] ④ 억류(확실 조우)
 
   if (def.kind === 'outing-legal') {
     // ★ [5] 궁 밖은 월 1회 — OUTING_MONTH 를 세워 이 달 추가 외출을 막는다.

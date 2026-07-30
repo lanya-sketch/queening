@@ -1,4 +1,5 @@
 import type { Effect, GameEvent, GameState, Scene, SceneLine } from '../../types/game'
+import { heroAvailable, princeAvailable } from '../places'
 
 /**
  * ★ [5] 질투 — 문어발의 대가(제한이 아니라 대가). 측실·관용과 같은 방식.
@@ -12,9 +13,9 @@ import type { Effect, GameEvent, GameState, Scene, SceneLine } from '../../types
  *   솔직히  — Y 크게 하락(−−). 정리·밀어냄. 단 '통하는' 성격은 오히려 −1(존중).
  *   넘어간다 — Y 하락(−hurt), X 그대로. 미룸 — 아무것도 정하지 않은 대가.
  *
- * ★ 같은 갈래도 사람마다 다르다(바이블 1층). 이번 라운드는 ①heir·②loyalist 만
- *   대사를 쓰고(조우 대화와 앞뒤 맞춤), ③④⑤ 는 표만 남겨 다음 라운드에 쓴다.
- *   ★ 이 표는 그대로 유지한다 — 설계가 확정됐다.
+ * ★ 같은 갈래도 사람마다 다르다(바이블 1층). [5-b]에서 5인 전부 대사를 완성했다:
+ *   ③ 넘어가면 경멸(역효과) / ④ 솔직히 "차라리"(통함) / ⑤ 달래면 격 깨짐(역효과).
+ *   ④는 입궁(hero_at_court) 후, ③은 체류(prince_present) 중에만 발동(jealousyAvailable).
  */
 
 const N = (text: string): SceneLine => ({ speaker: 'narration', text })
@@ -34,18 +35,30 @@ export const JEALOUSY_RIVAL_PREFIX = 'jealousy_rival:'
 export const leaningCounter = (charId: string) => `__bond:leaning:${charId}`
 export const WAVERED_COUNTER = '__bond:wavered'
 
-/** 질투 대사가 있는 인물(이번 라운드 ①②). ③④⑤ 는 다음 라운드. */
-export const JEALOUSY_CHARS = ['heir', 'loyalist']
+/** 질투 대사가 있는 인물(5인 전부). ④hero 는 입궁 후, ③prince 는 체류 중에만 발동. */
+export const JEALOUSY_CHARS = ['heir', 'loyalist', 'prince', 'commander', 'hero']
 /** 연애 대상 전체 — "2인 이상 30↑"(문어발 판정)의 모집단. */
 const ROMANCE_IDS = ['heir', 'loyalist', 'prince', 'commander', 'hero']
+
+/**
+ * ★ [5-b] 질투 대상이 "지금 알아챌 수 있는" 자리에 있는가.
+ *   ①②⑤ 상주 → 늘. ③ 왕래(prince_present) → 체류 중에만. ④ 대예배당 억류(hero_at_court) → 입궁 후.
+ *   자리에 없는 사람이 질투로 뜨는 건 어색하다(멀리 있는 이가 소문으로 삐치지 않게).
+ */
+function jealousyAvailable(charId: string, state: GameState): boolean {
+  if (charId === 'prince') return princeAvailable(state)
+  if (charId === 'hero') return heroAvailable(state)
+  return true
+}
 
 /** 질투 하락 기준값 — 관심 클수록 크게. 30~49 → 3 / 50~69 → 4 / 70+ → 5. */
 export function hurtOf(affection: number): number {
   return affection < 50 ? 3 : affection < 70 ? 4 : 5
 }
 
-// ── 성격 트위스트 표 (통함 / 무난 / 역효과) ──
-type Tier = 'works' | 'neutral' | 'backfire'
+// ── 성격 트위스트 표 (통함 / 무난 / 역효과 / 안 믿음) ──
+//   nil = ④ hero 달래기 "안 믿음" — 오르지도 내리지도 않는다(달램이 통하지 않는 냉소).
+type Tier = 'works' | 'neutral' | 'backfire' | 'nil'
 type Branch = 'soothe' | 'honest' | 'deflect'
 /**
  * ★ 확정된 트위스트 표. ③④⑤ 는 다음 라운드에 대사를 붙이되 이 표는 그대로 둔다.
@@ -57,13 +70,13 @@ const TWIST: Record<string, Record<Branch, Tier>> = {
   loyalist: { soothe: 'works', honest: 'backfire', deflect: 'neutral' },
   // ── 다음 라운드(표 유지) ──
   prince: { soothe: 'neutral', honest: 'works', deflect: 'backfire' },
-  hero: { soothe: 'neutral', honest: 'works', deflect: 'neutral' },
+  hero: { soothe: 'nil', honest: 'works', deflect: 'neutral' }, // 달래도 안 믿음(0), 솔직해야 통함
   commander: { soothe: 'backfire', honest: 'works', deflect: 'neutral' },
 }
 
 /** 갈래별 Y(질투한 쪽) 델타 — 트위스트 tier 를 반영. */
 function deltaY(branch: Branch, tier: Tier, hurt: number): number {
-  if (branch === 'soothe') return tier === 'works' ? 3 : tier === 'neutral' ? 1 : -hurt
+  if (branch === 'soothe') return tier === 'works' ? 3 : tier === 'neutral' ? 1 : tier === 'nil' ? 0 : -hurt
   if (branch === 'honest') return tier === 'works' ? -1 : tier === 'neutral' ? -hurt : -(hurt + 2)
   // deflect — 늘 적어도 base. 역효과(③ 경멸)면 한 칸 더.
   return tier === 'backfire' ? -(hurt + 1) : -hurt
@@ -86,7 +99,7 @@ export function planJealousy(
   const caring = ROMANCE_IDS.filter((id) => affOf(id) >= JEALOUSY_MIN)
   if (caring.length < 2) return null
   const candidates = JEALOUSY_CHARS
-    .filter((id) => id !== rivalId && affOf(id) >= JEALOUSY_MIN)
+    .filter((id) => id !== rivalId && affOf(id) >= JEALOUSY_MIN && jealousyAvailable(id, state))
     .sort((a, b) => affOf(b) - affOf(a))
   const y = candidates[0]
   return y ? `jealousy-${y}` : null
@@ -157,6 +170,36 @@ const BUILT = [
     { label: '"네 자리는 누구도 대신하지 못한다."', result: '{이름:loyalist}은 잠깐 숨을 골랐다. "…{전하}." 그 한마디에, 눌러 두었던 것이 놓였다.' },
     { label: '"너에게만은 솔직하고 싶다 — 아직 마음을 정하지 못했다."', result: '{이름:loyalist}은 조용히 고개를 숙였다. "…예. 아셨을 겁니다, 제 마음은." 그리고 말없이 물러섰다. 그 침묵이 가장 아팠다.' },
     { label: '"…신경 쓰지 마라."', result: '{이름:loyalist}은 고개를 끄덕였다. "예, {전하}." 그러고는 조용히 삭였다 — 늘 그래 왔듯이.' },
+  ),
+
+  // ─────────── ③ prince — 오만. 비웃음. 대담함이 통하고, 얼버무리면 경멸(역효과) ───────────
+  jealousy('prince', [
+    N('{이름:prince}이 {왕}이 다른 이와 함께 있던 자리를 멀찍이서 보고 있었다.'),
+    { speaker: 'prince', text: '"재미있군. …여기서도 줄을 세우십니까?" 비웃음이었지만, 눈은 웃지 않았다.' },
+  ],
+    { label: '"줄이 아니다. 너를 소홀히 한 적 없다."', result: '{이름:prince}이 어깨를 으쓱했다. "…그런 걸로 해 두지." 비웃으면서도, 물러나지는 않았다.' },
+    { label: '"그래. 나는 여럿을 저울에 올린다. 너를 포함해서."', result: '{이름:prince}이 눈썹을 들었다. "…허. 그 대담함은 인정하지." 감추지 않는 담대함을, 그는 반겼다.' },
+    { label: '"…네가 상관할 바는 아니지."', result: '{이름:prince}의 낯이 싸늘해졌다. "…하긴, 나 따위가." 얼버무리는 왕을, 그는 대놓고 경멸했다.' },
+  ),
+
+  // ─────────── ④ hero — 냉소. "역시 그렇군요". 솔직함이 통함(차라리 말해줘서) ───────────
+  jealousy('hero', [
+    N('{이름:hero}이 제단 아래에서, 왕의 곁에 사람이 오간다는 말을 병사들에게 들은 참이었다.'),
+    { speaker: 'hero', text: '"…역시 그렇군요. 뭐, 나야 여기 묶인 성물이니." 냉소는 오래 방치된 자의 것이었다.' },
+  ],
+    { label: '"너를 소홀히 한 적 없다. 믿어라."', result: '{이름:hero}이 실소했다. "믿으라…" 그 말을 그는 반쯤도 믿지 않았다.' },
+    { label: '"숨기지 않겠다. 나는 아직 마음을 정하지 못했다."', result: '{이름:hero}이 {왕}을 오래 보았다. "…차라리 그렇게 말해 주니. 그게 낫소." 꾸미지 않은 말이, 그를 붙들었다.' },
+    { label: '"…신경 쓸 것 없다."', result: '{이름:hero}이 고개를 끄덕였다. "역시. 그럴 줄 알았소." 방치당한 자의 냉소가, 그대로 맞아떨어졌다.' },
+  ),
+
+  // ─────────── ⑤ commander — 절도. 표정 없이 예를 갖춤. 달래면 격 깨짐(역효과) ───────────
+  jealousy('commander', [
+    N('{이름:commander}이 왕의 곁을 스치는 다른 이를 보고도, 표정 하나 바꾸지 않았다.'),
+    { speaker: 'commander', text: '"…소인은 문 앞을 지킬 뿐입니다, {전하}." 예는 반듯했고, 그 반듯함이 더 무거웠다.' },
+  ],
+    { label: '"그러지 마라. 네 마음 안다, 다 안다."', result: '{이름:commander}이 오히려 한 걸음 물러섰다. "…과하십니다." 격을 억지로 허무는 달램은, 그를 불편하게 했다.' },
+    { label: '"너에게는 숨기지 않겠다. 아직 정하지 못했다."', result: '{이름:commander}이 깊이 고개를 숙였다. "…말씀해 주시니 됐습니다." 예를 지킨 솔직함을, 그는 받았다.' },
+    { label: '"…아무 일도 아니다."', result: '{이름:commander}은 다시 예를 갖췄다. "예, {전하}." 표정 없는 그 예가, 오래 남았다.' },
   ),
 ]
 
