@@ -200,6 +200,11 @@ export function judgeEnding(state: GameState): EndingResult {
   } else if (flag(state, 'union_possible') && power >= T.unionEqual) {
     nationFlags.push('union_equal')
   }
+  // ★ [9-B] 교권 종속의 대가 — 교회와 손잡으면(church_vetoes_reform) 교회가 반대하는 개혁 노선이
+  //   엔딩에서 무효화된다. 단 성물(legitimacy_sacred·하늘의 인정)이 있으면 교회를 누를 수 있어 지켜진다.
+  //   9년에 걸쳐 세운 하원·중앙집권·선왕 개혁이 "명분을 얻고 개혁을 잃는" 실제 대가가 된다.
+  const reformVetoed = flag(state, 'church_vetoes_reform') && !flag(state, 'legitimacy_sacred')
+  const VETOED = new Set(['house_commons_defended', 'crown_centralized', 'late_king_reform'])
   for (const name of [
     'house_commons_defended',
     'house_commons_dissolved',
@@ -213,6 +218,9 @@ export function judgeEnding(state: GameState): EndingResult {
     'scroll_offered',
     'legitimacy_sacred',
     'church_support',
+    // ★ [9-B] 선포 결과 — 신성국(친정 변종) / 참칭(전쟁은 [9-C]에서 판정).
+    'holy_kingdom',
+    'empire_claimed',
     // ★ [3] 반란 진압 — 친정 후 반란을 막아 낸 흔적("반란을 진압한 왕").
     'rebellion_crushed',
     // ★ [3] 섭정공 명예 퇴장 — 담판으로 피 없이 정리한 흔적("협상으로 마무리한 왕").
@@ -229,7 +237,9 @@ export function judgeEnding(state: GameState): EndingResult {
     'hero_isolated', 'hero_spared', 'hero_concubine',
     'commander_purged', 'commander_spared', 'commander_concubine',
   ]) {
-    if (flag(state, name)) nationFlags.push(name)
+    if (!flag(state, name)) continue
+    if (reformVetoed && VETOED.has(name)) continue // ★ [9-B] 교권 종속 → 개혁 노선 무효화(성물 없으면)
+    nationFlags.push(name)
   }
 
   // ── 3단계. 실권 구간 — 단 배드가 살아남았으면 그것이 tier 다.
@@ -252,6 +262,9 @@ export function judgeEnding(state: GameState): EndingResult {
   if (flag(state, 'blood_oath_given')) modifiers.push('연인의 희생')
   if (flag(state, 'blood_oath_seized')) modifiers.push('정복의 전리품')
   if (flag(state, 'queen_poison_averted')) modifiers.push('독을 알아챘다')
+  // ★ [9-B] 신성국 — 친정 위에서 교황의 관을 받아 전쟁 없이 독립한 왕. 친정이 전제(교황과 협상하려면
+  //   왕이 실권을 쥐어야). 성물이 있으면 개혁까지 지킨 "관도 받고 개혁도 지킨" 왕(서술이 가른다).
+  if (flag(state, 'holy_kingdom') && influence >= T.autonomy) modifiers.push('관을 받은 왕')
 
   // ★ 숙청 수식 — 새 지표 없이 실행된 숙청의 수로 조합한다.
   const purges = purgeCount(state)

@@ -271,6 +271,26 @@ export const ENDING_INSERTS: EndingInsert[] = [
     priority: 19,
     lines: [line('책봉장에는 {왕}의 이름이 있었다. 나라는 지켜졌으나, 그 위에는 이제 다른 왕관이 있었다.')],
   },
+  // ★ [9-B] 신성국 — 성물이 있으면 개혁까지 지킨 왕, 없으면 개혁을 교회에 내준 왕.
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'holy_kingdom') && has(r, 'legitimacy_sacred'),
+    priority: 37,
+    lines: [line('교황이 몸소 관을 씌웠다. 제국을 거치지 않고, 피 없이, 이 나라는 하늘 아래 독립했다. 손에 든 성물이 교회의 목소리를 눌렀으니, {왕}은 관을 받고도 아홉 해에 걸쳐 그린 개혁을 하나도 내주지 않았다. 관도, 나라도, 온전히 그의 것이었다.')],
+  },
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'holy_kingdom') && !has(r, 'legitimacy_sacred'),
+    priority: 36,
+    lines: [line('교황이 관을 씌웠고, 전쟁 없이 나라는 독립했다. 그러나 하늘의 이름을 빌린 값은 노선이었다 — 지키려던 개혁은 교회의 뜻 아래 되돌려졌다. {왕}은 관을 얻고, 아버지가 가리킨 길을 잃었다.')],
+  },
+  // ★ [9-B] 참칭 — 전쟁 판정·결말은 [9-C]에서. 여기선 선언까지.
+  {
+    anchor: 'nation',
+    match: (r) => has(r, 'empire_claimed'),
+    priority: 38,
+    lines: [line('{왕}은 스스로 황제를 칭했다. 무너지는 제국을 부정하고 그 자리를 대신하겠다는 선언이었다. 국경 너머에서 군대가 모였고, 이 이야기의 마지막 장은 아직 칼끝에 매달려 있었다.')],
+  },
   {
     anchor: 'nation',
     match: (r) => has(r, 'crown_centralized'),

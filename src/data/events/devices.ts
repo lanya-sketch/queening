@@ -48,8 +48,9 @@ export const DEVICE_EVENTS: GameEvent[] = [
     effects: [{ target: { kind: 'resource', key: 'courtInfluence' }, amount: 18 }],
     setFlags: {
       [DEVICE_FLAGS.scrollOffered]: true,
+      // ★ [9-B] 성물은 **하늘의 인정(legitimacy_sacred)**만 준다. 교권 지지(church_support)는
+      //   교회와 손잡는 별도 경로에서만 — 성물=자유 / 교권=종속을 가르는 정합성.
       legitimacy_sacred: true,
-      church_support: true,
     },
   },
 

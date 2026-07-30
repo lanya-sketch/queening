@@ -87,6 +87,9 @@ export const PRIORITY: Record<string, number> = {
   'decisive-hero': 61,
   'prince-arrival': 60,
   'prince-duel': 59, // ★ [7] ③ 겨루기 — 체류 중 한 번
+  // ★ [9-B] 교권 동맹 + 선포 결정 (엔딩 직전 대외 결단)
+  'church-alliance': 44.1,
+  'proclamation': 43.1,
   // ★ [9-A] 신앙·성물 (성검 자리·대주교·두루마리) + 제국 쇠락 서사(background)
   'empty-altar': 47.1,
   'archbishop-audience': 46.1,

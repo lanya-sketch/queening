@@ -74,7 +74,8 @@ export const FAITH_EVENTS: GameEvent[] = [
     once: true,
     priority: 45.1,
     effects: [res('courtInfluence', 10)],
-    setFlags: { legitimacy_sacred: true, church_support: true, scroll_by_faith: true },
+    // ★ [9-B] 성물은 하늘의 인정만(legitimacy_sacred). church_support 는 교권 경로 전용.
+    setFlags: { legitimacy_sacred: true, scroll_by_faith: true },
   },
 
   // ── B. 제국 쇠락 서사 — 9년에 걸쳐 조금씩. 소문 → 조공 급함 → 붕괴. ──
