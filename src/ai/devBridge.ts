@@ -28,7 +28,8 @@ import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { resolveCharacterPortrait, resolveMonarchPortrait, validateManifest } from '../systems/outfits'
 import { setDeterministic, setRng, rng } from '../systems/rng'
-import { planVisit, setForceQueenAbsent } from '../systems/visit'
+import { CONNECTED_MONTH, connectedWithFlag, metMonthFlag, planVisit, setForceQueenAbsent } from '../systems/visit'
+import { encounterFor } from '../data/events/encounters'
 import {
   clearAllSlots, exportSlot, hasAnySave, importCode, listSlots, migrateLegacySave,
 } from '../systems/save'
@@ -170,6 +171,40 @@ export function installDevBridge(): void {
     forceEvent(eventId: string) {
       const game = useGame.getState().game
       useGame.setState({ game: { ...game, pendingEventIds: [eventId], phase: 'event' } })
+    },
+    /** ★ [5] 지금 상태에서 이 인물과의 조우 대화 id(없으면 null) — 곡선 실측용. */
+    encounterId(charId: string) {
+      return encounterFor(charId, useGame.getState().game)
+    },
+    /** ★ [5] 선택지를 코드로 고르고(효과 적용) 이벤트를 닫는다 — UI 클릭 없이 곡선을 돈다. */
+    choose(eventId: string, choiceId: string) {
+      useGame.getState().chooseOption(eventId, choiceId)
+      useGame.getState().dismissEvent()
+      return useGame.getState().game
+    },
+    /**
+     * ★ [5] 곡선 실측 — 특정 인물과의 '깊은 만남'을 강제 발동한다(presence rng 우회).
+     *   visit 의 조우 분기와 같은 flag(met_month·connected_this_month·connected_with)를 세우고
+     *   조우 대화를 enqueue 한다. 조우가 없으면(구간 소진·미해금) null.
+     */
+    connect(charId: string) {
+      const g = useGame.getState().game
+      const enc = encounterFor(charId, g)
+      if (!enc) return null
+      useGame.setState({
+        game: {
+          ...g,
+          flags: {
+            ...g.flags,
+            [metMonthFlag(charId)]: true,
+            [CONNECTED_MONTH]: true,
+            [connectedWithFlag(charId)]: true,
+          },
+          pendingEventIds: [enc],
+          phase: 'event',
+        },
+      })
+      return enc
     },
     /** ★ 궁 안 이동(2-b-1) — 목적지 방문을 코드로 발동한다(방문 계획·rng 그대로). */
     visit(place: string) {

@@ -40,8 +40,9 @@ const MAX_ABS: Record<AiDeltaTarget, number> = {
 /** 한 응답에서 받아들일 델타 개수 상한. */
 const MAX_DELTAS = 4
 
-/** 호감도 1회 상한. 신뢰와 같은 결로 작게 움직인다. */
-const MAX_AFFECTION = 3
+/** ★ [5] 호감도 1회 상한 — ±1 소폭. 선택지 대화(조우)가 주 경로가 되면서 AI 자유대화는
+ *   "더 깊이 이야기하기" 보조로 내려갔다. 호감도는 아주 조금만 움직인다(원하는 사람만 쓰는 덤). */
+const MAX_AFFECTION = 1
 
 /** 대사 길이 상한. 넘치면 자른다(모델이 폭주해도 UI 가 깨지지 않게). */
 const MAX_REPLY_CHARS = 1200

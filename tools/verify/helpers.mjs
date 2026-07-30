@@ -109,7 +109,7 @@ export async function launch() {
  * 함께 깨뜨린 적이 있어서, 버전만 한 곳에 모아 둔다.
  * (src/data/config.ts 의 GAME_CONFIG.saveVersion 과 맞춰야 한다)
  */
-export const SAVE_VERSION = 10
+export const SAVE_VERSION = 11
 
 /**
  * 실제 AI 엔드포인트로 나가는 요청을 전부 막는다.

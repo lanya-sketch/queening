@@ -8,6 +8,11 @@ import type { Character } from '../../types/game'
  *
  * ★ gender 를 하드코딩하지 않고 데이터로 두는 이유: (다) 전면 성별 선택이
  *   열릴 때 이 필드만 바꾸면 되고, 코드는 어디에도 "heir 는 남자"를 알지 못한다.
+ *
+ * ★ [5] **시작 호감도 전원 0**. 예전엔 ②⑤ 20·③ 5 로 "이미 친하다"를 공짜로 줬는데,
+ *   선택지 대화가 주 경로가 되면서 그 차이가 이상해졌다. 관계의 앞섬은 이제 **이벤트로만**
+ *   표현된다 — ②⑤가 어릴 때부터 곁에 있었다는 건 13~15세 teenBonds 가 호감도로 말한다.
+ *   ①의 "최저 출발"도 유효: 전원 0 이지만 ①만 반감 이벤트로 시작해 실질적으로 뒤처진다.
  */
 export const CHARACTERS: Character[] = [
   {
@@ -27,7 +32,7 @@ export const CHARACTERS: Character[] = [
     nameByGender: { male: '충신 가문의 아들', female: '충신 가문의 딸' },
     role: '왕당파. 어릴 때부터 곁에 있었다.',
     gender: 'female',
-    startingAffection: 20,
+    startingAffection: 0, // ★ [5] 전원 0 — 곁에 있었음은 teenBonds(+12)로 표현
     romanceUnlock: { flags: { romance_unlocked: true } },
     portraitId: 'loyalist',
   },
@@ -36,7 +41,7 @@ export const CHARACTERS: Character[] = [
     name: '제국의 왕족',
     role: '외부 축. 상주하지 않고 이따금 나타난다.',
     gender: 'male',
-    startingAffection: 5,
+    startingAffection: 0, // ★ [5] 전원 0
     romanceUnlock: { flags: { romance_unlocked: true } },
     // ★ 해금(영구)과 체류(현재)를 분리한다 — "아직 조건이 안 됐다"와
     //   "열렸지만 지금 궁에 없다"는 플레이어에게 전혀 다른 정보다.
@@ -51,7 +56,7 @@ export const CHARACTERS: Character[] = [
     name: '친위 지휘관',
     role: '오래된 무관 가문. 가장 오래 곁을 지켰다.',
     gender: 'female',
-    startingAffection: 20,
+    startingAffection: 0, // ★ [5] 전원 0 — 가장 오래 곁을 지킴은 teenBonds(+12)로 표현
     romanceUnlock: { flags: { romance_unlocked: true } },
     portraitId: 'commander',
   },

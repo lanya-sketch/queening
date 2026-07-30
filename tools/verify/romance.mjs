@@ -219,8 +219,10 @@ log('F4 v4 → 현재 버전 연쇄 마이그레이션:', migrated.version,
   ok(migrated.version === SAVE_VERSION))
 log('F4b 계절 타이머 필드 주입(v5→v6):', JSON.stringify(migrated.state.counters),
   ok(typeof migrated.state.counters === 'object'))
-log('F5 호감도 기본값 주입:', JSON.stringify(migrated.state.affection),
-  ok(migrated.state.affection.heir === 0 && migrated.state.affection.loyalist === 20))
+// ★ [5] 전원 0 시작 — 관계는 이벤트로만 열린다(startingAffection 전부 0). v11 리베이스
+//   마이그레이션이 옛 시작값을 빼 0 으로 맞춘다. 그래서 기본 주입은 heir·loyalist 모두 0.
+log('F5 호감도 기본값 주입(전원 0):', JSON.stringify(migrated.state.affection),
+  ok(migrated.state.affection.heir === 0 && migrated.state.affection.loyalist === 0))
 log('F6 군주 성별 기본값 male:', ok(migrated.state.monarchGender === 'male'))
 log('F7 기존 flag 보존:', ok(migrated.state.flags.clue_radical_edict === true))
 log('F8 기존 착장 보존:', ok(migrated.state.currentOutfitId === 'office'))

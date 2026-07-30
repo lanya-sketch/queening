@@ -109,9 +109,9 @@ export function rollChance(
 export function tickCounters(counters: Record<string, number>): Record<string, number> {
   const next: Record<string, number> = {}
   for (const [key, value] of Object.entries(counters)) {
-    // ★ `__pity:`(쌓인 헛탕)와 `__risk:`(쌓인 방치)는 타이머가 아니라 누적기라
-    //   매 턴 깎으면 안 된다. 나머지(체류·쿨다운)만 규칙 하나로 준다.
-    if (key.startsWith('__pity:') || key.startsWith('__risk:')) {
+    // ★ `__pity:`(쌓인 헛탕)·`__risk:`(쌓인 방치)·`__bond:`([5] 질투 leaning/wavered 기록)는
+    //   타이머가 아니라 누적기라 매 턴 깎으면 안 된다. 나머지(체류·쿨다운)만 규칙 하나로 준다.
+    if (key.startsWith('__pity:') || key.startsWith('__risk:') || key.startsWith('__bond:')) {
       next[key] = value
       continue
     }

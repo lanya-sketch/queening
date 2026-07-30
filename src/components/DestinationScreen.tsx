@@ -1,5 +1,5 @@
 import { PLACES } from '../data/places'
-import { outingsPerMonth } from '../systems/visit'
+import { canVisit, outingsPerMonth } from '../systems/visit'
 import { useGame } from '../store/gameStore'
 import { Rule } from './ui/Chrome'
 
@@ -52,7 +52,11 @@ export function DestinationScreen({ onClose }: { onClose: () => void }) {
 
         <ul className="mt-3 space-y-2.5">
           {PLACES.map((place) => {
-            const locked = place.minAge != null && game.age < place.minAge
+            const ageLocked = place.minAge != null && game.age < place.minAge
+            const isOuting = place.kind === 'outing-legal' || place.kind === 'outing-sneak'
+            // ★ [5] 궁 밖은 이 달에 이미 나갔으면 잠긴다(월 1회). 궁 안은 늘 열림(자유).
+            const outingUsed = isOuting && !ageLocked && !canVisit(game, place.id)
+            const locked = ageLocked || outingUsed
             return (
               <li key={place.id}>
                 <button
@@ -71,10 +75,13 @@ export function DestinationScreen({ onClose }: { onClose: () => void }) {
                     <span className="font-title text-[15px] font-semibold text-parchment">
                       {place.label}
                     </span>
-                    {locked && (
+                    {ageLocked && (
                       <span className="ml-auto text-[11px] text-faint">
                         {place.minAge}세부터
                       </span>
+                    )}
+                    {outingUsed && (
+                      <span className="ml-auto text-[11px] text-faint">이 달엔 이미 나감</span>
                     )}
                   </div>
                   <p className="mt-1 pl-6 text-[12.5px] leading-relaxed text-muted">{place.hint}</p>
@@ -85,7 +92,8 @@ export function DestinationScreen({ onClose }: { onClose: () => void }) {
         </ul>
 
         <p className="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-faint">
-          이번 달 남은 걸음: {outingsPerMonth(game)}회. 담 밖은 들킬 위험이 따릅니다.
+          궁 안은 하루에도 여러 곳을 돌 수 있습니다. 담 밖 나들이는 이 달에 {outingsPerMonth(game)}회 —
+          들킬 위험이 따릅니다. (같은 사람은 그 달에 한 번만 마주칩니다.)
         </p>
       </div>
     </div>

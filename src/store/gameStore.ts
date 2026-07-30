@@ -7,6 +7,7 @@ import { TEMPERAMENTS, TEMPERAMENT_BY_ID, temperamentFlag } from '../data/temper
 import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '../types/game'
 import { applyEffects } from '../systems/effects'
 import { resolvedChoice } from '../systems/activityTier'
+import { resolveJealousyChoice } from '../data/events/jealousy'
 import { matchesCondition } from '../systems/eventEngine'
 import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/outfits'
 import { rng } from '../systems/rng'
@@ -162,7 +163,7 @@ export const useGame = create<GameStore>()((set, get) => ({
   // ★ 궁 안 이동 — 방문 계획(rng)을 세워 장소 이벤트를 그 자리에서 발동한다(AP 무소모).
   visitDestination: (place) => {
     const { game } = get()
-    if (!canVisit(game)) return
+    if (!canVisit(game, place)) return
     const plan = planVisit(place, game, rng)
     const event = EVENT_BY_ID[plan.eventId]
     if (!event) return
@@ -223,9 +224,19 @@ export const useGame = create<GameStore>()((set, get) => ({
     // ★ 4-C 결과 차등 — 잠그는 대신 스탯에 따라 결과가 갈리는 선택지가 있다.
     //   등급은 **효과를 적용하기 전 상태**로 확정한다(효과가 기준 스탯을 움직이므로).
     const resolved = resolvedChoice(choice, game)
-    const { state, deltas } = applyEffects(game, resolved.effects, rng)
+    // ★ [5] 질투 — 대사(label·resultText)는 정적, 수치(Y hurt·X 하락·leaning/wavered)는
+    //   상태에 따라 동적으로 낸다. jealousy.ts 가 소유. 그 외 이벤트는 정적 효과 그대로.
+    const jealousy = eventId.startsWith('jealousy-')
+      ? resolveJealousyChoice(eventId, choiceId, game)
+      : null
+    const effects = jealousy ? jealousy.effects : resolved.effects
+    const { state, deltas } = applyEffects(game, effects, rng)
     set({
-      game: { ...state, flags: { ...state.flags, ...resolved.setFlags } },
+      game: {
+        ...state,
+        flags: { ...state.flags, ...resolved.setFlags },
+        ...(jealousy ? { counters: { ...state.counters, ...jealousy.counters } } : {}),
+      },
       lastChoiceOutcome: { eventId, choiceId, deltas, resultText: resolved.resultText },
     })
   },

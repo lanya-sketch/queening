@@ -5,6 +5,7 @@ import {
 } from '../data/places'
 import { chamberSearchEligible, CHAMBER } from '../data/events/bloodoath'
 import { knowsTreason, officeSearchEligible, OFFICE_SEARCH_OPEN } from '../data/events/treason'
+import { encounterFor } from '../data/events/encounters'
 import { RISK_TUTOR } from './risk'
 import type { Rng } from './effects'
 
@@ -39,14 +40,34 @@ export interface VisitPlan {
   counters: Record<string, number>
 }
 
-/** 한 달에 나갈 수 있는 횟수. 지금 1 고정 — 나중에 나이·실권으로 늘림(구조만 개방). */
-export function outingsPerMonth(_game: GameState): number {
-  return 1
+/** ★ [5] 궁 밖 외출 월 1회. 궁 안 이동은 자유(횟수 제한 없음). */
+export function outingsPerMonth(game: GameState): number {
+  return game.flags[OUTING_MONTH] === true ? 0 : 1
 }
 
-/** 이번 달 아직 안 나갔나(스케줄 화면에서만). */
-export function canVisit(game: GameState): boolean {
-  return game.phase === 'schedule' && game.flags[VISITED_MONTH] !== true
+/** ★ [5] 궁 밖 외출은 그 달에 나갔으면 잠긴다(큰 결심·위험). 궁 안 이동은 자유. */
+export const OUTING_MONTH = 'outing_this_month'
+/** ★ [5] 소득 1회 — 그 달 이미 만난 인물. 재방문해도 조우 대화·호감도 없이 짧은 인사만. */
+export const metMonthFlag = (charId: string) => `met_month:${charId}`
+/**
+ * ★ [5] "자유롭되 소득은 1회" — 궁 안을 하루에도 여러 곳 돌 수 있으나, 마음을 나누는 깊은 만남
+ *   (조우 대화·호감도)은 그 달에 하나뿐. 이것이 집중(빠르고 안전) vs 분산(느리고 흔들림)을
+ *   가르는 축이다 — 자유 이동으로 만남 기회가 몇 배가 돼도 소득은 한 번뿐.
+ */
+export const CONNECTED_MONTH = 'connected_this_month'
+/** ★ [5] 그 달 깊이 만난 인물(X) — 질투의 '달래기'가 '다른 쪽 하락' 대상으로 읽는다. transient. */
+export const connectedWithFlag = (charId: string) => `connected_with:${charId}`
+
+/**
+ * ★ [5] 방문 가능 여부. 궁 안(서고/정원/연무장/왕대비궁/집무실)은 자유(일상),
+ *   궁 밖(순찰/잠행)은 월 1회(큰 결심). place 없이 부르면 화면 진입 가능 여부(궁 안이 늘 있으니 true).
+ */
+export function canVisit(game: GameState, place?: PlaceId): boolean {
+  if (game.phase !== 'schedule') return false
+  if (!place) return true
+  const kind = PLACE_BY_ID[place]?.kind
+  if (kind === 'outing-legal' || kind === 'outing-sneak') return game.flags[OUTING_MONTH] !== true
+  return true // 궁 안은 자유
 }
 
 /** 그날 그 장소에 누가 있나 — 가중치 × pity. 없을 수도 있다(null). */
@@ -168,7 +189,8 @@ function planOffice(game: GameState, rng: Rng, base: VisitPlan): VisitPlan {
  */
 export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan {
   const def = PLACE_BY_ID[place]
-  const setFlags: Record<string, boolean> = { [VISITED_MONTH]: true, [visitedFlag(place)]: true }
+  // ★ [5] 궁 안은 자유 — VISITED_MONTH 를 안 세운다(여러 번 방문 가능). visited_<place> 만 기록.
+  const setFlags: Record<string, boolean> = { [visitedFlag(place)]: true }
   const counters: Record<string, number> = {}
   const base: VisitPlan = { eventId: def.eventId, scene: null, setFlags, counters }
 
@@ -176,13 +198,16 @@ export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan 
   if (def.kind === 'office') return planOffice(game, rng, base)
 
   if (def.kind === 'outing-legal') {
+    // ★ [5] 궁 밖은 월 1회 — OUTING_MONTH 를 세워 이 달 추가 외출을 막는다.
     setFlags.outing_legal = true
+    setFlags[OUTING_MONTH] = true
     return { ...base, scene: buildPlaceScene(place, null, pickLore(place, rng)) }
   }
   if (def.kind === 'outing-sneak') {
     // ★ went_out 을 세워 기존 발각(outing-caught) 체인을 그대로 탄다 — 턴 종료에 판정·소거.
     setFlags.went_out = true
     setFlags.outing_sneak = true
+    setFlags[OUTING_MONTH] = true
     // ★ 흔적 — 몰래 다닐 때마다 __risk:tutor 가 +1(예전 sneak 활동의 역할). 튜터 해고 데드의 공급원.
     //   (__risk: 는 누적기라 tickCounters 가 안 깎는다 — 여기서 현재값+1 로 세운다.)
     counters[RISK_TUTOR] = (game.counters?.[RISK_TUTOR] ?? 0) + 1
@@ -191,6 +216,22 @@ export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan 
 
   // 일반 장소(서고/정원/연무장) — 인물 유동 조우.
   const present = rollPresence(place, game, rng)
-  if (present) counters[seenCounter(present)] = SEEN_FRESH
-  return { ...base, scene: buildPlaceScene(place, present, pickLore(place, rng)) }
+  // ★ [5] 소득 1회 — 그 달 이미 만난 인물이거나, 이미 이 달의 깊은 만남을 썼으면 조우 대화 없이 짧게.
+  const alreadyMet = present ? game.flags[metMonthFlag(present)] === true : false
+  const connectedAlready = game.flags[CONNECTED_MONTH] === true
+  if (present && !alreadyMet) {
+    counters[seenCounter(present)] = SEEN_FRESH
+    setFlags[metMonthFlag(present)] = true
+    // ★ [5] 선택지 대화 — 이 달의 깊은 만남을 아직 안 썼고 조우 대화가 있으면 enqueue. 그 만남을 소진한다.
+    const enc = connectedAlready ? null : encounterFor(present, game)
+    if (enc) {
+      setFlags[CONNECTED_MONTH] = true
+      setFlags[connectedWithFlag(present)] = true // ★ [5] 질투 달래기의 '다른 쪽' 대상
+      return { eventId: enc, scene: null, setFlags, counters }
+    }
+    // 이미 이 달의 깊은 만남을 썼거나(다른 인물), 조우 대화가 없음 → meet-line(소득 없음).
+    return { ...base, scene: buildPlaceScene(place, present, pickLore(place, rng)) }
+  }
+  // 이미 만났거나 아무도 없음 — 조용한 장소(소득 없음).
+  return { ...base, scene: buildPlaceScene(place, null, pickLore(place, rng)) }
 }

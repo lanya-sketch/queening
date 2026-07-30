@@ -52,9 +52,10 @@ export function RomancePanel({ onClose }: { onClose: () => void }) {
           <div>
             <h1 className="font-title text-lg font-semibold text-parchment">인연</h1>
             <p className="mt-1 text-xs text-muted">
+              마음은 궁 안에서 만나 나누는 대화로 열립니다(「이번 달, 어디로」).{' '}
               {aiEnabled
-                ? '해금된 사람을 누르면 대화가 시작됩니다.'
-                : 'AI 설정에서 키를 넣으면 대화할 수 있습니다.'}{' '}
+                ? '여기서 누르면 「더 깊이 이야기하기」 — 자유로이 말을 나눌 수 있으나, 마음은 조금만 움직입니다.'
+                : 'AI 설정에서 키를 넣으면 「더 깊이 이야기하기」가 열립니다(선택 사항).'}{' '}
               호감도 {DEEP_BOND_THRESHOLD} 에 이르면 결정적 순간이 찾아오고, 그때 한 사람을
               택하면 나머지 인연은 닫힙니다.
             </p>

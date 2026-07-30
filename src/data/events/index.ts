@@ -15,6 +15,8 @@ import { DAILY_EVENTS } from './daily'
 import { SURPRISE_EVENTS } from './surprises'
 import { BANQUET_EVENTS } from './banquet'
 import { TREASON_EVENTS } from './treason'
+import { ENCOUNTER_EVENTS } from './encounters'
+import { JEALOUSY_EVENTS } from './jealousy'
 import { M1_EVENTS } from './m1-samples'
 import { PRIORITY } from './priority'
 import { OUTING_EVENTS } from './outings'
@@ -88,9 +90,10 @@ export const MINOR_EVENTS: GameEvent[] = MINOR_POOL.map((event) => ({
 }))
 
 /**
- * 화면이 렌더할 수 있도록 메인 + 소소 채널 + 장소 이벤트를 모두 담는다.
- * ★ PLACE_EVENTS 는 EVENTS(자동발동)엔 없고 여기에만 있다 — 방문 resolver가 직접 enqueue 한다.
+ * 화면이 렌더할 수 있도록 메인 + 소소 채널 + 장소 이벤트 + 조우 대화 + 질투를 모두 담는다.
+ * ★ PLACE_EVENTS·ENCOUNTER_EVENTS·JEALOUSY_EVENTS 는 EVENTS(자동발동)엔 없고 여기에만 있다 —
+ *   방문 resolver(조우)·endTurn 파생(질투)이 직접 enqueue 한다.
  */
 export const EVENT_BY_ID: Record<string, GameEvent> = Object.fromEntries(
-  [...EVENTS, ...MINOR_EVENTS, ...PLACE_EVENTS].map((e) => [e.id, e]),
+  [...EVENTS, ...MINOR_EVENTS, ...PLACE_EVENTS, ...ENCOUNTER_EVENTS, ...JEALOUSY_EVENTS].map((e) => [e.id, e]),
 )

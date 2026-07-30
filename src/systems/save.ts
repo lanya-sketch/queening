@@ -78,6 +78,16 @@ const MIGRATIONS: Record<number, (state: any) => any> = {
   }),
   // v9 -> v10 : ★ [3] 권세 지표 도입. 옛 세이브는 허수아비 출발점(10)에서 시작한다.
   9: (state) => ({ ...state, courtStanding: state.courtStanding ?? INITIAL_RESOURCES.courtStanding }),
+  // v10 -> v11 : ★ [5] 시작 호감도 전원 0 리베이스. 옛 시작분(②⑤ 20·③ 5)을 빼서
+  //   전원 0 기준선으로 통일 — 이벤트로 번 몫만 남긴다. 안 건드린 캐릭터는 옛 시작값에서 리베이스돼 0.
+  10: (state) => {
+    const OLD_START: Record<string, number> = { heir: 0, loyalist: 20, prince: 5, commander: 20, hero: 0 }
+    const aff = { ...(state.affection ?? {}) }
+    for (const [id, old] of Object.entries(OLD_START)) {
+      aff[id] = Math.max(0, (aff[id] ?? old) - old)
+    }
+    return { ...state, affection: aff }
+  },
 }
 
 function migrate(state: any, fromVersion: number): GameState | null {

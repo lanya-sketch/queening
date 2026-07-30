@@ -9,6 +9,12 @@ import {
 import { RISK_STRAIN, updateRisk } from './risk'
 import { isPostAutonomy, PEOPLE_FAVOR_MIN, reliefCount, STANDING_STRONG, tideHasTurned } from './rebellion'
 import { initialAffection, initialCharacterGenders } from './romance'
+import { CONNECTED_MONTH } from './visit'
+import { JEALOUSY_CD, JEALOUSY_COOLDOWN, jealousyRivalFlag, planJealousy } from '../data/events/jealousy'
+
+/** ★ [5] 그 달 깊이 만난 인물(X) flag prefix — 질투 달래기의 '다른 쪽' 대상. */
+const CONNECTED_WITH_PREFIX = 'connected_with:'
+const JEALOUSY_RIVAL_PREFIX = 'jealousy_rival:'
 import type { Delta, DiaryEntry, Effect, GameDate, GameEvent, GameState } from '../types/game'
 
 /**
@@ -247,11 +253,20 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
     triggered.push(event)
   }
 
+  // ★ [5] 질투 판정 재료 — 연결 flag 소거 전에 "이 달 깊은 만남이 있었나 · 상대(X)는 누구였나"를 잡는다.
+  const connectedThisMonth = next.flags[CONNECTED_MONTH] === true
+  const rivalId = connectedThisMonth
+    ? Object.keys(next.flags)
+        .find((k) => k.startsWith(CONNECTED_WITH_PREFIX) && next.flags[k])
+        ?.slice(CONNECTED_WITH_PREFIX.length)
+    : undefined
+
   // 3-a-2. 외출·방문 신호 소거 — `went_out` 과 궁 안 이동(2-b-1) transient flag 들은
   //   **그 턴에만** 유효하다. 이 턴의 발각(outing-caught)·수색(chamber-search)이 조건으로 읽은 뒤
   //   여기서 끈다. 안 끄면 다음 턴에 남아 오발한다.
   //   대상: went_out · visited_this_month · visited_<place> · queen_chamber_open.
   //   (인물 조우 pity 인 `__seen:<id>` 는 counter 라 위 tickCounters 가 매 턴 감소시킨다 — 여기서 안 만짐.)
+  //   ★ [5] connected_with:* 와 jealousy_rival:* 도 그 달(→다음 달 질투 해소)까지만 — 여기서 소거.
   const clearedFlags = { ...next.flags }
   let flagsDirty = false
   for (const key of Object.keys(clearedFlags)) {
@@ -260,6 +275,11 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
       (key === 'went_out' ||
         key === 'queen_chamber_open' ||
         key === 'office_search_open' || // ★ [4] 집무실 수색 게이트도 그 턴에만
+        key === 'outing_this_month' || // ★ [5] 궁 밖 월 1회 게이트 — 다음 달 리셋
+        key === 'connected_this_month' || // ★ [5] 이 달의 깊은 만남(소득 1회) — 다음 달 리셋
+        key.startsWith('met_month:') || // ★ [5] 소득 1회(그 달 만난 인물) — 다음 달 리셋
+        key.startsWith(CONNECTED_WITH_PREFIX) || // ★ [5] 그 달 만난 상대(X) — 질투 해소 뒤 소거
+        key.startsWith(JEALOUSY_RIVAL_PREFIX) || // ★ [5] 질투 rival flag — 다음 턴 소거(해소는 이번 턴 event 상)
         key.startsWith('visited_'))
     ) {
       clearedFlags[key] = false
@@ -314,6 +334,15 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
     king_trusted: favor || strongStanding,
   }
 
+  // ★ [5] 질투 — 문어발의 대가(제한이 아니라 대가). 이 달 깊은 만남이 있었고 다른 연애 대상도
+  //   마음에 두고 있으면(2인↑ 30↑) 가끔(쿨다운) 질투가 뜬다. planJealousy 가 조건·대상(Y)을 정한다.
+  //   달래기의 '다른 쪽 하락' 대상(X=rival)을 flag 로 남겨 두면(다음 턴 소거) 해소 때 읽는다.
+  const jealousyId = planJealousy(next, connectedThisMonth, rivalId)
+  if (jealousyId) {
+    if (rivalId) next.flags = { ...next.flags, [jealousyRivalFlag(rivalId)]: true }
+    next.counters = { ...next.counters, [JEALOUSY_CD]: JEALOUSY_COOLDOWN }
+  }
+
   // 3-c. 소소-비트 — **빈 달만** 채운다. 큰 이벤트가 뜬 달엔 굴리지 않고,
   //   굴려도 턴 상한과 별개라 서사를 굶기지 않는다. 데드엔딩이 섰으면 굴리지 않는다.
   if (next.age <= GAME_CONFIG.endAge && deadEndReason(next) === null) {
@@ -351,7 +380,8 @@ export function endTurn(state: GameState, rng: Rng = Math.random): GameState {
 
   next.actionPoints = GAME_CONFIG.actionPointsPerTurn
   next.plannedActivityIds = []
-  next.pendingEventIds = queued.map((e) => e.id)
+  // ★ [5] 질투는 endTurn 이 파생 발동해 enqueue(조우 대화처럼 별지면 VN). 큐 뒤에 붙인다.
+  next.pendingEventIds = [...queued.map((e) => e.id), ...(jealousyId ? [jealousyId] : [])]
   next.phase = 'result'
   next.lastTurnReport = {
     date: state.date,
