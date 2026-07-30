@@ -30,6 +30,7 @@ import { resolveCharacterPortrait, resolveMonarchPortrait, validateManifest } fr
 import { setDeterministic, setRng, rng } from '../systems/rng'
 import { CONNECTED_MONTH, connectedWithFlag, metMonthFlag, planVisit, setForceQueenAbsent } from '../systems/visit'
 import { encounterFor } from '../data/events/encounters'
+import { eligibleAftermath, eligibleReckonings, nextEndgameEvent } from '../systems/endgame'
 import {
   clearAllSlots, exportSlot, hasAnySave, importCode, listSlots, migrateLegacySave,
 } from '../systems/save'
@@ -181,6 +182,32 @@ export function installDevBridge(): void {
       useGame.getState().chooseOption(eventId, choiceId)
       useGame.getState().dismissEvent()
       return useGame.getState().game
+    },
+    /** ★ [8] 이벤트를 (선택 없이) 닫는다 — 여파처럼 선택지 없는 결산 이벤트를 넘긴다. */
+    dismiss() {
+      useGame.getState().dismissEvent()
+      return useGame.getState().game
+    },
+    /** ★ [8] 결과 화면에서 계속 — 큐가 비면 「엔딩 직전 결산」 정착을 발동한다. */
+    continueResult() {
+      useGame.getState().continueFromResult()
+      return useGame.getState().game
+    },
+    /** ★ [8] 지금 상태에서 다음 결산 이벤트 id(없으면 null) — 순서 로직 실측용. */
+    nextEndgame() {
+      return nextEndgameEvent(useGame.getState().game)
+    },
+    /** ★ [8] 지금 상태에서 자격 되는 청산 id 전부(조건만) — 게이팅 검증용. */
+    eligibleReckonings() {
+      return eligibleReckonings(useGame.getState().game)
+    },
+    /** ★ [8] 지금 상태에서 자격 되는 청산 여파 id 전부 — 후일담 구간 게이팅 검증용. */
+    eligibleAftermath() {
+      return eligibleAftermath(useGame.getState().game)
+    },
+    /** ★ [8] id 로 이벤트 정의(EVENT_BY_ID — 결산 청산·여파 포함). */
+    eventById(id: string) {
+      return EVENT_BY_ID[id] ? JSON.parse(JSON.stringify(EVENT_BY_ID[id])) : null
     },
     /**
      * ★ [5] 곡선 실측 — 특정 인물과의 '깊은 만남'을 강제 발동한다(presence rng 우회).

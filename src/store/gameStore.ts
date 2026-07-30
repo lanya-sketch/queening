@@ -8,7 +8,9 @@ import type { ChoiceOutcome, GameState, Gender, OutfitManifest, Phase } from '..
 import { applyEffects } from '../systems/effects'
 import { resolvedChoice } from '../systems/activityTier'
 import { resolveJealousyChoice } from '../data/events/jealousy'
-import { matchesCondition } from '../systems/eventEngine'
+import { matchesCondition, seenFlagId } from '../systems/eventEngine'
+import { deadEndReason } from '../systems/deadend'
+import { nextEndgameEvent } from '../systems/endgame'
 import { isOutfitUnlocked, loadOutfitManifest, resolveOutfit } from '../systems/outfits'
 import { rng } from '../systems/rng'
 import { getSlotSummary, loadGame, saveGame } from '../systems/save'
@@ -20,6 +22,26 @@ import type { PlaceId } from '../data/places'
 /** 이벤트 큐를 다 비운 뒤 돌아갈 화면. 20세를 넘겼으면 스케줄 대신 종료 화면. */
 function idlePhase(game: GameState): Phase {
   return hasReachedEnd(game) ? 'ended' : 'schedule'
+}
+
+/**
+ * ★ [8] 큐가 빈 뒤 어디로 — 엔딩에 닿았고 데드엔딩이 아니면 「엔딩 직전 결산」을 정착시킨다.
+ *   다음 결산 이벤트가 있으면 enqueue + seen 표시 → 'event'. 없으면 idlePhase(대개 'ended').
+ *   데드엔딩(파국)이면 nextEndgameEvent 를 부르지 않아 결산 없이 바로 'ended'.
+ */
+function settleAfterQueue(game: GameState): GameState {
+  if (hasReachedEnd(game) && !deadEndReason(game)) {
+    const next = nextEndgameEvent(game)
+    if (next) {
+      return {
+        ...game,
+        pendingEventIds: [next],
+        flags: { ...game.flags, [seenFlagId(next)]: true },
+        phase: 'event',
+      }
+    }
+  }
+  return { ...game, phase: idlePhase(game) }
 }
 
 interface GameStore {
@@ -187,7 +209,11 @@ export const useGame = create<GameStore>()((set, get) => ({
 
   continueFromResult: () => {
     const { game } = get()
-    set({ game: { ...game, phase: game.pendingEventIds.length ? 'event' : idlePhase(game) } })
+    if (game.pendingEventIds.length) {
+      set({ game: { ...game, phase: 'event' } })
+      return
+    }
+    set({ game: settleAfterQueue(game) }) // ★ [8] 큐 비면 결산 정착(엔딩 직전) or 'ended'
   },
 
   setMonarchGender: (monarchGender) => {
@@ -244,12 +270,10 @@ export const useGame = create<GameStore>()((set, get) => ({
   dismissEvent: () => {
     const { game } = get()
     const pendingEventIds = game.pendingEventIds.slice(1)
+    const advanced = { ...game, pendingEventIds }
+    // ★ [8] 큐가 남았으면 다음 이벤트, 비었으면 결산 정착(엔딩 직전) or 'ended'.
     set({
-      game: {
-        ...game,
-        pendingEventIds,
-        phase: pendingEventIds.length ? 'event' : idlePhase(game),
-      },
+      game: pendingEventIds.length ? { ...advanced, phase: 'event' } : settleAfterQueue(advanced),
       lastChoiceOutcome: null,
     })
   },
@@ -265,15 +289,13 @@ export const useGame = create<GameStore>()((set, get) => ({
           triggeredEventIds: game.lastTurnReport.triggeredEventIds.filter((id) => id !== eventId),
         }
       : game.lastTurnReport
+    // 이벤트 화면에 머물러 있었고 큐가 비었으면 결산 정착(엔딩 직전) or 평상 화면으로.
+    const base = { ...game, pendingEventIds, lastTurnReport: report }
     set({
-      game: {
-        ...game,
-        pendingEventIds,
-        lastTurnReport: report,
-        // 이벤트 화면에 머물러 있었다면 다음 이벤트 or 평상 화면으로 옮긴다(빈 화면 방지).
-        phase:
-          game.phase === 'event' && pendingEventIds.length === 0 ? idlePhase(game) : game.phase,
-      },
+      game:
+        game.phase === 'event' && pendingEventIds.length === 0
+          ? settleAfterQueue(base)
+          : base,
       lastChoiceOutcome: null,
     })
   },

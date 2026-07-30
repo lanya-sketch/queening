@@ -129,47 +129,54 @@ log('A7 ★ 호감도 90 여럿이어도 확정 안 했으면 철인통치:',
 
 // ─────────────────────────────────────────────────────────────
 log('')
-log('=== B. ★ 청산 게이팅 ===')
+log('=== B. ★ 청산 게이팅 (★ [8] 결산으로 이동 — 자격 로직은 그대로, 발동은 엔딩 직전) ===')
+// ★ [8] 청산은 19세 auto-fire 를 떼고 「엔딩 직전 결산」으로 옮겼다(systems/endgame.ts).
+//   자격 조건(정치 flag + romance_confirmed:X=false + minAge)은 그대로라 eligibleReckonings 로 검증한다.
+const eligible = (state) => page.evaluate((s) => {
+  window.__queeningAi.setGame(s)
+  return window.__queeningAi.eligibleReckonings()
+}, state)
 
-// ⑤ 반역: 로맨스 안 함 + 영향도 낮음 + 군사노선 안 탐 + 19세
-const commanderPurge = await triggerable(base({
-  age: 19, courtInfluence: 40,
+// ⑤ 반역: 로맨스 안 함 + 영향도 낮음 + 군사노선 안 탐. 엔딩 직전(21세) 기준.
+const commanderPurge = await eligible(base({
+  age: 21, courtInfluence: 40,
   flags: { ...SEEN_OTHERS, romance_unlocked: true },
 }))
-log('B1 ⑤ 청산 조건 충족 → 발동 가능:', ok(commanderPurge.includes('commander-reckoning')))
+log('B1 ⑤ 청산 조건 충족 → 결산 자격:', ok(commanderPurge.includes('commander-reckoning')))
 
 // 로맨스 확정한 캐릭터는 청산 대상 아님
-const commanderConfirmed = await triggerable(base({
-  age: 19, courtInfluence: 40,
+const commanderConfirmed = await eligible(base({
+  age: 21, courtInfluence: 40,
   flags: { ...SEEN_OTHERS, romance_unlocked: true, 'romance_confirmed:commander': true, romance_settled: true },
 }))
 log('B2 ★ 확정한 캐릭터는 청산 대상 아님:',
   ok(!commanderConfirmed.includes('commander-reckoning')))
 
 // 정치 조건 미달(영향도 높음)이면 안 뜸
-const commanderStrong = await triggerable(base({
-  age: 19, courtInfluence: 80,
+const commanderStrong = await eligible(base({
+  age: 21, courtInfluence: 80,
   flags: { ...SEEN_OTHERS, romance_unlocked: true },
 }))
 log('B3 정치 조건 미달(영향도 80)이면 청산 안 뜸:',
   ok(!commanderStrong.includes('commander-reckoning')))
 
-// 18세엔 아직
-const tooYoung = await triggerable(base({
-  age: 18, courtInfluence: 40, flags: { ...SEEN_OTHERS, romance_unlocked: true },
+// ★ [8] 치세 중(19세)엔 청산이 auto-fire 하지 않는다 — triggerable 에 없어야(결산에서만).
+const midReign = await triggerable(base({
+  age: 19, courtInfluence: 40, flags: { ...SEEN_OTHERS, romance_unlocked: true },
 }))
-log('B4 19세 전에는 청산 없음:', ok(!tooYoung.includes('commander-reckoning')))
+log('B4 ★ 치세 중 청산 auto-fire 없음(결산에서만):',
+  ok(!midReign.some((id) => id.endsWith('-reckoning'))))
 
-// ★ 철인통치 시 넷 다 조건 맞으면 숙청 가능
-const heartlessAll = await triggerable(base({
-  age: 19, courtInfluence: 40,
+// ★ 철인통치 시 넷 다 조건 맞으면 넷 다 결산 자격
+const heartlessAll = await eligible(base({
+  age: 21, courtInfluence: 40,
   flags: {
     ...SEEN_OTHERS, romance_unlocked: true,
     regent_disposed: true, house_commons_dissolved: true, hero_at_court: true,
   },
 }))
 const reckonings = heartlessAll.filter((id) => id.endsWith('-reckoning'))
-log('B5 ★ 철인통치 + 넷 다 조건 → 넷 다 청산 가능:',
+log('B5 ★ 철인통치 + 넷 다 조건 → 넷 다 결산 자격:',
   reckonings.join(', '), ok(reckonings.length === 4))
 
 // ─────────────────────────────────────────────────────────────
@@ -254,8 +261,12 @@ log('D6 관용도 삽입으로(위험을 안고 감):', ok(spared.text.includes(
 // 호감도 구간 변주 — ⑤ 3구간 실제 발동
 log('')
 log('=== E. 호감도 구간별 청산 후일담 (⑤ 3구간) ===')
-const bandFire = async (affection) => triggerable(base({
-  age: 19, courtInfluence: 40,
+// ★ [8] 여파도 결산에서만 발동 — eligibleAftermath 로 구간 게이팅 검증(조건은 그대로).
+const bandFire = async (affection) => page.evaluate((p) => {
+  window.__queeningAi.setGame(p)
+  return window.__queeningAi.eligibleAftermath()
+}, base({
+  age: 21, courtInfluence: 40,
   affection: { heir: 0, loyalist: 0, prince: 5, commander: affection, hero: 0 },
   flags: { ...SEEN_OTHERS, romance_unlocked: true, commander_purged: true },
 }))

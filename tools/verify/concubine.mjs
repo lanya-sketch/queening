@@ -53,21 +53,21 @@ const sceneText = async (state) => {
 
 // ─────────────────────────────────────────────────────────────
 log('=== A. 측실 — 청산 3갈래 ===')
-const commanderChoices = await page.evaluate(() => {
-  const e = window.__queeningAi.events().find((x) => x.id === 'commander-reckoning')
-  return e.choices.map((c) => c.id)
-})
+// ★ [8] 청산은 결산으로 이동 — 정의는 EVENT_BY_ID(eventById)로 읽는다(events()=auto-fire엔 없음).
+const commanderChoices = await page.evaluate(() =>
+  window.__queeningAi.eventById('commander-reckoning').choices.map((c) => c.id))
 log('A1 ⑤ 청산이 3갈래(죽임/측실/관용):', commanderChoices.join(', '),
   ok(commanderChoices.length === 3 && commanderChoices.includes('concubine')))
 const allThree = await page.evaluate(() =>
-  ['heir', 'loyalist', 'hero', 'commander'].map((c) => {
-    const e = window.__queeningAi.events().find((x) => x.id === `${c}-reckoning`)
-    return e.choices.some((ch) => ch.id === 'concubine')
-  }))
+  ['heir', 'loyalist', 'hero', 'commander'].map((c) =>
+    window.__queeningAi.eventById(`${c}-reckoning`).choices.some((ch) => ch.id === 'concubine')))
 log('A2 네 캐릭터 청산 전부 측실 갈래 있음:', ok(allThree.every(Boolean)))
 
-// ⑤ 측실 후일담 3구간 게이팅
-const bandFire = (aff) => triggerable(base({
+// ⑤ 측실 후일담 3구간 게이팅 — ★ [8] 여파도 결산에서만 → eligibleAftermath 로 검증(조건은 그대로).
+const bandFire = (aff) => page.evaluate((p) => {
+  window.__queeningAi.setGame(p)
+  return window.__queeningAi.eligibleAftermath()
+}, base({
   affection: { ...base().affection, commander: aff },
   flags: { ...SEEN, romance_unlocked: true, commander_concubine: true },
 }))

@@ -24,6 +24,8 @@
     "verify:ablation": "node tools/verify/ablation.mjs",
     "verify:incidents": "node tools/verify/incidents.mjs",
     "verify:ending": "node tools/verify/ending.mjs",
+    "verify:endgame": "node tools/verify/endgame.mjs",
+    "verify:round-a": "node tools/verify/round-a.mjs",
     "verify:ending-scene": "node tools/verify/ending-scene.mjs",
     "verify:hard-exclusive": "node tools/verify/hard-exclusive.mjs",
     "verify:concubine": "node tools/verify/concubine.mjs",

@@ -53,8 +53,8 @@ const RAW_EVENTS: GameEvent[] = [
   ...DISPOSAL_EVENTS,
   ...DECISIVE_EVENTS,
   ...CONQUEST_EVENTS,
-  ...RECKONING_EVENTS,
-  ...RECKONING_AFTERMATH,
+  // ★ [8] RECKONING_EVENTS·RECKONING_AFTERMATH 는 RAW_EVENTS 에서 뺐다(19세 auto-fire 안 함).
+  //   엔딩 직전 결산(systems/endgame.ts)이 hasReachedEnd 시 순차 enqueue 한다. EVENT_BY_ID 에는 남긴다.
   ...SURPRISE_EVENTS,
   ...OUTING_EVENTS,
   ...BANQUET_EVENTS,
@@ -95,5 +95,6 @@ export const MINOR_EVENTS: GameEvent[] = MINOR_POOL.map((event) => ({
  *   방문 resolver(조우)·endTurn 파생(질투)이 직접 enqueue 한다.
  */
 export const EVENT_BY_ID: Record<string, GameEvent> = Object.fromEntries(
-  [...EVENTS, ...MINOR_EVENTS, ...PLACE_EVENTS, ...OUTING_VISIT_EVENTS, ...ENCOUNTER_EVENTS, ...JEALOUSY_EVENTS].map((e) => [e.id, e]),
+  [...EVENTS, ...MINOR_EVENTS, ...PLACE_EVENTS, ...OUTING_VISIT_EVENTS, ...ENCOUNTER_EVENTS, ...JEALOUSY_EVENTS,
+    ...RECKONING_EVENTS, ...RECKONING_AFTERMATH].map((e) => [e.id, e]),
 )
