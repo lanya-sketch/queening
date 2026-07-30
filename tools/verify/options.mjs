@@ -37,9 +37,9 @@ for (let i = 0; i < 8; i++) {
 }
 log('A2 ★ 성별 선택 화면:',
   ok((await page.getByText('당신이 키울 이는').isVisible()) &&
-     (await page.getByRole('button', { name: /여왕이 될 소녀/ }).isVisible())))
+     (await page.getByRole('button', { name: '소녀', exact: true }).isVisible())))
 await page.screenshot({ path: `${OUT}/intro-gender.png` })
-await page.getByRole('button', { name: /여왕이 될 소녀/ }).click()
+await page.getByRole('button', { name: '소녀', exact: true }).click()
 await page.waitForTimeout(150)
 // 정체성 → 기질(기본 균형) → 온보딩.
 await page.getByRole('button', { name: '다음', exact: true }).click() // 정체성 → 기질

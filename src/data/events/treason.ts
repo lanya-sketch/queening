@@ -40,7 +40,7 @@ export const TREASON_EVENTS: GameEvent[] = [
     id: 'office-search',
     title: '섭정공의 문갑',
     text:
-      '{왕}은 새 자물쇠가 걸린 문갑을 열었다. 안에는 여러 이름이 연명된 종이 한 장 — 연판장이었다.\n' +
+      '{왕}은 새 자물쇠가 걸린 문갑을 열었다. 안에는 여러 이름이 연명된 종이 한 장, 연판장이었다.\n' +
       '선왕의 중앙집권에 반발한 귀족파의 반란 모의가, 이름과 서명으로 거기 있었다.',
     condition: { minAge: 16, flags: { [OFFICE_SEARCH_OPEN]: true, collective_treason: false } },
     once: false,
@@ -48,11 +48,11 @@ export const TREASON_EVENTS: GameEvent[] = [
     insights: [
       {
         requires: { resources: { courtStanding: { min: 55 } } },
-        text: '적힌 이름이 뜻밖에 적었다 — 조정이 이미 왕에게 기운 탓에, 감히 이름을 올린 자가 많지 않았다.',
+        text: '적힌 이름이 뜻밖에 적었다. 조정이 이미 왕에게 기운 탓에, 감히 이름을 올린 자가 많지 않았다.',
       },
       {
         requires: { resources: { courtStanding: { max: 54 } } },
-        text: '적힌 이름이 적지 않았다 — 조정의 무게중심이 아직 섭정공 쪽이라는 뜻이었다.',
+        text: '적힌 이름이 적지 않았다. 조정의 무게중심이 아직 섭정공 쪽이라는 뜻이었다.',
       },
     ],
     choices: [
@@ -73,7 +73,7 @@ export const TREASON_EVENTS: GameEvent[] = [
     text:
       '사로잡힌 자객은 입을 열지 않았다. 그러나 그가 무엇을 알고 있느냐는, 사실은 중요하지 않았다.\n' +
       '"저 자가 모든 것을 자백했다"는 말 한마디면, 연명에 이름을 올린 자들은 밤잠을 설칠 것이다.\n' +
-      '공포는 배신을 낳는다. 먼저 자수하려는 자가 반드시 나온다 — 판을 흔들 수만 있다면.',
+      '공포는 배신을 낳는다. 먼저 자수하려는 자가 반드시 나온다. 판을 흔들 수만 있다면.',
     condition: { minAge: 17, flags: { assassin_evidence: true, collective_treason: false } },
     once: true,
     category: 'story',
@@ -85,9 +85,9 @@ export const TREASON_EVENTS: GameEvent[] = [
         setFlags: { collective_treason: true },
         hint: '누가 먼저 무너질지 지켜본다',
         resultText:
-          '{왕}은 서두르지 않고, 다만 몇 사람의 귀에 조용히 흘렸다 — 자객이 다 불었다고.\n' +
+          '{왕}은 서두르지 않고, 다만 몇 사람의 귀에 조용히 흘렸다. 자객이 다 불었다고.\n' +
           '사흘이 지나기 전에 한 백작이 제 발로 찾아와 다른 이의 이름을 댔다. 그 이름이 또 다른 ' +
-          '이름을 불렀다. 무너지는 데에는 첫 장 하나면 충분했다 — 연판장이, 제 발로 걸어 나왔다.',
+          '이름을 불렀다. 무너지는 데에는 첫 장 하나면 충분했다. 연판장이, 제 발로 걸어 나왔다.',
       },
       {
         id: 'spread-rhetoric',
@@ -102,11 +102,11 @@ export const TREASON_EVENTS: GameEvent[] = [
       },
       {
         id: 'hold',
-        label: '아직 이르다 — 증거를 더 모은다',
+        label: '아직 이르다 · 증거를 더 모은다',
         hint: '섭정공 집무실이라면 무언가 있을지도',
         resultText:
           '{왕}은 소문을 흘리지 않았다. 확신 없는 말은 오히려 역풍이 된다는 것을 안다.\n' +
-          '증거는 소문이 아니라 물건이어야 한다 — 어디에 있을지는, 짐작이 갔다.',
+          '증거는 소문이 아니라 물건이어야 한다. 어디에 있을지는, 짐작이 갔다.',
       },
     ],
   },
@@ -118,7 +118,7 @@ export const TREASON_EVENTS: GameEvent[] = [
     text:
       '연판장에는 섭정공만이 아니라 여러 이름이 연명돼 있었다. 오래된 가문, 변경의 영주, ' +
       '어전에서 웃던 얼굴들.\n' +
-      '이 종이 한 장으로 무엇을 할 수 있는가 — 그것이 왕의 그릇을 가른다.',
+      '이 종이 한 장으로 무엇을 할 수 있는가, 그것이 왕의 그릇을 가른다.',
     condition: { minAge: 19, flags: { collective_treason: true, treason_handled: false } },
     once: true,
     category: 'story',
@@ -132,7 +132,7 @@ export const TREASON_EVENTS: GameEvent[] = [
         resultText:
           '{왕}은 이름 하나도 남기지 않았다. 오래된 가문들이 하루아침에 무너졌고, 변경의 영주들은 ' +
           '왕관 앞에 무릎을 꿇었다.\n' +
-          '나라는 하나의 손아래 모였다 — 두려움으로. 대숙청의 이름은 오래 기억될 것이다.',
+          '나라는 하나의 손아래 모였다. 두려움으로. 대숙청의 이름은 오래 기억될 것이다.',
       },
       {
         id: 'purge-leader',
@@ -154,7 +154,7 @@ export const TREASON_EVENTS: GameEvent[] = [
         effects: [res('courtInfluence', 8)],
         hint: '피 한 방울 없이, 판을 뒤집는다',
         resultText:
-          '{왕}은 아무도 죽이지 않았다. 대신 온 나라에 알렸다 — 왕을 해하려는 모의가 있었고, ' +
+          '{왕}은 아무도 죽이지 않았다. 대신 온 나라에 알렸다. 왕을 해하려는 모의가 있었고, ' +
           '왕은 그 표적이었다고.\n' +
           '왕은 피해자이자 정당한 통치자가 되었고, 연루된 귀족들은 명분을 잃었다. 선왕의 중앙집권이 ' +
           '옳았다는 것을, 반역자들 스스로가 증명한 셈이었다. 피 없이, 판이 뒤집혔다.',
@@ -163,10 +163,10 @@ export const TREASON_EVENTS: GameEvent[] = [
         id: 'conceal',
         label: '덮어둔다',
         setFlags: { treason_handled: true, treason_concealed: true },
-        hint: '알고도 모른 척 — 이름들은 왕의 손에 쥐여 있다',
+        hint: '알고도 모른 척 · 이름들은 왕의 손에 쥐여 있다',
         resultText:
           '{왕}은 연판장을 태우지 않고, 다만 깊이 넣어 두었다.\n' +
-          '적힌 자들은 왕이 무엇을 아는지 모른다. 그 모름이 그들을 얌전하게 만든다 — 언제든 ' +
+          '적힌 자들은 왕이 무엇을 아는지 모른다. 그 모름이 그들을 얌전하게 만든다. 언제든 ' +
           '꺼낼 수 있는 패는, 꺼내지 않을 때 가장 강하다.',
       },
     ],
@@ -190,7 +190,7 @@ export const TREASON_EVENTS: GameEvent[] = [
         setFlags: { queen_executed: true },
         hint: '어머니를 벤 왕을, 백성은 어떻게 읽을 것인가',
         resultText:
-          '{왕}은 손을 떨지 않았다 — 적어도 남들 앞에서는.\n' +
+          '{왕}은 손을 떨지 않았다. 적어도 남들 앞에서는.\n' +
           '선왕을 죽인 자에게 내리는 벌에, 그 자가 어머니라는 사실은 법 앞에서 예외가 아니었다. ' +
           '그러나 법과 사람의 마음은 다른 저울로 잰다.',
       },
@@ -201,7 +201,7 @@ export const TREASON_EVENTS: GameEvent[] = [
         hint: '죽이지도, 용서하지도 않는다',
         resultText:
           '{왕}은 어머니를 죽이지 않았다. 다만 다시는 나올 수 없는 탑에 들였다.\n' +
-          '살려두었으나 완전히 격리한 — 죽이지도 용서하지도 않은 제3의 길이었다. 가장 왕다운 ' +
+          '살려두었으나 완전히 격리한, 죽이지도 용서하지도 않은 제3의 길이었다. 가장 왕다운 ' +
           '선택일지도 모른다. 그 탑의 창에 불이 켜질 때마다, {왕}은 무엇을 떠올렸을까.',
       },
       {
@@ -212,7 +212,7 @@ export const TREASON_EVENTS: GameEvent[] = [
         resultText:
           '{왕}은 아무것도 하지 않았다. 진실을 알고도, 그 손을 잡은 것이 자신을 낳은 손이라는 것을 ' +
           '알고도.\n' +
-          '용서였는지, 두려움이었는지, 아니면 그저 지친 것인지 — {왕} 자신도 끝내 답하지 못했다.',
+          '용서였는지, 두려움이었는지, 아니면 그저 지친 것인지, {왕} 자신도 끝내 답하지 못했다.',
       },
     ],
   },

@@ -32,7 +32,7 @@ export function PortraitButton({ className = '' }: PortraitButtonProps) {
   return (
     <button
       onClick={openPortrait}
-      aria-label={`군주 초상 — 현재 착장 ${outfit.name}. 눌러서 크게 보기`}
+      aria-label={`군주 초상, 현재 착장 ${outfit.name}. 눌러서 크게 보기`}
       data-throne={tier}
       data-onboard="outfit"
       className={`group relative shrink-0 overflow-hidden rounded-xl border transition-all duration-700 active:border-gold-400 ${throne.ring} ${className}`}

@@ -108,6 +108,7 @@ export function IntroSequence() {
             {/* 이름 — 빈칸이면 성별 기본 이름이 표시된다(placeholder 로 안내). */}
             <label className="mt-6 block">
               <span className="text-sm text-muted">{INTRO_GENDER.namePrompt}</span>
+              <span className="ml-1.5 text-[11px] text-faint">{INTRO_GENDER.nameHint}</span>
               <input
                 data-intro-name
                 type="text"
@@ -189,26 +190,41 @@ export function IntroSequence() {
                 <ul className="mt-4 space-y-2">
                   {CHARACTERS.map((c) => {
                     const g = characterGender(c.id, game)
-                    const face = manifest.characterPortraits
-                      ? resolveCharacterPortrait(manifest.characterPortraits, c.id, g, 16)?.thumbSrc ?? null
-                      : null
+                    // ★ [6] ④ 평민 영웅은 존재 자체가 스포일러라 성별 선택에서도 실루엣(???)으로 둔다.
+                    //   성별은 고를 수 있게 두어(나중 등장에 반영), 얼굴·이름·소개만 가린다.
+                    const hidden = c.id === 'hero'
+                    const face = hidden || !manifest.characterPortraits
+                      ? null
+                      : resolveCharacterPortrait(manifest.characterPortraits, c.id, g, 16)?.thumbSrc ?? null
                     return (
                       <li
                         key={c.id}
                         data-relation-choice={c.id}
+                        data-relation-hidden={hidden ? 'true' : undefined}
                         className="flex items-center gap-3 rounded-xl border border-line bg-ink-900/50 p-2.5"
                       >
-                        {face && (
+                        {hidden ? (
+                          <div
+                            aria-hidden
+                            className="flex h-14 w-11 shrink-0 items-center justify-center rounded bg-ink-950 text-lg text-faint"
+                          >
+                            ?
+                          </div>
+                        ) : face ? (
                           <img
                             src={face}
                             alt=""
                             draggable={false}
                             className="h-14 w-11 shrink-0 rounded object-cover object-top"
                           />
-                        )}
+                        ) : null}
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13px] text-parchment">{characterName(c.id, game)}</p>
-                          <p className="truncate text-[11px] text-muted">{CHARACTER_TERMS[g].title}</p>
+                          <p className="truncate text-[13px] text-parchment">
+                            {hidden ? '???' : characterName(c.id, game)}
+                          </p>
+                          <p className="truncate text-[11px] text-muted">
+                            {hidden ? '아직 만나지 않은 인연' : CHARACTER_TERMS[g].title}
+                          </p>
                         </div>
                         <div className="flex shrink-0 overflow-hidden rounded-lg border border-line">
                           {(['male', 'female'] as Gender[]).map((opt) => (

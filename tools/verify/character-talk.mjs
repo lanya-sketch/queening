@@ -211,8 +211,9 @@ log('E1 대사 표시:', ok(talkText.length > 0 && !talkText.includes('<<<META>>
 log('E2 META 미노출:', ok(!talkText.includes('deltas')))
 
 if (!LIVE) {
-  log('E3 ① 호감도만 +3 (9 → 상한 3):',
-    ok(talkText.includes('섭정공의 아들 호감도 +3')))
+  // ★ [5] AI 자유대화 호감도 상한이 ±1(MAX_AFFECTION=1)로 좁아졌다 — 조우 대화가 주 경로가 되면서.
+  log('E3 ① 호감도만 +1 (9 → 상한 1):',
+    ok(talkText.includes('섭정공의 아들 호감도 +1')))
   log('E4 심신 +1 통과:', ok(talkText.includes('심신 +1')))
   log('E5 ★ 다른 캐릭터(⑤)로 새지 않음:',
     ok(!talkText.includes('친위 지휘관 호감도')))
@@ -257,7 +258,7 @@ await saveToSlot(page, 0)
 const saved = await readSlot(page, 0)
 log('G1 세이브 버전:', saved.version, ok(saved.version === SAVE_VERSION))
 log('G2 ① 호감도가 세이브에 반영:', saved.state.affection.heir,
-  ok(LIVE ? true : saved.state.affection.heir === 13))
+  ok(LIVE ? true : saved.state.affection.heir === 11)) // ★ [5] 상한 ±1: 10 + 1
 log('G3 ⑤ 호감도는 그대로:', saved.state.affection.commander,
   ok(saved.state.affection.commander === 10))
 log('G4 대화 로그는 세이브에 없음:',

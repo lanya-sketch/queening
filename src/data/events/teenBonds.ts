@@ -120,7 +120,7 @@ export const TEEN_BOND_EVENTS: GameEvent[] = [
     id: 'bond-prince-spar',
     title: '무예 이야기',
     sceneId: 'scene-bond-prince-spar',
-    text: '왕족이 처음으로 정치가 아닌 것 — 무예와 전술 — 을 물었다.',
+    text: '왕족이 처음으로 정치가 아닌 것(무예와 전술)을 물었다.',
     condition: { minAge: 15, month: 10, flags: met('prince') },
     once: true,
     effects: [bond('prince', 3)],

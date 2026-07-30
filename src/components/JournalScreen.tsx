@@ -29,9 +29,9 @@ export function JournalScreen({ onClose }: { onClose: () => void }) {
   const showFormation = game.age >= 14 && game.flags.regent_retired !== true
   const formationLine = FORMATION[standingMood(game)]
   const tideHint = tideHasTurned(game)
-    ? '판이 기울었다 — 섭정공을 협상으로 물러나게 할 자리가 열릴 것이다.'
+    ? '판이 기울었다. 섭정공을 협상으로 물러나게 할 자리가 열릴 것이다.'
     : game.flags.declared_rule !== true
-      ? `아직 판이 덜 기울었다 — 하원·민심·신망·궁정의 지지 중 ${TIDE_MIN}가지가 갖춰져야 담판이 성사된다. (지금 ${tideSignals(game)})`
+      ? `아직 판이 덜 기울었다. 하원·민심·신망·궁정의 지지 중 ${TIDE_MIN}가지가 갖춰져야 담판이 성사된다. (지금 ${tideSignals(game)})`
       : null
   const empty = themes.length === 0 && hints.length === 0 && !danger && !showFormation
 
@@ -126,7 +126,7 @@ export function JournalScreen({ onClose }: { onClose: () => void }) {
             <ul className="mt-2 space-y-1.5">
               {hints.map((h, i) => (
                 <li key={i} className="flex gap-2 text-[12.5px] leading-relaxed text-parchment/75">
-                  <span aria-hidden className="text-gold-400">—</span>
+                  <span aria-hidden className="text-gold-400">·</span>
                   <span>{h}</span>
                 </li>
               ))}

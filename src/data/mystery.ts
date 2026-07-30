@@ -30,7 +30,7 @@ export const MYSTERY_ENTRIES: MysteryEntry[] = [
   },
   {
     flag: 'clue_sealed_report', theme: '선왕의 죽음', kind: 'clue', title: '봉인된 진료 기록',
-    learned: '선왕의 마지막 진료 기록이 봉인됐다 — "왕의 심기를 헤아려"라는 명분으로, 섭정공의 손에.',
+    learned: '선왕의 마지막 진료 기록이 봉인됐다. "왕의 심기를 헤아려"라는 명분으로, 섭정공의 손에.',
   },
   {
     flag: 'clue_witness_gone', theme: '선왕의 죽음', kind: 'clue', title: '사라진 증인',
@@ -38,7 +38,7 @@ export const MYSTERY_ENTRIES: MysteryEntry[] = [
   },
   {
     flag: 'clue_noble_ledger', theme: '선왕의 죽음', kind: 'clue', title: '귀족가 장부',
-    learned: '붕어 반년 뒤 출처 모를 지출이 네 배로 뛰었다 — 전부 귀족파 가문으로. 누군가 사람을 샀다.',
+    learned: '붕어 반년 뒤 출처 모를 지출이 네 배로 뛰었다. 전부 귀족파 가문으로. 누군가 사람을 샀다.',
   },
 
   // ── 섭정공 ──
@@ -50,7 +50,7 @@ export const MYSTERY_ENTRIES: MysteryEntry[] = [
   // ── 왕대비 ──
   {
     flag: 'clue_mother_calm', theme: '왕대비', kind: 'clue', title: '어머니의 한 박자',
-    learned: '선왕을 입에 올렸을 때 왕대비의 한 박자 멈춤 — 미망인의 슬픔이 아니라, 고른 자의 슬픔이었다.',
+    learned: '선왕을 입에 올렸을 때 왕대비의 한 박자 멈춤, 미망인의 슬픔이 아니라, 고른 자의 슬픔이었다.',
   },
   {
     flag: 'clue_mother_letter', theme: '왕대비', kind: 'clue', title: '어머니의 서신',
@@ -58,7 +58,7 @@ export const MYSTERY_ENTRIES: MysteryEntry[] = [
   },
   {
     flag: 'clue_apothecary', theme: '왕대비', kind: 'clue', title: '왕대비궁의 약재',
-    learned: '선왕을 무너뜨린 것은 오래 쌓이는 독이었다. 그런 것은 왕대비궁 재고에서만 나온다 — 그 안을 관장하는 이는 단 한 사람이다.',
+    learned: '선왕을 무너뜨린 것은 오래 쌓이는 독이었다. 그런 것은 왕대비궁 재고에서만 나온다. 그 안을 관장하는 이는 단 한 사람이다.',
   },
   {
     flag: 'truth_mother_mastermind', theme: '왕대비', kind: 'truth', title: '어머니의 필적',
@@ -88,11 +88,11 @@ export function mysteryHints(game: GameState): string[] {
   }
   // 섭정공이 덮은 건 알았으나, 오래 쌓이는 독의 출처가 비어 있다.
   if (has(game, 'truth_regent_involved') && !has(game, 'clue_apothecary')) {
-    hints.push('섭정공이 덮었다는 데까지는 왔다. 그러나 오래 쌓이는 독을 그가 어디서 구했는지가 맞지 않는다 — 궁의 안쪽, 그의 손이 닿지 않는 곳.')
+    hints.push('섭정공이 덮었다는 데까지는 왔다. 그러나 오래 쌓이는 독을 그가 어디서 구했는지가 맞지 않는다. 궁의 안쪽, 그의 손이 닿지 않는 곳.')
   }
   // ★ ②-비의존 발견: clue_apothecary 만으로 왕대비궁 방향이 뜬다(로맨스 불필요).
   if (has(game, 'clue_apothecary') && !has(game, 'queen_chamber_searched') && !has(game, 'queen_poison_path')) {
-    hints.push('독은 왕대비궁 재고에서만 나온다. 그 안을 들여다볼 방법을 궁리해볼 수도 있겠다 — 왕대비가 자리를 비우는 때를 노린다면.')
+    hints.push('독은 왕대비궁 재고에서만 나온다. 그 안을 들여다볼 방법을 궁리해볼 수도 있겠다. 왕대비가 자리를 비우는 때를 노린다면.')
   }
   // 모후가 주모자임을 알았다 — 남은 것은 증거와, 그것으로 무엇을 할지.
   if (has(game, 'truth_mother_mastermind')) {

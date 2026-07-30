@@ -81,10 +81,10 @@ const LINES: Record<string, Line[]> = {
   'attend-banquet': [
     { wLow: true, text: '사람들의 말소리가 웅웅거렸다. 웃는 낯을 짓는 것만도 힘겨웠다.' },
     // ★ [3] 권세 형세 — 모브 귀족이 왕을 어떻게 대하는지로 숨은 권세가 드러난다.
-    { standing: 'high', text: '말을 걸어오는 이가 줄을 이었다. 어느새 섭정공 곁이 눈에 띄게 헐거웠다 — 사람들은 힘이 어디로 가는지 안다.' },
+    { standing: 'high', text: '말을 걸어오는 이가 줄을 이었다. 어느새 섭정공 곁이 눈에 띄게 헐거웠다. 사람들은 힘이 어디로 가는지 안다.' },
     { standing: 'mid', text: '몇몇이 다가와 안부를 물었다. 그래도 대부분은 여전히 섭정공 쪽에 서 있었다.' },
-    { standing: 'low', text: '누가 누구에게 인사하는지 지켜보았다. 아무도 이쪽을 오래 보지 않았다 — 궁정은 아직 숙부의 것이다.' },
-    { temperament: 'cunning', text: '누가 누구에게 웃는지, 그 웃음이 진짜인지 — 아이는 자리를 읽고 있었다.' },
+    { standing: 'low', text: '누가 누구에게 인사하는지 지켜보았다. 아무도 이쪽을 오래 보지 않았다. 궁정은 아직 숙부의 것이다.' },
+    { temperament: 'cunning', text: '누가 누구에게 웃는지, 그 웃음이 진짜인지, 아이는 자리를 읽고 있었다.' },
     { text: '연회의 자리에 섰다. 어른들 틈에서 아직 어색하다.' },
   ],
   'royal-hunt': [
@@ -115,7 +115,7 @@ const LINES: Record<string, Line[]> = {
   'sneak-town': [
     { mood: 'relieved', text: '왕인 줄 모르는 얼굴들이 편안했다. 저잣거리의 웃음이 장부의 숫자와 어긋나지 않았다.' },
     { mood: 'burdened', text: '왕인 줄 모르고 하는 말들이 무거웠다. 장부의 숫자와 저잣거리의 얼굴이 달랐다.' },
-    { text: '남루한 옷으로 저잣거리에 섞였다. 웃는 이도, 한숨짓는 이도 있었다 — 장부에는 없는 얼굴들.' },
+    { text: '남루한 옷으로 저잣거리에 섞였다. 웃는 이도, 한숨짓는 이도 있었다. 장부에는 없는 얼굴들.' },
   ],
   'sneak-slum': [
     { mood: 'burdened', text: '장부에 안 적히는 얼굴들이 거기 있었다. 보고 나니 그날 밤 잠이 얕았다.' },
@@ -160,7 +160,7 @@ export function diaryLine(activityId: string, c: DiaryContext): string {
   if (lines) {
     for (const l of lines) if (matches(l, c)) return l.text
   }
-  if (c.preferenceMatch === 'wish') return `${name} — 요즘 이 아이가 바라던 것이다. 유난히 열심이었다.`
+  if (c.preferenceMatch === 'wish') return `${name}, 요즘 이 아이가 바라던 것이다. 유난히 열심이었다.`
   if (c.preferenceMatch === 'like') return `오늘 ${name}에는 제법 열심이었다.`
   if (c.wellbeing < 40) return `${name}으로 하루를 보냈다. 지친 몸으로 겨우 해냈다.`
   if (c.luck === 'good') return `${name}으로 하루를 보냈다. 뜻밖에 잘 풀린 하루였다.`

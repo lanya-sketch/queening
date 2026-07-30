@@ -57,7 +57,7 @@ export const SURPRISE_EVENTS: GameEvent[] = [
     choices: [
       {
         id: 'rest',
-        label: '스승이 억지로 자리에 눕힌다 — 요양한다',
+        label: '스승이 억지로 자리에 눕힌다 · 요양한다',
         // ★ 회피 1회: 가정교사를 깊이 신뢰할 때(신망 50+)만 열린다.
         //   잘 돌본 관계가 아이를 붙든다. 미달이면 이 선택지는 잠긴다.
         requires: { resources: { tutorTrust: { min: 50 } } },
@@ -114,7 +114,7 @@ export const SURPRISE_EVENTS: GameEvent[] = [
         setFlags: { exposure_averted: true },
         resultText:
           '왕은 등불을 내던지고 칼을 잡았다. 짧고 사나운 소란 끝에 자객이 물러났다.\n'
-          + '섭정은 한발 물러섰다 — 이 아이는 만만치 않다.',
+          + '섭정은 한발 물러섰다. 이 아이는 만만치 않다.',
         hint: '위기를 넘긴다',
       },
       {
@@ -158,7 +158,7 @@ export const SURPRISE_EVENTS: GameEvent[] = [
     id: 'tutor-dismissal',
     title: '닫히는 문',
     text:
-      '섭정공이 스승을 불렀다. 왕은 그 자리에 없었다 — 그것부터가 답이었다.\n' +
+      '섭정공이 스승을 불렀다. 왕은 그 자리에 없었다. 그것부터가 답이었다.\n' +
       '"수고 많으셨소. 다만 전하께는 이제 다른 스승이 필요할 듯하오." 문서 한 장이 놓였다. ' +
       '가정교사의 소임을 거둔다는, 이미 서명된 문서.\n' +
       '여기서 갈린다.',
@@ -202,7 +202,7 @@ export const SURPRISE_EVENTS: GameEvent[] = [
     title: '술렁이는 조정',
     text:
       '밀려난 섭정공의 처소에 밤마다 사람이 든다고 했다. 옛 영주들의 이름이 그 방을 오간다.\n' +
-      '이겼다 여긴 자리 밑에서 다른 판이 짜이고 있었다. 아직 늦지 않았다 — 지금이라면.',
+      '이겼다 여긴 자리 밑에서 다른 판이 짜이고 있었다. 아직 늦지 않았다. 지금이라면.',
     condition: { maxAge: 19, counters: { [RISK_REBELLION]: { min: RISK.rebellionWarn } } },
     once: true,
     category: 'story',
@@ -233,7 +233,7 @@ export const SURPRISE_EVENTS: GameEvent[] = [
         hint: '자객을 제압한다',
         resultText:
           '{왕}의 손이 먼저 움직였다. 짧은 다툼 끝에 자객은 제압되어 바닥에 눌렸다.\n' +
-          '그 품에서 나온 밀지 한 장 — 누가 이 칼을 보냈는지, 글씨가 말해 주고 있었다.',
+          '그 품에서 나온 밀지 한 장, 누가 이 칼을 보냈는지, 글씨가 말해 주고 있었다.',
       },
       {
         id: 'evade-courtcraft',

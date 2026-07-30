@@ -230,7 +230,7 @@ function ImportBody() {
       {result?.ok && state && !done && (
         <div className="space-y-1.5">
           <p className="text-[11px] text-gold-300/80">
-            불러올 수 있습니다 — {(state as any).monarchName} · {(state as any).age}세. 저장할 슬롯을 고르세요.
+            불러올 수 있습니다. {(state as any).monarchName} · {(state as any).age}세. 저장할 슬롯을 고르세요.
           </p>
           {slots.map((s) =>
             confirmSlot === s.slot ? (

@@ -179,7 +179,7 @@ export function resourceGauge(key: ResourceKey, state: GameState, cap?: number):
   // ★ [3] 섭정공 명예 퇴장 — 섭정 관련 게이지(의심/반란 모의·신망)는 위협이 사라져 무력화된다.
   const neutralized =
     state.flags.regent_retired === true && (key === 'regentSuspicion' || key === 'regentRapport')
-      ? '섭정공 은퇴 — 위협 소멸'
+      ? '섭정공 은퇴 · 위협 소멸'
       : undefined
   return {
     key,

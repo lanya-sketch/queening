@@ -220,7 +220,7 @@ export function Gauge({ view, hint }: { view: GaugeView; hint?: string }) {
           className="text-[12px]"
           style={{ color: band.peril && !neutralized ? 'var(--color-peril-soft)' : 'var(--color-gold-300)' }}
         >
-          {neutralized ? '—' : band.label}
+          {neutralized ? '.' : band.label}
         </span>
       </div>
       <div className="relative h-1.5 overflow-hidden rounded-sm bg-white/6">

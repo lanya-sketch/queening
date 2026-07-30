@@ -187,6 +187,7 @@ export function EventScreen() {
               sceneId={event.sceneId}
               finished={sceneDone}
               showSprites // 이벤트 씬은 VN 전신 레이아웃(화자 스프라이트).
+              outfitOverride={event.sceneOutfit} // ★ [6] 의식 착장(데뷔탕트 연회복 등) — 씬 동안만.
               onFinished={() => setSceneDone(true)}
             />
           ) : (

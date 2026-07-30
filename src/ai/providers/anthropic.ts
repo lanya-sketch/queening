@@ -98,9 +98,9 @@ export const anthropicProvider: AiProvider = {
   id: 'anthropic',
   label: 'Anthropic (Claude)',
   models: [
-    { id: 'claude-opus-4-8', label: 'Claude Opus 4.8 — 가장 유능' },
-    { id: 'claude-sonnet-5', label: 'Claude Sonnet 5 — 균형' },
-    { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 — 가장 저렴' },
+    { id: 'claude-opus-4-8', label: 'Claude Opus 4.8 · 가장 유능' },
+    { id: 'claude-sonnet-5', label: 'Claude Sonnet 5 · 균형' },
+    { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 · 가장 저렴' },
   ],
   defaultModel: 'claude-opus-4-8',
   note: '키는 console.anthropic.com 에서 발급합니다.',

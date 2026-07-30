@@ -221,9 +221,6 @@ export function TalkModal() {
                 {streaming || <span className="text-muted">…</span>}
                 {busy && <span className="ml-0.5 animate-pulse text-gold-400">▌</span>}
               </div>
-              {busy && (
-                <p className="mt-1 text-[11px] text-faint">탭하면 바로 다 보입니다</p>
-              )}
             </div>
           )}
 

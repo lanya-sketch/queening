@@ -344,7 +344,7 @@ export function ScheduleScreen() {
           <span className="flex-1">
             <span className="block font-title text-[15px] font-bold text-gold-300">이번 달, 어디로</span>
             <span className="block text-[12px] text-muted">
-              행동력 없이 한 곳을 다녀옵니다 — 서고·정원·연무장·왕대비궁, 또는 담 밖.
+              행동력 없이 한 곳을 다녀옵니다. 서고·정원·연무장·왕대비궁, 또는 담 밖.
             </span>
           </span>
           <span aria-hidden className="text-faint">→</span>

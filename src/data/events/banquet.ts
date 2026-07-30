@@ -48,7 +48,7 @@ export const BANQUET_EVENTS: GameEvent[] = [
         label: '혼자 좌중을 지켜본다',
         effects: [{ target: { kind: 'stat', key: 'courtcraft' }, amount: 1 }],
         resultText:
-          '{왕}은 말없이 방을 읽었다. 누가 누구의 잔을 채우는지, 누가 누구의 농담에 웃는지 — ' +
+          '{왕}은 말없이 방을 읽었다. 누가 누구의 잔을 채우는지, 누가 누구의 농담에 웃는지.' +
           '그런 것들이 나중에 쓸모가 있으리라는 것을, 아이는 어렴풋이 알았다.',
       },
     ],
@@ -80,7 +80,7 @@ export const BANQUET_EVENTS: GameEvent[] = [
           { target: { kind: 'resource', key: 'regentRapport' }, amount: 4 },
           { target: { kind: 'resource', key: 'regentSuspicion' }, amount: -2 },
         ],
-        resultText: '{왕}은 좌중이 보는 앞에서 숙부께 예를 표했다. 섭정공의 낯이 풀렸다 — 아직은 아이라고.',
+        resultText: '{왕}은 좌중이 보는 앞에서 숙부께 예를 표했다. 섭정공의 낯이 풀렸다. 아직은 아이라고.',
       },
       {
         id: 'withdraw',
@@ -130,7 +130,7 @@ export const BANQUET_EVENTS: GameEvent[] = [
         ],
         resultText:
           '{왕}은 좌중이 다 듣는 앞에서 섭정공의 처결 하나를 정면으로 물었다. 방이 조용해졌다. ' +
-          '물러서지 않는 젊은 왕을 보고, 눈치 빠른 자들은 그날 밤 자리를 옮겼다 — 그리고 섭정공은 기억했다.',
+          '물러서지 않는 젊은 왕을 보고, 눈치 빠른 자들은 그날 밤 자리를 옮겼다. 그리고 섭정공은 기억했다.',
       },
     ],
   },

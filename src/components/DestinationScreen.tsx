@@ -36,7 +36,7 @@ export function DestinationScreen({ onClose }: { onClose: () => void }) {
           <div>
             <h1 className="font-title text-lg font-semibold text-parchment">이번 달, 어디로</h1>
             <p className="mt-1 text-xs text-muted">
-              행동력을 쓰지 않고 한 곳을 다녀옵니다. 궁 안이든, 담 밖이든 — 오늘은 누가 있을까요.
+              행동력을 쓰지 않고 한 곳을 다녀옵니다. 궁 안이든, 담 밖이든, 오늘은 누가 있을까요.
             </p>
           </div>
           <button
@@ -92,7 +92,7 @@ export function DestinationScreen({ onClose }: { onClose: () => void }) {
         </ul>
 
         <p className="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-faint">
-          궁 안은 하루에도 여러 곳을 돌 수 있습니다. 담 밖 나들이는 이 달에 {outingsPerMonth(game)}회 —
+          궁 안은 하루에도 여러 곳을 돌 수 있습니다. 담 밖 나들이는 이 달에 {outingsPerMonth(game)}회, 
           들킬 위험이 따릅니다. (같은 사람은 그 달에 한 번만 마주칩니다.)
         </p>
       </div>

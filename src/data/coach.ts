@@ -14,7 +14,7 @@ export interface CoachLine {
 export const COACH: Record<CoachKey, CoachLine> = {
   bond: {
     target: 'bond',
-    text: '이제 궁에 사람이 생겼습니다. 「인연」에서 만난 이들을 볼 수 있어요 — 아직 그저 아는 사이지만.',
+    text: '이제 궁에 사람이 생겼습니다. 「인연」에서 만난 이들을 볼 수 있어요, 아직 그저 아는 사이지만.',
   },
   talk: {
     target: 'talk',
@@ -22,6 +22,6 @@ export const COACH: Record<CoachKey, CoachLine> = {
   },
   outfit: {
     target: 'outfit',
-    text: '자리에 맞는 옷이 있습니다. 초상을 눌러 갈아입혀 보세요 — 어떤 자리엔 어떤 옷이 필요합니다.',
+    text: '자리에 맞는 옷이 있습니다. 초상을 눌러 갈아입혀 보세요, 어떤 자리엔 어떤 옷이 필요합니다.',
   },
 }

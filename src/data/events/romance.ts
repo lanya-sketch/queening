@@ -16,7 +16,10 @@ export const ROMANCE_EVENTS: GameEvent[] = [
     id: 'debut-ball',
     title: '데뷔탕트',
     sceneId: 'scene-debut-ball',
-    // sceneId 가 있어도 text 는 남겨둔다 — 씬을 못 찾을 때의 안전망.
+    // ★ [6] 성년 연회 — 씬 동안만 데뷔탕트복(debut, 흰옷)으로. 씬이 끝나면 원래 착장으로 돌아온다.
+    //   debut 은 옷장(선택 가능)엔 없고 초상 해석기(portraits.outfits·restrict 16세)만 아는 의식 전용 착장.
+    sceneOutfit: 'debut',
+    // sceneId 가 있어도 text 는 남겨둔다. 씬을 못 찾을 때의 안전망.
     text: '{왕}의 성년을 알리는 연회가 열렸다.',
     condition: { minAge: 16, minYear: 5, month: 9 },
     priority: 35,
@@ -40,7 +43,7 @@ export const ROMANCE_EVENTS: GameEvent[] = [
       {
         requires: { flags: { heard_frontier_rumor: true } },
         text:
-          '{왕}은 그 이름을 알았다. 삼 년에 걸쳐 조공 문서 틈으로 흘러들던 소문 — 보급도 증원도 끊긴 ' +
+          '{왕}은 그 이름을 알았다. 삼 년에 걸쳐 조공 문서 틈으로 흘러들던 소문, 보급도 증원도 끊긴 ' +
           '전선을 홀로 지킨 이름 없는 이름. 얼굴도 모른 채 기억해 둔 그 사람이, 지금 눈앞에 서 있었다.\n' +
           '소문과 실물이 만나는 자리였다. 아, 그 사람이 이 사람이구나.',
       },

@@ -87,14 +87,14 @@ export function preferenceTrust(activityIds: string[], game: GameState): number 
 /** ★ 스케줄 한 줄 — 이번 달 wish 를 수치 없이 결로만 알린다(플레이어가 해석). */
 const WISH_HINT: Record<PrefCategory, string> = {
   통치학: '요즘 이 아이는 책에서 눈을 떼지 않는다.',
-  변론: '요즘 이 아이는 말끝마다 되묻는다 — 무언가 겨루고 싶은 눈치다.',
+  변론: '요즘 이 아이는 말끝마다 되묻는다. 무언가 겨루고 싶은 눈치다.',
   무예: '몸이 근질거리는지 자꾸 마당으로 눈이 간다.',
   재정: '요즘 이 아이는 숫자 적힌 것을 오래 들여다본다.',
   궁정처세: '사람들 오가는 자리를 유심히 살핀다.',
   사냥: '바깥바람을 쐬고 싶은 얼굴이다.',
   정무: '어른들이 무슨 이야기를 하는지 자꾸 귀를 기울인다.',
-  휴식: '부쩍 지쳐 보인다 — 좀 쉬고 싶은 눈치다.',
-  놀이: '요즘 통 웃지를 않는다 — 아이답게 놀고 싶은 모양이다.',
+  휴식: '부쩍 지쳐 보인다. 좀 쉬고 싶은 눈치다.',
+  놀이: '요즘 통 웃지를 않는다. 아이답게 놀고 싶은 모양이다.',
 }
 export function wishHint(game: GameState): string {
   return WISH_HINT[monthlyWish(game)]

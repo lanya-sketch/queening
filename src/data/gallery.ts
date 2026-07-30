@@ -48,7 +48,7 @@ export const GALLERY: GalleryItem[] = [
     group: '실권',
     match: (r) => r?.tier === '공존',
     scene: '나라의 절반은 그의 것이고, 나머지 절반은 아직 숙부의 것이다.',
-    summary: '영향도 45~69. 섭정과 저울이 맞은 채로 아홉 해를 마쳤다 — 지지 않은 것도 이긴 것.',
+    summary: '영향도 45~69. 섭정과 저울이 맞은 채로 아홉 해를 마쳤다. 지지 않은 것도 이긴 것.',
   },
   {
     id: 'puppet',
@@ -110,7 +110,7 @@ export const GALLERY: GalleryItem[] = [
     spoiler: true,
     match: (r) => has(r, '소유의 옥좌'),
     scene: '혼자가 아니라, 소유물로 채운 옥좌였다.',
-    summary: '두 사람 이상을 측실로 삼았다. 고독한 옥좌의 거울상 — 곁을 소유로 메운 자리.',
+    summary: '두 사람 이상을 측실로 삼았다. 고독한 옥좌의 거울상, 곁을 소유로 메운 자리.',
   },
   {
     id: 'devoured-love',
@@ -154,7 +154,7 @@ export const GALLERY: GalleryItem[] = [
     title: '지키지 못한 옥좌',
     group: '파국',
     match: (_r, dead) => dead === '폐위',
-    scene: '열린 성문 안으로 옛 문장을 단 병사들이 들었고 — 지켜 줄 것이 없었다.',
+    scene: '열린 성문 안으로 옛 문장을 단 병사들이 들었고, 지켜 줄 것이 없었다.',
     summary: '친정을 이뤘으나 밀려난 섭정공의 반란을 막지 못했다. 가장 높이 올랐다가 가장 멀리 떨어졌다.',
   },
   {

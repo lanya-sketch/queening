@@ -4,7 +4,7 @@ import { SCENE_BY_ID } from '../../data/scenes'
 import { characterGender, characterName, resolveText } from '../../systems/text'
 import { isRead, markRead } from '../../systems/readlog'
 import {
-  resolveCharacterPortrait, resolveMonarchPortrait, resolveOutfit,
+  resolveCharacterPortrait, resolveMonarchPortrait,
 } from '../../systems/outfits'
 import { useGame } from '../../store/gameStore'
 import { SPEED_MS, useOptions } from '../../store/optionsStore'
@@ -30,6 +30,7 @@ export function ScenePlayer({
   sceneId,
   finished = false,
   showSprites = false,
+  outfitOverride,
   onFinished,
 }: {
   sceneId: string
@@ -37,9 +38,13 @@ export function ScenePlayer({
   finished?: boolean
   /** true 면 이벤트 씬 VN 레이아웃 — 화자 반신 스프라이트를 표시한다. */
   showSprites?: boolean
+  /** ★ [6] 이 씬 동안만 군주 착장을 이걸로(의식용). 상태 불변 — 씬이 끝나면 원래대로. */
+  outfitOverride?: string
   onFinished: () => void
 }) {
-  const game = useGame((s) => s.game)
+  const realGame = useGame((s) => s.game)
+  // ★ [6] 스프라이트/얼굴 해석용 게임 — 의식 착장이면 그 착장으로 군주를 그린다(렌더 한정).
+  const game = outfitOverride ? { ...realGame, currentOutfitId: outfitOverride } : realGame
   const manifest = useGame((s) => s.outfitManifest)
   const textSpeed = useOptions((s) => s.textSpeed)
   const [index, setIndex] = useState(0)
@@ -339,8 +344,9 @@ function spriteFor(speaker: string, game: GameState, manifest: OutfitManifest): 
   if (speaker === 'narration' || speaker === 'tutor') return null
   if (speaker === 'monarch') {
     if (!manifest.portraits) return null
-    const outfit = resolveOutfit(manifest, game.currentOutfitId)
-    return resolveMonarchPortrait(manifest.portraits, game.monarchGender, game.age, outfit.id).fullSrc
+    // ★ [6] currentOutfitId 를 초상 해석기에 그대로 넘긴다 — 의식 전용 착장(debut 등 옷장 밖)도
+    //   resolveMonarchPortrait 가 portraits.outfits·restrict 로 직접 푼다(없으면 자체 폴백).
+    return resolveMonarchPortrait(manifest.portraits, game.monarchGender, game.age, game.currentOutfitId).fullSrc
   }
   if (!manifest.characterPortraits) return null
   // 5인은 데이터 성별, 모후·섭정공은 config 에 성별이 박혀 있어(호출 성별은 무시됨).
@@ -353,8 +359,7 @@ function faceFor(speaker: string, game: GameState, manifest: OutfitManifest): st
   if (speaker === 'narration' || speaker === 'tutor') return null
   if (speaker === 'monarch') {
     if (!manifest.portraits) return null
-    const outfit = resolveOutfit(manifest, game.currentOutfitId)
-    return resolveMonarchPortrait(manifest.portraits, game.monarchGender, game.age, outfit.id).thumbSrc
+    return resolveMonarchPortrait(manifest.portraits, game.monarchGender, game.age, game.currentOutfitId).thumbSrc
   }
   if (!manifest.characterPortraits) return null
   const gender = CHARACTER_BY_ID[speaker] ? characterGender(speaker, game) : 'male'

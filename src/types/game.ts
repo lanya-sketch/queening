@@ -333,6 +333,12 @@ export interface GameEvent {
    */
   sceneId?: string
   /**
+   * ★ [6] 의식 착장 — 이 씬을 재생하는 동안만 군주가 이 착장으로 보인다(렌더 override).
+   *   상태(currentOutfitId)를 바꾸지 않으므로 씬이 끝나면 저절로 원래 착장으로 돌아온다.
+   *   데뷔탕트(연회복)처럼 "의식용 옷"에 쓴다. 플레이어가 고른 평상 착장은 건드리지 않는다.
+   */
+  sceneOutfit?: string
+  /**
    * 기본 'scripted'.
    *
    * ★ 'ai_generated' 는 **내용을 AI 가 채우는 자리표시자**다(M2b-4).

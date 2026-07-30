@@ -61,7 +61,7 @@ export function endingSummaryRows(r: EndingResult): SummaryRow[] {
     label: '함께한 이',
     value:
       r.romance === 'none'
-        ? '홀로 — 철인통치'
+        ? '홀로 · 철인통치'
         // ★ 성별 반영 — {이름:charId} 토큰으로 두면 EndedScreen 의 resolveText 가 성별에 맞춘다.
         : (CHARACTERS.some((c) => c.id === r.romance) ? `{이름:${r.romance}}` : r.romance),
   })

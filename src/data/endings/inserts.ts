@@ -55,7 +55,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     match: (r) => r.disposal === '정당' && has(r, 'collective_treason'),
     priority: 15,
     lines: [line(
-      '섭정공은 심판을 받았다. 그를 친 것은 오래된 죄가 아니라 지금 이 순간의 반역이었다 — ' +
+      '섭정공은 심판을 받았다. 그를 친 것은 오래된 죄가 아니라 지금 이 순간의 반역이었다.' +
       '여러 이름이 연명된 종이 한 장이, 말보다 확실했다.\n' +
       '궁정의 누구도 그것을 찬탈이라 부르지 못했다.',
     )],
@@ -66,7 +66,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     match: (r) => r.disposal === '정당' && has(r, 'rebellion_crushed'),
     priority: 14,
     lines: [line(
-      '섭정공은 심판을 받았다. 칼을 든 그 밤이 곧 명분이었다 — 현행범을 치는 데에 다른 증거는 ' +
+      '섭정공은 심판을 받았다. 칼을 든 그 밤이 곧 명분이었다. 현행범을 치는 데에 다른 증거는 ' +
       '필요치 않았다.',
     )],
   },
@@ -189,7 +189,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     anchor: 'nation',
     match: (r) => has(r, 'military_king_led'),
     priority: 35,
-    lines: [line('군은 {왕}의 뒤에 섰다. 앞이 아니라 뒤에 — 그 차이를 지키는 데 나라의 명운이 걸려 있었다.')],
+    lines: [line('군은 {왕}의 뒤에 섰다. 앞이 아니라 뒤에, 그 차이를 지키는 데 나라의 명운이 걸려 있었다.')],
   },
   {
     anchor: 'nation',
@@ -208,49 +208,49 @@ export const ENDING_INSERTS: EndingInsert[] = [
     anchor: 'nation',
     match: (r) => has(r, 'rebellion_crushed'),
     priority: 38,
-    lines: [line('밀려난 자는 마지막으로 칼을 들었고, {왕}은 그 밤을 넘겼다. 반란을 진압한 왕 — 옥좌는 이제 누구의 의심도 사지 않았다.')],
+    lines: [line('밀려난 자는 마지막으로 칼을 들었고, {왕}은 그 밤을 넘겼다. 반란을 진압한 왕, 옥좌는 이제 누구의 의심도 사지 않았다.')],
   },
   {
     // ★ [3] 섭정공 명예 퇴장 — 담판으로 피 없이 정리한 왕(협상의 마무리).
     anchor: 'nation',
     match: (r) => has(r, 'regent_retired'),
     priority: 39,
-    lines: [line('섭정공은 대공의 작위를 받아 스스로 인장을 내려놓았다. 피 한 방울 없이 물러난 섭정 — {왕}은 힘이 아니라 협상으로 옥좌를 정리한 군주로 남았다.')],
+    lines: [line('섭정공은 대공의 작위를 받아 스스로 인장을 내려놓았다. 피 한 방울 없이 물러난 섭정, {왕}은 힘이 아니라 협상으로 옥좌를 정리한 군주로 남았다.')],
   },
   {
     // ★ [4] 공표 — 피 없이 판을 뒤집은 왕. 왕은 피해자이자 정당한 통치자로.
     anchor: 'nation',
     match: (r) => has(r, 'treason_denounced'),
     priority: 41,
-    lines: [line('{왕}은 아무도 죽이지 않고, 다만 온 나라에 알렸다 — 왕을 해하려는 모의가 있었노라고. 왕은 피해자이자 정당한 통치자가 되었고, 연루된 자들은 스스로 명분을 잃었다. 피 없이 판을 뒤집은 왕.')],
+    lines: [line('{왕}은 아무도 죽이지 않고, 다만 온 나라에 알렸다. 왕을 해하려는 모의가 있었노라고. 왕은 피해자이자 정당한 통치자가 되었고, 연루된 자들은 스스로 명분을 잃었다. 피 없이 판을 뒤집은 왕.')],
   },
   {
     // ★ [4] 대숙청 — 연명한 이름을 모두 친 왕. 두려움으로 하나가 된 나라.
     anchor: 'nation',
     match: (r) => has(r, 'nobles_purged_all'),
     priority: 40,
-    lines: [line('연판장에 적힌 이름은 하나도 남지 않았다. 오래된 가문이 하루아침에 무너졌고, 나라는 하나의 손아래 모였다 — 두려움으로. 대숙청의 이름은 오래 기억될 것이다.')],
+    lines: [line('연판장에 적힌 이름은 하나도 남지 않았다. 오래된 가문이 하루아침에 무너졌고, 나라는 하나의 손아래 모였다. 두려움으로. 대숙청의 이름은 오래 기억될 것이다.')],
   },
   {
     // ★ [4] 모후 처형 — 여론이 나쁠 때: 백성이 등을 돌린 처형(더 무겁게).
     anchor: 'nation',
     match: (r) => has(r, 'queen_executed') && mod(r, '민심을 잃은 처형'),
     priority: 38,
-    lines: [line('{왕}은 선왕을 죽인 자를 벴다 — 그 자가 어머니였음에도. 그러나 백성은 법이 아니라 마음으로 읽었고, 어머니를 벤 왕의 이름 뒤에는 오래도록 그림자가 따랐다.')],
+    lines: [line('{왕}은 선왕을 죽인 자를 벴다. 그 자가 어머니였음에도. 그러나 백성은 법이 아니라 마음으로 읽었고, 어머니를 벤 왕의 이름 뒤에는 오래도록 그림자가 따랐다.')],
   },
   {
     // ★ [4] 모후 처형 — 여론이 받쳐 감당한 처형.
     anchor: 'nation',
     match: (r) => has(r, 'queen_executed'),
     priority: 37,
-    lines: [line('{왕}은 선왕을 죽인 자를 벴다 — 그 자가 어머니였음에도. 백성은 왕의 손을 이해했으나, {왕} 자신은 그 밤을 이해할 수 있었을까.')],
+    lines: [line('{왕}은 선왕을 죽인 자를 벴다. 그 자가 어머니였음에도. 백성은 왕의 손을 이해했으나, {왕} 자신은 그 밤을 이해할 수 있었을까.')],
   },
   {
     // ★ [4] 모후 폐탑 유폐 — 죽이지도 용서하지도 않은 제3의 길.
     anchor: 'nation',
     match: (r) => has(r, 'queen_confined'),
     priority: 37,
-    lines: [line('{왕}은 어머니를 죽이지 않았다. 다만 다시는 나올 수 없는 탑에 들였다. 죽이지도 용서하지도 않은 — 가장 왕다웠으나 가장 외로웠던 선택. 그 탑의 창에 불이 켜질 때마다, 왕은 무엇을 떠올렸을까.')],
+    lines: [line('{왕}은 어머니를 죽이지 않았다. 다만 다시는 나올 수 없는 탑에 들였다. 죽이지도 용서하지도 않은, 가장 왕다웠으나 가장 외로웠던 선택. 그 탑의 창에 불이 켜질 때마다, 왕은 무엇을 떠올렸을까.')],
   },
   {
     anchor: 'nation',
@@ -287,13 +287,13 @@ export const ENDING_INSERTS: EndingInsert[] = [
     anchor: 'nation',
     match: (r) => has(r, 'late_king_reform'),
     priority: 28,
-    lines: [line('선왕이 손대다 만 개혁을, 아들이 마저 그렸다. 백성에 기댄 나라 — 아버지가 가리키기만 했던 그 나라가, 비로소 형태를 얻었다.')],
+    lines: [line('선왕이 손대다 만 개혁을, 아들이 마저 그렸다. 백성에 기댄 나라, 아버지가 가리키기만 했던 그 나라가, 비로소 형태를 얻었다.')],
   },
   {
     anchor: 'nation',
     match: (r) => has(r, 'late_king_frontier'),
     priority: 13,
-    lines: [line('{왕}은 변경을 다시 세우고 아버지의 도박을 접었다. 나라는 단단한 옛 모양으로 돌아갔다 — 안전한, 그러나 아무것도 바꾸지 않은 모양으로.')],
+    lines: [line('{왕}은 변경을 다시 세우고 아버지의 도박을 접었다. 나라는 단단한 옛 모양으로 돌아갔다. 안전한, 그러나 아무것도 바꾸지 않은 모양으로.')],
   },
   {
     anchor: 'nation',
@@ -323,7 +323,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     anchor: 'purge',
     match: (r) => has(r, 'heir_spared') && (mod(r, '정복의 전리품') || mod(r, '연인의 희생')),
     priority: 35,
-    lines: [line('섭정공의 {자식:heir}은 살아남았다. {왕}은 죄를 아버지에게만 물었다 — 그 관용이 훗날 무엇이 될지는 몰랐다.')],
+    lines: [line('섭정공의 {자식:heir}은 살아남았다. {왕}은 죄를 아버지에게만 물었다. 그 관용이 훗날 무엇이 될지는 몰랐다.')],
   },
   {
     anchor: 'purge',
@@ -360,7 +360,7 @@ export const ENDING_INSERTS: EndingInsert[] = [
     priority: 32,
     lines: [line(
       '섭정공의 {자식:heir}은 가문이 지워진 채 왕실에 편입되었다. 성도 아버지도 없이,\n' +
-      '오직 {왕}의 소유로만 남았다 — 벗으려던 그늘째로 삼켜져서.',
+      '오직 {왕}의 소유로만 남았다. 벗으려던 그늘째로 삼켜져서.',
     )],
   },
   {

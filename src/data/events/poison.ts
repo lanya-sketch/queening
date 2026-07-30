@@ -48,7 +48,7 @@ export const POISON_EVENTS: GameEvent[] = [
     title: '끊어낼 기회',
     text:
       '탕약을 끊어야 한다. 그러나 왕대비궁은 궁정의 관할 밖이고, ' +
-      '어머니를 정면으로 의심하는 순간 — 돌아갈 길은 없다.',
+      '어머니를 정면으로 의심하는 순간, 돌아갈 길은 없다.',
     condition: { minAge: 19, flags: { poison_fog: true, [AVERTED]: false } },
     choices: [
       {
@@ -56,23 +56,23 @@ export const POISON_EVENTS: GameEvent[] = [
         id: 'detect',
         label: '약을 직접 알아본다',
         requires: { stats: { courtcraft: { min: 45 } } },
-        hint: '궁정처세 45 이상 — 성분을 짚어낸다',
+        hint: '궁정처세 45 이상 · 성분을 짚어낸다',
         setFlags: { [AVERTED]: true },
         effects: [{ target: { kind: 'resource', key: 'wellbeing' }, amount: 8 }],
         resultText:
           '{왕}은 의관을 은밀히 불러 성분을 짚었다. 잔은 입에 닿기 전에 물러났다.\n' +
-          '안개가 걷혔다. 왕대비는 알아챘고, 아무 말도 하지 않았다 — 이제 둘 다 안다.',
+          '안개가 걷혔다. 왕대비는 알아챘고, 아무 말도 하지 않았다. 이제 둘 다 안다.',
       },
       {
         // ★ ② 시녀장 사촌 씨앗의 두 번째 회수. 13~15세 "제 사촌이 왕대비궁 시녀장입니다".
         id: 'cousin',
         label: '충신 가문에 기댄다',
         requires: { affection: { loyalist: { min: 45 } } },
-        hint: '충신 가문과의 신뢰 — 그 궁 안에 사람이 있다',
+        hint: '충신 가문과의 신뢰 · 그 궁 안에 사람이 있다',
         setFlags: { [AVERTED]: true },
         effects: [{ target: { kind: 'resource', key: 'wellbeing' }, amount: 8 }],
         resultText:
-          '오래전 그 아이가 흘리듯 말했었다 — 사촌이 왕대비궁 시녀장이라고. ' +
+          '오래전 그 아이가 흘리듯 말했었다. 사촌이 왕대비궁 시녀장이라고. ' +
           '"필요하시면… 아닙니다, 나중에요"라던 그 "나중"이, 이제 왔다.\n' +
           '탕약은 상에 오르기 전에 바뀌었다. 왕대비는 끝내 누가 손을 썼는지 알지 못했다.',
       },
@@ -81,7 +81,7 @@ export const POISON_EVENTS: GameEvent[] = [
         id: 'tutor',
         label: '가정교사에게 맡긴다',
         requires: { resources: { tutorTrust: { min: 40 } } },
-        hint: '튜터를 향한 신뢰 — 오래 곁을 지킨 손',
+        hint: '튜터를 향한 신뢰 · 오래 곁을 지킨 손',
         setFlags: { [AVERTED]: true },
         effects: [{ target: { kind: 'resource', key: 'wellbeing' }, amount: 8 }],
         resultText:
@@ -94,7 +94,7 @@ export const POISON_EVENTS: GameEvent[] = [
         label: '버틴다',
         resultText:
           '끊어낼 방도가 없었다. {왕}은 잔을 밀어 두는 것 말고는 할 수 있는 게 없었다.\n' +
-          '몸이 버텨 주기를 바랄 뿐. — 아직 끝난 것은 아니다.',
+          '몸이 버텨 주기를 바랄 뿐. 아직 끝난 것은 아니다.',
       },
     ],
   },

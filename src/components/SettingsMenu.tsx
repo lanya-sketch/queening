@@ -4,10 +4,14 @@ import { SaveTransferPanel } from './SaveTransferPanel'
 import { clearGallery } from '../systems/gallery'
 import { clearReadlog } from '../systems/readlog'
 import { clearAllSlots } from '../systems/save'
+import { CHARACTERS } from '../data/characters'
+import { CHARACTER_TERMS } from '../data/lexicon'
+import { characterGender, characterName } from '../systems/text'
 import { TEXT_SPEEDS, useOptions } from '../store/optionsStore'
 import { useApp } from '../store/appStore'
 import { useGame } from '../store/gameStore'
 import { useAiEnabled } from '../store/aiStore'
+import type { Gender } from '../types/game'
 
 /**
  * 설정 메뉴 (D-1 → D-3 확장).
@@ -22,6 +26,7 @@ export function SettingsMenu() {
   const textSpeed = useOptions((s) => s.textSpeed)
   const setTextSpeed = useOptions((s) => s.setTextSpeed)
   const aiEnabled = useAiEnabled()
+  const inGame = useApp((s) => s.screen === 'game')
   const [readCleared, setReadCleared] = useState(false)
 
   return (
@@ -86,6 +91,9 @@ export function SettingsMenu() {
             {readCleared ? '읽음 기록을 지웠습니다' : '읽음 기록 초기화 (스킵 대상 리셋)'}
           </button>
 
+          {/* ★ [6] 인연 성별 — 인트로에서만 고르던 것을 게임 중에도 바꿀 수 있게(원하면 허용). */}
+          {inGame && <CharacterGenderPanel />}
+
           {/* 세이브 내보내기 / 가져오기 */}
           <SaveTransferPanel />
 
@@ -100,6 +108,55 @@ export function SettingsMenu() {
           <DangerZone />
         </div>
       </div>
+    </div>
+  )
+}
+
+/**
+ * ★ [6] 인연 성별 변경 — 세이브의 characterGenders 를 그대로 바꾼다(구조 변경 없음).
+ *   앞으로의 표기(그/그녀·호칭)만 바뀌고, 이미 지나간 이야기의 표기는 그대로다(경고 명시).
+ *   ④ 평민 영웅은 입궁 전이면 존재가 스포일러라 실루엣(???)으로 두되 성별은 고를 수 있다.
+ */
+function CharacterGenderPanel() {
+  const game = useGame((s) => s.game)
+  const setCharacterGender = useGame((s) => s.setCharacterGender)
+  return (
+    <div className="rounded-xl border border-line/60 bg-ink-900/30 p-3.5">
+      <p className="text-[11px] font-medium text-muted">인연 성별</p>
+      <ul className="mt-2.5 space-y-1.5">
+        {CHARACTERS.map((c) => {
+          const g = characterGender(c.id, game)
+          const hidden = c.id === 'hero' && game.flags.hero_at_court !== true
+          return (
+            <li key={c.id} data-setting-gender={c.id} className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-xs text-parchment">
+                {hidden ? '???' : characterName(c.id, game)}
+                <span className="ml-1.5 text-[10px] text-faint">
+                  {hidden ? '아직 만나지 않은 인연' : CHARACTER_TERMS[g].title}
+                </span>
+              </span>
+              <div className="flex shrink-0 overflow-hidden rounded-lg border border-line">
+                {(['male', 'female'] as Gender[]).map((opt) => (
+                  <button
+                    key={opt}
+                    data-setting-gender-opt={opt}
+                    aria-pressed={g === opt}
+                    onClick={() => setCharacterGender(c.id, opt)}
+                    className={`min-h-[32px] w-9 text-[11px] transition-colors ${
+                      g === opt ? 'bg-ink-700/60 text-gold-300' : 'bg-ink-900/40 text-muted active:bg-ink-800'
+                    }`}
+                  >
+                    {opt === 'male' ? '남' : '여'}
+                  </button>
+                ))}
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="mt-2.5 text-[10px] leading-relaxed text-faint">
+        이미 지나간 이야기의 표기는 바뀌지 않습니다. 앞으로의 대화·서술에만 반영됩니다.
+      </p>
     </div>
   )
 }

@@ -24,7 +24,7 @@ export const OUTING_EVENTS: GameEvent[] = [
     text:
       '뒷골목을 돌아 나오던 길, 익숙한 얼굴 하나가 걸음을 멈추고 이쪽을 보았다. ' +
       '섭정공의 사람이다. 남루한 옷차림의 아이와, 그 곁의 스승.\n' +
-      '그가 무엇을 보았는지, 무엇을 보았다 여길지 — 다음 한마디에 달렸다.',
+      '그가 무엇을 보았는지, 무엇을 보았다 여길지, 다음 한마디에 달렸다.',
     // 몰래 나간 그 턴에만. 20세 전(데드 경계와 안 겹치게).
     condition: { maxAge: 19, flags: { went_out: true } },
     once: false,
@@ -43,11 +43,11 @@ export const OUTING_EVENTS: GameEvent[] = [
         requires: { stats: { courtcraft: { min: 30 } } },
         effects: [res('regentSuspicion', 4), tutorRisk(1)],
         setFlags: { outing_talked_away: true },
-        hint: '재주껏 넘긴다 — 다만 흔적은 남는다',
+        hint: '재주껏 넘긴다 · 다만 흔적은 남는다',
         resultText:
           '스승이 앞으로 나서 웃으며 몇 마디를 건넸다. 심부름 나온 궁의 아이라 했던가, ' +
           '그 자리는 그렇게 지나갔다.\n' +
-          '넘어갔다. 다만 그 얼굴이 오늘 본 것을 아주 잊지는 않을 것이다 — 흔적은 남는다.',
+          '넘어갔다. 다만 그 얼굴이 오늘 본 것을 아주 잊지는 않을 것이다. 흔적은 남는다.',
       },
       {
         id: 'exposed',

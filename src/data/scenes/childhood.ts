@@ -107,7 +107,7 @@ export const CHILDHOOD_SCENES: Scene[] = [
         speaker: 'narration',
         text:
           '아이는 인사를 하지 않았다. 대신 {왕}을 천천히 훑어보았다.\n' +
-          '그 눈에 담긴 것은 호기심이 아니라 평가였다 — 아버지 밑에서 사람을 값매기며 자란 눈.',
+          '그 눈에 담긴 것은 호기심이 아니라 평가였다. 아버지 밑에서 사람을 값매기며 자란 눈.',
       },
       { speaker: 'heir', text: '"…폐하께서는, 생각보다 작으시군요."' },
       {
@@ -121,7 +121,7 @@ export const CHILDHOOD_SCENES: Scene[] = [
     lines: [
       {
         speaker: 'narration',
-        text: '문서를 나르던 아이가 {왕} 앞에서 걸음을 멈췄다. 낯이 익었다 — 어디서 봤더라.',
+        text: '문서를 나르던 아이가 {왕} 앞에서 걸음을 멈췄다. 낯이 익었다. 어디서 봤더라.',
       },
       {
         speaker: 'narration',

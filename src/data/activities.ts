@@ -215,7 +215,7 @@ export const ACTIVITIES: Activity[] = [
     name: '명예를 베푼다',
     description:
       '섭정공에게 작위와 예우를 더한다. 실권은 내주지 않되, 그의 공을 조정 앞에서 인정한다. ' +
-      '체면이 서면 등을 돌릴 이유가 준다 — 힘으로 누르는 것과는 다른 길이다.',
+      '체면이 서면 등을 돌릴 이유가 준다. 힘으로 누르는 것과는 다른 길이다.',
     apCost: 1,
     requires: { minAge: 14 },
     effects: [

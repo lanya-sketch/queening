@@ -23,7 +23,7 @@ export const POISON_SCENES: Scene[] = [
         speaker: 'narration',
         text:
           '그때는 그 손을 다정이라 불렀다.\n' +
-          '— 지금은 아니다. 이제 {왕}은 그 병 안에 무엇이 들었는지 안다.',
+          '지금은 아니다. 이제 {왕}은 그 병 안에 무엇이 들었는지 안다.',
       },
     ],
   },

@@ -48,7 +48,7 @@ export interface Incident {
   rejected: string[]
 }
 
-const FORBIDDEN_NOTE = `절대 만들지 않는 것 — 이것들은 전부 다른 곳에서 이미 다뤄지고 있다:
+const FORBIDDEN_NOTE = `절대 만들지 않는 것, 이것들은 전부 다른 곳에서 이미 다뤄지고 있다:
 - 선왕의 죽음이나 그 진상
 - 왕대비, 섭정공, 하원, 제국에 관한 일
 - 마왕과 마족에 관한 일
@@ -131,7 +131,7 @@ export function buildIncidentPrompt(game: GameState, withChoices: boolean): stri
     '',
     withChoices
       ? [
-          '응답 형식 — 아래 JSON 하나만. 다른 말은 붙이지 마라.',
+          '응답 형식, 아래 JSON 하나만. 다른 말은 붙이지 마라.',
           '{',
           '  "title": "짧은 제목",',
           '  "text": "사건 서술. 두세 문장.",',
@@ -142,12 +142,12 @@ export function buildIncidentPrompt(game: GameState, withChoices: boolean): stri
           '  ]',
           '}',
           '',
-          '선택지는 둘 또는 셋. 그중 하나에 "cautious": true 를 붙여라 —',
+          '선택지는 둘 또는 셋. 그중 하나에 "cautious": true 를 붙여라.',
           '가장 신중하고 소극적인 쪽이다.',
           '정말 급히 결단해야 하는 일이면 "urgent": true.',
         ].join('\n')
       : [
-          '응답 형식 — 아래 JSON 하나만. 다른 말은 붙이지 마라.',
+          '응답 형식, 아래 JSON 하나만. 다른 말은 붙이지 마라.',
           '{',
           '  "title": "짧은 제목",',
           '  "text": "사건 서술. 두세 문장. 선택할 것 없이 벌어진 일이다.",',
@@ -169,7 +169,7 @@ function clampDeltas(raw: unknown): { deltas: AiDelta[]; rejected: string[] } {
   )
   return {
     deltas: clamped.deltas,
-    rejected: clamped.rejected.map((r) => `${r.target} ${r.amount} — ${r.reason}`),
+    rejected: clamped.rejected.map((r) => `${r.target} ${r.amount}, ${r.reason}`),
   }
 }
 

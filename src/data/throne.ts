@@ -44,20 +44,20 @@ export const THRONE_BACKDROP: Record<ThroneTier, ThroneBackdrop> = {
     ring: 'border-line',
     backdrop: 'bg-gradient-to-b from-ink-900 to-ink-950',
     imgFilter: '',
-    label: '허수아비 — 실권 없음',
+    label: '허수아비 · 실권 없음',
   },
   // 공존 — 옥좌 앞·중간. 반쯤 쥠.
   coexist: {
     ring: 'border-line-gold/70',
     backdrop: 'bg-gradient-to-b from-ink-800 via-ink-800 to-gold-600/25',
     imgFilter: '',
-    label: '공존 — 반쯤 쥔 실권',
+    label: '공존 · 반쯤 쥔 실권',
   },
   // 친정 — 옥좌에 앉음·밝게. 실권을 장악했다.
   autonomy: {
     ring: 'border-gold-400/80 shadow-[0_0_20px_-2px_rgba(212,176,106,0.55)]',
     backdrop: 'bg-gradient-to-b from-gold-600/45 via-ink-800 to-gold-400/15',
     imgFilter: '',
-    label: '친정 — 실권 장악',
+    label: '친정 · 실권 장악',
   },
 }
