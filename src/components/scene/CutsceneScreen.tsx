@@ -8,6 +8,8 @@ import { useGame } from '../../store/gameStore'
 import { monthlyWish, prefRelation } from '../../systems/parenting'
 import { isPostAutonomy, standingMood } from '../../systems/rebellion'
 import { resolveMonarchPortrait } from '../../systems/outfits'
+import { SceneBackground } from './SceneBackground'
+import { activityBgUrl, bgUrl } from '../../data/backgrounds'
 import type { FlagSet } from '../../types/game'
 
 /**
@@ -78,25 +80,32 @@ export function CutsceneScreen({ onDone }: { onDone: () => void }) {
   const portrait = manifest.portraits
     ? resolveMonarchPortrait(manifest.portraits, game.monarchGender, report.startAge, game.currentOutfitId).fullSrc
     : null
+  // ★ [10] 활동별 배경(컷신). 같은 달 같은 컷(안정 선택). 병(bedrest)은 처소. 없으면 폴백.
+  const bgSrc = bedrest
+    ? bgUrl('chamber', 'bedrest')
+    : activityBgUrl(entry.activityId, `${entry.activityId}-${report.date.year}-${report.date.month}`)
 
   return (
     <div
       data-screen="cutscene"
       data-cutscene-index={i}
       onClick={() => setI((n) => n + 1)}
-      className="flex min-h-[70vh] cursor-pointer select-none flex-col items-center justify-center lg:min-h-0 lg:flex-1"
+      className="relative flex min-h-[70vh] cursor-pointer select-none flex-col items-center justify-center overflow-hidden lg:min-h-0 lg:flex-1"
     >
+      {/* ★ [10] 배경 그림(있으면) + 가독성 스크림. 없으면 상위 ink-950 그대로(폴백). */}
+      <SceneBackground url={bgSrc} className="rounded-2xl" />
+      {bgSrc && <div aria-hidden className="absolute inset-0 rounded-2xl bg-ink-950/55" />}
       {portrait && (
         <img
           key={(bedrest ? 'bedrest' : entry.activityId) + i}
           src={portrait}
           alt=""
           draggable={false}
-          className="h-52 w-auto rounded-xl object-cover object-top opacity-95 lg:h-64"
+          className="relative z-10 h-52 w-auto rounded-xl object-cover object-top opacity-95 lg:h-64"
           style={{ animation: 'cutscene-fade .4s ease-out' }}
         />
       )}
-      <div key={i} className="mt-6 max-w-md text-center" style={{ animation: 'cutscene-fade .5s ease-out' }}>
+      <div key={i} className="relative z-10 mt-6 max-w-md text-center" style={{ animation: 'cutscene-fade .5s ease-out' }}>
         <p data-cutscene-date className="font-title text-sm tracking-wide text-gold-300">
           즉위 {report.date.year}년 {monthLabel(report.date.month)} {dateDay}일
         </p>
@@ -105,7 +114,7 @@ export function CutsceneScreen({ onDone }: { onDone: () => void }) {
         </p>
         <p data-cutscene-line className="mt-3 text-[15px] leading-relaxed text-parchment/80">{line}</p>
       </div>
-      <p className="mt-8 text-[11px] tabular-nums text-faint">
+      <p className="relative z-10 mt-8 text-[11px] tabular-nums text-faint">
         {i + 1} / {count} · 눌러서 넘기기
       </p>
       <style>{`@keyframes cutscene-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}`}</style>

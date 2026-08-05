@@ -9,6 +9,8 @@ import {
 import { useGame } from '../../store/gameStore'
 import { SPEED_MS, useOptions } from '../../store/optionsStore'
 import { useTypewriter } from './useTypewriter'
+import { SceneBackground } from './SceneBackground'
+import { sceneBgUrl } from '../../data/backgrounds'
 import type { GameState, OutfitManifest, Scene } from '../../types/game'
 
 /**
@@ -31,6 +33,7 @@ export function ScenePlayer({
   finished = false,
   showSprites = false,
   outfitOverride,
+  bgOverride,
   onFinished,
 }: {
   sceneId: string
@@ -40,6 +43,8 @@ export function ScenePlayer({
   showSprites?: boolean
   /** ★ [6] 이 씬 동안만 군주 착장을 이걸로(의식용). 상태 불변 — 씬이 끝나면 원래대로. */
   outfitOverride?: string
+  /** ★ [10] 배경 URL 강제(엔딩 등 동적 sceneId 라 SCENE_BG 로 못 찾는 경우). null 이면 폴백. */
+  bgOverride?: string | null
   onFinished: () => void
 }) {
   const realGame = useGame((s) => s.game)
@@ -49,6 +54,8 @@ export function ScenePlayer({
   const textSpeed = useOptions((s) => s.textSpeed)
   const [index, setIndex] = useState(0)
   const scene = SCENE_BY_ID[sceneId]
+  // ★ [10] 이 씬의 배경 URL. bgOverride(엔딩) > scene.bg(장소 방문 등 동적) > sceneId 매핑 > null(폴백).
+  const bg = bgOverride !== undefined ? bgOverride : (scene?.bg ?? sceneBgUrl(sceneId))
   // 이 씬을 예전에 끝까지 본 적이 있는가(스킵 허용 여부). 마운트 시 한 번 읽는다.
   const alreadyRead = useMemo(() => isRead(sceneId), [sceneId])
 
@@ -162,8 +169,10 @@ export function ScenePlayer({
         onKeyDown={onKey}
         className="fixed inset-0 z-50 cursor-pointer select-none overflow-hidden bg-ink-950"
       >
-        {/* 무대 배경 — 그라데이션 + 상단 금빛 비네트 */}
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-ink-700/25 via-ink-950 to-black" />
+        {/* ★ [10] 무대 배경 — 배경 그림(있으면) + 가독성 스크림 + 금빛 비네트.
+             그림이 없거나 404 면 스크림만 남아 기존 어두운 톤이 된다(폴백). */}
+        <SceneBackground url={bg} />
+        <div aria-hidden className={`absolute inset-0 ${bg ? 'bg-gradient-to-b from-ink-950/70 via-ink-950/45 to-ink-950/88' : 'bg-gradient-to-b from-ink-700/25 via-ink-950 to-black'}`} />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
@@ -248,12 +257,15 @@ export function ScenePlayer({
     >
       {/* ── 무대(컷신): 배경 슬롯(지금은 어두운 그라데이션, 나중에 배경 그림) + 반신 스프라이트.
              ★ 대화창과 붙이지 않고 독립 패널로 둔다 — 아래 대화창은 따로. ── */}
-      {cast.length > 0 && (
+      {(cast.length > 0 || bg) && (
         <div
-          className={`relative flex h-[34dvh] items-start justify-center overflow-hidden rounded-2xl border border-line-gold/40 bg-gradient-to-b from-ink-700/40 via-ink-900 to-ink-950 sm:h-[42dvh] ${
-            cast.length > 1 ? 'gap-1 sm:gap-3' : ''
-          }`}
+          className={`relative flex h-[34dvh] items-start justify-center overflow-hidden rounded-2xl border border-line-gold/40 sm:h-[42dvh] ${
+            bg ? '' : 'bg-gradient-to-b from-ink-700/40 via-ink-900 to-ink-950'
+          } ${cast.length > 1 ? 'gap-1 sm:gap-3' : ''}`}
         >
+          {/* ★ [10] 배경 그림(있으면) + 가독성 스크림. 내레이션 씬(스프라이트 없음)도 배경 배너를 갖는다. */}
+          <SceneBackground url={bg} />
+          {bg && <div aria-hidden className="absolute inset-0 bg-ink-950/45" />}
           {/* 배경 비네트 */}
           <div
             aria-hidden

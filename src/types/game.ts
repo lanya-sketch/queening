@@ -88,6 +88,8 @@ export interface SceneLine {
 export interface Scene {
   id: string
   lines: SceneLine[]
+  /** ★ [10] 이 씬의 배경 URL. 동적/공용 id(장소 방문 등 SCENE_BG 로 못 찾는 경우)에 직접 싣는다. */
+  bg?: string | null
 }
 
 /**

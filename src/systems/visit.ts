@@ -6,6 +6,7 @@ import {
 import { chamberSearchEligible, CHAMBER } from '../data/events/bloodoath'
 import { knowsTreason, officeSearchEligible, OFFICE_SEARCH_OPEN } from '../data/events/treason'
 import { encounterFor } from '../data/events/encounters'
+import { placeBgUrl } from '../data/backgrounds'
 import { RISK_TUTOR } from './risk'
 import { isPostAutonomy } from './rebellion'
 import { FAITH } from '../data/config'
@@ -234,9 +235,16 @@ export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan 
   const counters: Record<string, number> = {}
   const base: VisitPlan = { eventId: def.eventId, scene: null, setFlags, counters }
 
-  if (def.kind === 'queen') return planQueen(game, rng, base)
-  if (def.kind === 'office') return planOffice(game, rng, base)
-  if (place === 'chapel') return planChapel(game, rng, base) // ★ [5-b] ④ 억류(확실 조우)
+  // ★ [10] 방문 씬(공용 id 'scene-place-visit')에 그 장소의 배경을 싣는다. 방문마다 컷이 바뀌게
+  //   ctxId 에 연·월을 넣는다(같은 방문 안에서는 불변 → 깜빡임 없음). 대예배당은 placeBgUrl 이 2종으로 가른다.
+  const withPlaceBg = (p: VisitPlan): VisitPlan =>
+    p.scene
+      ? { ...p, scene: { ...p.scene, bg: placeBgUrl(place, game, `${place}-${game.date.year}-${game.date.month}`) } }
+      : p
+
+  if (def.kind === 'queen') return withPlaceBg(planQueen(game, rng, base))
+  if (def.kind === 'office') return withPlaceBg(planOffice(game, rng, base))
+  if (place === 'chapel') return withPlaceBg(planChapel(game, rng, base)) // ★ [5-b] ④ 억류(확실 조우)
 
   // ★ [7] 이 달 몇 번째 외출인가 — 첫 번은 OUTING_MONTH, (친정 후) 두 번째는 OUTING_MONTH_2.
   const outingSlot = game.flags[OUTING_MONTH] === true ? OUTING_MONTH_2 : OUTING_MONTH
@@ -272,8 +280,8 @@ export function planVisit(place: PlaceId, game: GameState, rng: Rng): VisitPlan 
       return { eventId: enc, scene: null, setFlags, counters }
     }
     // 이미 이 달의 깊은 만남을 썼거나(다른 인물), 조우 대화가 없음 → meet-line(소득 없음).
-    return { ...base, scene: buildPlaceScene(place, present, pickLore(place, rng)) }
+    return withPlaceBg({ ...base, scene: buildPlaceScene(place, present, pickLore(place, rng)) })
   }
   // 이미 만났거나 아무도 없음 — 조용한 장소(소득 없음).
-  return { ...base, scene: buildPlaceScene(place, null, pickLore(place, rng)) }
+  return withPlaceBg({ ...base, scene: buildPlaceScene(place, null, pickLore(place, rng)) })
 }

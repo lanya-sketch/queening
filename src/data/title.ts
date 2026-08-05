@@ -16,4 +16,4 @@ export const TITLE = {
   },
 } as const
 
-export const TITLE_BACKGROUND = '/assets/background/title.png'
+export const TITLE_BACKGROUND = '/assets/background/title.webp'

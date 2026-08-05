@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { courtInfluenceCap } from '../data/config'
 import { STAT_KEYS, STAT_META } from '../data/stats'
-import { buildEndingScene } from '../systems/endingScene'
+import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
+import { endingBgUrl, deadEndBgUrl } from '../data/backgrounds'
 import { judgeEnding, describeEnding } from '../systems/ending'
 import { deadEndReason } from '../systems/deadend'
 import { buildDeadEndScene } from '../data/endings/deadends'
@@ -33,18 +34,20 @@ export function EndedScreen() {
 
   // 판정과 씬 조립은 상태에 의존하지만 게임 진행 중에 바뀌지 않는다.
   // ★ 조기 데드엔딩이면 판정(judgeEnding)을 우회하고 손으로 쓴 데드 씬을 재생한다.
-  const { sceneId, summary, dead } = useMemo(() => {
+  const { sceneId, summary, dead, bg } = useMemo(() => {
     const reason = deadEndReason(game)
     if (reason) {
       const { scene, title } = buildDeadEndScene(reason)
       SCENE_BY_ID[scene.id] = scene
-      return { sceneId: scene.id, summary: null, dead: { title, reason } }
+      // ★ [10] 데드엔딩 배경 — 사유별(폐허·밤 등).
+      return { sceneId: scene.id, summary: null, dead: { title, reason }, bg: deadEndBgUrl(reason) }
     }
     const result = judgeEnding(game)
     const scene = buildEndingScene(result)
     // ScenePlayer 는 SCENE_BY_ID 에서 씬을 찾는다 — 조립된 씬을 그 자리에 얹는다.
     SCENE_BY_ID[scene.id] = scene
-    return { sceneId: scene.id, summary: result, dead: null }
+    // ★ [10] 엔딩 배경 — 골격(tier·처분)별(대전·전장·폐허 등).
+    return { sceneId: scene.id, summary: result, dead: null, bg: endingBgUrl(endingSkeletonId(result)) }
     // eslint 없는 프로젝트. 마운트 시 한 번만 조립한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -68,7 +71,7 @@ export function EndedScreen() {
             {dead ? `즉위 ${game.date.year}년 · ${game.age}세 · 채우지 못한 치세` : `즉위 ${game.date.year}년 · 아홉 해의 끝`}
           </p>
           <div className="mt-4">
-            <ScenePlayer sceneId={sceneId} onFinished={() => setSceneDone(true)} />
+            <ScenePlayer sceneId={sceneId} bgOverride={bg} onFinished={() => setSceneDone(true)} />
           </div>
         </article>
       </div>

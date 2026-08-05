@@ -24,6 +24,7 @@ import {
 } from '../systems/minorEvents'
 import { durabilityBase, growthFactor, wellbeingCostFactor } from '../systems/durability'
 import { ENDING_THRESHOLDS, judgeEnding, warOutcome, warStrength, empireStrength } from '../systems/ending'
+import { bgAuditUrls, sceneBgUrl, activityBgUrl, placeBgUrl, endingBgUrl, deadEndBgUrl } from '../data/backgrounds'
 import { buildEndingScene, endingSkeletonId } from '../systems/endingScene'
 import { findTriggeredEvents } from '../systems/eventEngine'
 import { resolveCharacterPortrait, resolveMonarchPortrait, validateManifest } from '../systems/outfits'
@@ -94,6 +95,20 @@ export function installDevBridge(): void {
     warOutcome(state?: Record<string, unknown>) {
       const s = (state ?? useGame.getState().game) as never
       return { outcome: warOutcome(s), ours: warStrength(s), enemy: empireStrength(s) }
+    },
+    /** ★ [10] 배경 매핑 감사 — 모든 매핑 URL + 파일 없는 키. verify 가 404 0건을 확인. */
+    bgAudit() {
+      return bgAuditUrls()
+    },
+    /** ★ [10] 개별 리졸버 — 씬/활동/장소/엔딩 배경 URL 확인용. */
+    bgResolve(kind: string, id: string, state?: Record<string, unknown>) {
+      const s = (state ?? useGame.getState().game) as never
+      if (kind === 'scene') return sceneBgUrl(id)
+      if (kind === 'activity') return activityBgUrl(id)
+      if (kind === 'place') return placeBgUrl(id, s)
+      if (kind === 'ending') return endingBgUrl(id)
+      if (kind === 'deadend') return deadEndBgUrl(id)
+      return null
     },
     /** 내구도 계수 — 초반 혹독/후반 가속 곡선 검증용. */
     durabilityInfo(durability: number) {

@@ -4,3 +4,6 @@
 *.local
 .claude/settings.json
 .claude/settings.json
+
+# 배경 원본 PNG는 로컬 보관, WebP만 커밋 (209MB git 유입 방지)
+public/assets/background/*.png
